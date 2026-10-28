@@ -1236,12 +1236,19 @@
       }
     }
 
-    function handleLogout() {
-      currentUserSession = null;
-      document.getElementById('modalLogin').classList.remove('hidden');
-      document.getElementById('loginUsername').value = '';
-      document.getElementById('loginPassword').value = '';
-    }
+  function handleLogout() {
+  currentUserSession = null;
+  
+  // Hapus hanya sesi login pengguna (JANGAN gunakan localStorage.clear())
+  localStorage.removeItem('USER_SESSION');
+  
+  // Tampilkan kembali modal login
+  document.getElementById('modalLogin').classList.remove('hidden');
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  
+  showAlert('Berhasil Logout', 'Anda telah keluar dari sistem.');
+}
 
     function openModalLupaPassword() {
       document.getElementById('modalLupaPassword').classList.remove('hidden');
@@ -2096,7 +2103,44 @@
     }
 
     function uploadLogoSekolah() { showAlert('Logo Terunggah', 'Logo sekolah berhasil diperbarui.'); }
-    function saveGoogleConfig() { showAlert('Google Integration', 'Koneksi database Google Sheets berhasil disimpan.'); }
+    // SIMPAN KONFIGURASI KE LOCAL STORAGE
+function saveGoogleConfig() {
+  const url = document.getElementById('gsheetUrl').value.trim();
+  const folder = document.getElementById('gdriveFolder').value.trim();
+  const token = document.getElementById('apiSecurityToken').value.trim();
+
+  if (!url) {
+    showAlert('Peringatan', 'Google Web App Script URL tidak boleh kosong!');
+    return;
+  }
+
+  // Simpan ke LocalStorage dengan kunci khusus
+  localStorage.setItem('PRESENSI_GSHEET_URL', url);
+  localStorage.setItem('PRESENSI_GDRIVE_FOLDER', folder);
+  localStorage.setItem('PRESENSI_SECURITY_TOKEN', token);
+
+  showAlert('Konfigurasi Tersimpan!', 'URL Google Apps Script, Folder ID, dan API Token berhasil tersimpan secara permanen.');
+}
+
+// MUAT OTOMATIS KONFIGURASI SAAT HALAMAN DIBUKA
+function loadSavedGoogleConfig() {
+  const savedUrl = localStorage.getItem('PRESENSI_GSHEET_URL');
+  const savedFolder = localStorage.getItem('PRESENSI_GDRIVE_FOLDER');
+  const savedToken = localStorage.getItem('PRESENSI_SECURITY_TOKEN');
+
+  const elUrl = document.getElementById('gsheetUrl');
+  const elFolder = document.getElementById('gdriveFolder');
+  const elToken = document.getElementById('apiSecurityToken');
+
+  if (elUrl && savedUrl) elUrl.value = savedUrl;
+  if (elFolder && savedFolder) elFolder.value = savedFolder;
+  if (elToken && savedToken) elToken.value = savedToken;
+}
+
+// Panggil otomatis saat DOM siap
+document.addEventListener('DOMContentLoaded', function() {
+  loadSavedGoogleConfig();
+});
 
     // --- CHARTS INITIALIZATION ---
     function initCharts() {

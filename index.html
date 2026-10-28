@@ -428,14 +428,17 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <h3 class="text-lg font-bold text-slate-800">Kelola Data Siswa</h3>
           <div class="flex flex-wrap gap-2">
-            <button onclick="openModalSiswa()" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-2">
+            <button onclick="downloadTemplateSiswa()" class="px-3 py-2 bg-slate-700 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition flex items-center gap-1.5" title="Unduh Format CSV">
+              <i data-lucide="download" class="w-4 h-4"></i> Unduh Template CSV
+            </button>
+            <button onclick="openModalSiswa()" class="px-3 py-2 bg-indigo-600 text-white text-xs font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-1.5">
               <i data-lucide="plus" class="w-4 h-4"></i> Tambah Manual
             </button>
-            <label class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-2">
-              <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV Massal
+            <label class="px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5" title="Impor & Timpa Data">
+              <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV (Timpa)
               <input type="file" accept=".csv" class="hidden" onchange="importSiswaCSV(event)">
             </label>
-            <label class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700 transition cursor-pointer flex items-center gap-2">
+            <label class="px-3 py-2 bg-purple-600 text-white text-xs font-medium rounded-xl hover:bg-purple-700 transition cursor-pointer flex items-center gap-1.5">
               <i data-lucide="image" class="w-4 h-4"></i> Unggah Foto Massal
               <input type="file" multiple accept="image/*" class="hidden" onchange="handleFotoMassal(event)">
             </label>
@@ -520,11 +523,14 @@
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h3 class="text-lg font-bold text-slate-800">Data Guru & Tenaga Pendidik</h3>
               <div class="flex gap-2">
+                <button onclick="downloadTemplateGuru()" class="px-3 py-1.5 bg-slate-700 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition flex items-center gap-1" title="Unduh Format CSV">
+                  <i data-lucide="download" class="w-4 h-4"></i> Template CSV
+                </button>
                 <button onclick="openModalGuru()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-1">
                   <i data-lucide="plus" class="w-4 h-4"></i> Tambah Manual
                 </button>
-                <label class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1">
-                  <i data-lucide="upload" class="w-4 h-4"></i> Impor Guru CSV
+                <label class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1" title="Impor & Timpa Data">
+                  <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV (Timpa)
                   <input type="file" accept=".csv" class="hidden" onchange="importGuruCSV(event)">
                 </label>
               </div>
@@ -1242,7 +1248,7 @@
       document.getElementById('modalLogin').classList.remove('hidden');
       document.getElementById('loginUsername').value = '';
       document.getElementById('loginPassword').value = '';
-      showAlert('Logout Berhasil', 'Anda telah keluar dari sistem.');
+      showAlert('Berhasil Logout', 'Anda telah keluar dari sistem.');
     }
 
     function openModalLupaPassword() {
@@ -1268,6 +1274,7 @@
         acc.password = newPass;
         closeModalLupaPassword();
         renderUserAccountsTable();
+      loadSavedGoogleConfig();
         showAlert('Reset Berhasil', `Password untuk akun ${username} telah diperbarui. Silakan login.`);
       } else {
         showAlert('Gagal', 'Username tidak ditemukan atau password baru masih kosong!');
@@ -1326,6 +1333,7 @@
         userAccountsStore.push({ username, password, name, role });
         closeModalUserAccount();
         renderUserAccountsTable();
+      loadSavedGoogleConfig();
         showAlert('Akun Ditambahkan', `Pengguna ${name} (${role}) berhasil dibuat.`);
       }
     }
@@ -1333,6 +1341,7 @@
     function deleteUserAccount(idx) {
       userAccountsStore.splice(idx, 1);
       renderUserAccountsTable();
+      loadSavedGoogleConfig();
     }
 
     // --- INITIALIZATION ---
@@ -1347,6 +1356,7 @@
       renderKartuA4();
       renderRekapPrint();
       renderUserAccountsTable();
+      loadSavedGoogleConfig();
 
       setInterval(() => {
         const clockEl = document.getElementById('liveClock');
@@ -1445,6 +1455,7 @@
       if (tabId === 'tab-kartu') renderKartuA4();
       if (tabId === 'tab-rekap') renderRekapPrint();
       if (tabId === 'tab-users') renderUserAccountsTable();
+      loadSavedGoogleConfig();
     }
 
     // --- CETAK KARTU A4 LOGIC ---
@@ -2099,55 +2110,291 @@
 
     function uploadLogoSekolah() { showAlert('Logo Terunggah', 'Logo sekolah berhasil diperbarui.'); }
     
-  // --- LOCALSTORAGE & GOOGLE CONFIG MANAGEMENT ---
-  function saveGoogleConfig() {
-    const url = document.getElementById('gsheetUrl')?.value.trim() || '';
-    const folder = document.getElementById('gdriveFolder')?.value.trim() || '';
-    const token = document.getElementById('apiSecurityToken')?.value.trim() || '';
+    // --- STATE EDIT ---
+    let editSiswaIndex = null;
+    let editGuruIndex = null;
 
-    localStorage.setItem('PRESENSI_GSHEET_URL', url);
-    localStorage.setItem('PRESENSI_GDRIVE_FOLDER', folder);
-    localStorage.setItem('PRESENSI_SECURITY_TOKEN', token);
+    // --- SAVE & LOAD GOOGLE CONFIG (LOCALSTORAGE FIX) ---
+    function saveGoogleConfig() {
+      const url = document.getElementById('gsheetUrl')?.value.trim() || '';
+      const folder = document.getElementById('gdriveFolder')?.value.trim() || '';
+      const token = document.getElementById('apiSecurityToken')?.value.trim() || '';
 
-    showAlert('Konfigurasi Tersimpan', 'URL Google Web App, Folder ID, dan Security Token berhasil tersimpan di browser!');
-  }
+      if (!url) {
+        showAlert('Peringatan', 'Google Web App Script URL tidak boleh kosong!');
+        return;
+      }
 
-  function loadSavedGoogleConfig() {
-    if (document.getElementById('gsheetUrl') && localStorage.getItem('PRESENSI_GSHEET_URL')) {
-      document.getElementById('gsheetUrl').value = localStorage.getItem('PRESENSI_GSHEET_URL');
-    }
-    if (document.getElementById('gdriveFolder') && localStorage.getItem('PRESENSI_GDRIVE_FOLDER')) {
-      document.getElementById('gdriveFolder').value = localStorage.getItem('PRESENSI_GDRIVE_FOLDER');
-    }
-    if (document.getElementById('apiSecurityToken') && localStorage.getItem('PRESENSI_SECURITY_TOKEN')) {
-      document.getElementById('apiSecurityToken').value = localStorage.getItem('PRESENSI_SECURITY_TOKEN');
-    }
-  }
+      localStorage.setItem('PRESENSI_GSHEET_URL', url);
+      localStorage.setItem('PRESENSI_GDRIVE_FOLDER', folder);
+      localStorage.setItem('PRESENSI_SECURITY_TOKEN', token);
 
-  // --- SINKRONISASI GOOGLE SHEETS API ---
-  async function sendToGoogleAppsScript(action, payload = {}) {
-    const gsheetUrl = localStorage.getItem('PRESENSI_GSHEET_URL') || document.getElementById('gsheetUrl')?.value;
-    const token = localStorage.getItem('PRESENSI_SECURITY_TOKEN') || document.getElementById('apiSecurityToken')?.value || 'SECURE_PRESENSI_TOKEN_2026';
-
-    if (!gsheetUrl) {
-      console.warn("URL Google Apps Script belum dikonfigurasi.");
-      return null;
+      showAlert('Konfigurasi Tersimpan!', 'URL Google Apps Script, Folder ID, dan API Security Token berhasil tersimpan secara permanen.');
     }
 
-    try {
-      const response = await fetch(gsheetUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, token, ...payload })
+    function loadSavedGoogleConfig() {
+      const savedUrl = localStorage.getItem('PRESENSI_GSHEET_URL');
+      const savedFolder = localStorage.getItem('PRESENSI_GDRIVE_FOLDER');
+      const savedToken = localStorage.getItem('PRESENSI_SECURITY_TOKEN');
+
+      const elUrl = document.getElementById('gsheetUrl');
+      const elFolder = document.getElementById('gdriveFolder');
+      const elToken = document.getElementById('apiSecurityToken');
+
+      if (elUrl && savedUrl) elUrl.value = savedUrl;
+      if (elFolder && savedFolder) elFolder.value = savedFolder;
+      if (elToken && savedToken) elToken.value = savedToken;
+    }
+
+    async function sendToGoogleAppsScript(action, payload = {}) {
+      const gsheetUrl = localStorage.getItem('PRESENSI_GSHEET_URL') || document.getElementById('gsheetUrl')?.value;
+      const token = localStorage.getItem('PRESENSI_SECURITY_TOKEN') || document.getElementById('apiSecurityToken')?.value || 'SECURE_PRESENSI_TOKEN_2026';
+
+      if (!gsheetUrl) {
+        console.warn("URL Google Apps Script belum dikonfigurasi.");
+        return null;
+      }
+
+      try {
+        const response = await fetch(gsheetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, token, ...payload })
+        });
+        return { status: "success", message: "Data dikirim ke Google Sheets server." };
+      } catch (err) {
+        console.error("Gagal sinkronisasi Google Apps Script:", err);
+        return null;
+      }
+    }
+
+    // --- TEMPLATE DOWNLOAD ---
+    function downloadTemplateSiswa() {
+      const csvContent = "data:text/csv;charset=utf-8,NISN,Nama,Kelas,Binaan\n0051234561,Ahmad Fauzi,10-A,Pak Budi (Walikelas)\n0051234562,Siti Nurhaliza,10-A,Pak Budi (Walikelas)";
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Template_Data_Siswa.csv");
+      document.body.appendChild(link);
+      link.click();
+    }
+
+    function downloadTemplateGuru() {
+      const csvContent = "data:text/csv;charset=utf-8,NIP,Nama,Mapel,Kelas\n198501012010011001,Budi Hartono S.Pd,Walikelas 10-A,10-A\n198803152012022003,Ani Wijaya S.Pd,Guru PJOK,All";
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Template_Data_Guru.csv");
+      document.body.appendChild(link);
+      link.click();
+    }
+
+    // --- CRUD SISWA WITH EDIT & DELETE ---
+    function renderSiswaTable() {
+      const query = document.getElementById('searchSiswa')?.value.toLowerCase() || '';
+      const tbody = document.getElementById('tableSiswaBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const filtered = siswaData.filter(s => s.nama.toLowerCase().includes(query) || s.nisn.includes(query) || s.kelas.toLowerCase().includes(query));
+      if (document.getElementById('countSiswa')) document.getElementById('countSiswa').innerText = filtered.length;
+
+      filtered.forEach((s, index) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-4"><img src="${s.foto}" class="w-10 h-10 rounded-full object-cover border"></td>
+            <td class="p-4 font-mono text-xs font-bold">${s.nisn}</td>
+            <td class="p-4 font-medium text-slate-800">${s.nama}</td>
+            <td class="p-4">${s.kelas}</td>
+            <td class="p-4">${s.binaan}</td>
+            <td class="p-4 text-center space-x-1">
+              <button onclick="editSiswa(${index})" class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100" title="Edit Data"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+              <button onclick="deleteSiswa(${index})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
       });
-      return { status: "success", message: "Data dikirim ke server Google Sheets." };
-    } catch (err) {
-      console.error("Gagal sinkronisasi Google Apps Script:", err);
-      return null;
+      if (window.lucide) lucide.createIcons();
     }
-  }
-  
+
+    function editSiswa(index) {
+      editSiswaIndex = index;
+      const s = siswaData[index];
+      document.getElementById('inputNISN').value = s.nisn;
+      document.getElementById('inputNamaSiswa').value = s.nama;
+      document.getElementById('inputKelasSiswa').value = s.kelas;
+      document.getElementById('inputBinaanSiswa').value = s.binaan;
+      openModalSiswa();
+    }
+
+    function saveSiswa() {
+      const nisn = document.getElementById('inputNISN').value.trim();
+      const nama = document.getElementById('inputNamaSiswa').value.trim();
+      const kelas = document.getElementById('inputKelasSiswa').value;
+      const binaan = document.getElementById('inputBinaanSiswa').value.trim();
+
+      if (!nisn || !nama) {
+        showAlert('Perhatian', 'NISN dan Nama Siswa wajib diisi!');
+        return;
+      }
+
+      const payload = { nisn, nama, kelas, binaan, foto: 'https://placehold.co/100x120/indigo/white?text=' + nama.split(' ')[0] };
+
+      if (editSiswaIndex !== null) {
+        siswaData[editSiswaIndex] = payload;
+        editSiswaIndex = null;
+      } else {
+        siswaData.push(payload);
+      }
+
+      closeModalSiswa();
+      renderSiswaTable();
+      renderKartuA4();
+      sendToGoogleAppsScript("sync_siswa", { siswaList: siswaData, mode: "timpa" });
+    }
+
+    function deleteSiswa(index) {
+      if (confirm("Apakah Anda yakin ingin menghapus data siswa ini?")) {
+        siswaData.splice(index, 1);
+        renderSiswaTable();
+        renderKartuA4();
+        sendToGoogleAppsScript("sync_siswa", { siswaList: siswaData, mode: "timpa" });
+      }
+    }
+
+    function importSiswaCSV(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const lines = evt.target.result.split('\n');
+          let newSiswaList = [];
+          lines.forEach((line, idx) => {
+            if (idx > 0 && line.trim()) {
+              const [nisn, nama, kelas, binaan] = line.split(',');
+              if (nisn && nama) {
+                newSiswaList.push({
+                  nisn: nisn.trim(),
+                  nama: nama.trim(),
+                  kelas: kelas ? kelas.trim() : '10-A',
+                  binaan: binaan ? binaan.trim() : 'Walikelas',
+                  foto: 'https://placehold.co/100x120/indigo/white?text=' + nama.trim().split(' ')[0]
+                });
+              }
+            }
+          });
+
+          if (newSiswaList.length > 0) {
+            siswaData = newSiswaList;
+            renderSiswaTable();
+            renderKartuA4();
+            sendToGoogleAppsScript("sync_siswa", { siswaList: siswaData, mode: "timpa" });
+            showAlert('Impor Massal Sukses', `Data siswa berhasil ditimpa dengan ${siswaData.length} data dari CSV.`);
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    // --- CRUD GURU WITH EDIT & DELETE ---
+    function renderGuruTable() {
+      const tbody = document.getElementById('tableGuruBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      guruData.forEach((g, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono text-xs">${g.nip}</td>
+            <td class="p-3 font-medium text-slate-800">${g.nama}</td>
+            <td class="p-3">${g.mapel}</td>
+            <td class="p-3">${g.kelas}</td>
+            <td class="p-3 text-center space-x-1">
+              <button onclick="editGuru(${idx})" class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100" title="Edit Data"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+              <button onclick="deleteGuru(${idx})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function editGuru(index) {
+      editGuruIndex = index;
+      const g = guruData[index];
+      document.getElementById('inputNIPGuru').value = g.nip;
+      document.getElementById('inputNamaGuru').value = g.nama;
+      document.getElementById('inputMapelGuru').value = g.mapel;
+      document.getElementById('inputKelasBinaan').value = g.kelas;
+      openModalGuru();
+    }
+
+    function saveGuru() {
+      const nip = document.getElementById('inputNIPGuru').value.trim();
+      const nama = document.getElementById('inputNamaGuru').value.trim();
+      const mapel = document.getElementById('inputMapelGuru').value.trim();
+      const kelas = document.getElementById('inputKelasBinaan').value.trim();
+
+      if (!nip || !nama) {
+        showAlert('Perhatian', 'NIP dan Nama Guru wajib diisi!');
+        return;
+      }
+
+      const payload = { nip, nama, mapel, kelas };
+
+      if (editGuruIndex !== null) {
+        guruData[editGuruIndex] = payload;
+        editGuruIndex = null;
+      } else {
+        guruData.push(payload);
+      }
+
+      closeModalGuru();
+      renderGuruTable();
+      sendToGoogleAppsScript("sync_guru", { guruList: guruData, mode: "timpa" });
+    }
+
+    function deleteGuru(index) {
+      if (confirm("Apakah Anda yakin ingin menghapus data guru ini?")) {
+        guruData.splice(index, 1);
+        renderGuruTable();
+        sendToGoogleAppsScript("sync_guru", { guruList: guruData, mode: "timpa" });
+      }
+    }
+
+    function importGuruCSV(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const lines = evt.target.result.split('\n');
+          let newGuruList = [];
+          lines.forEach((line, idx) => {
+            if (idx > 0 && line.trim()) {
+              const [nip, nama, mapel, kelas] = line.split(',');
+              if (nip && nama) {
+                newGuruList.push({
+                  nip: nip.trim(),
+                  nama: nama.trim(),
+                  mapel: mapel ? mapel.trim() : 'Guru',
+                  kelas: kelas ? kelas.trim() : 'All'
+                });
+              }
+            }
+          });
+
+          if (newGuruList.length > 0) {
+            guruData = newGuruList;
+            renderGuruTable();
+            sendToGoogleAppsScript("sync_guru", { guruList: guruData, mode: "timpa" });
+            showAlert('Impor Massal Sukses', `Data guru/tendik berhasil ditimpa dengan ${guruData.length} data dari CSV.`);
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
 
     // --- CHARTS INITIALIZATION ---
     function initCharts() {

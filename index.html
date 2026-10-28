@@ -428,16 +428,18 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <h3 class="text-lg font-bold text-slate-800">Kelola Data Siswa</h3>
           <div class="flex flex-wrap gap-2">
-            <button onclick="openModalSiswa()" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-2">
-              <i data-lucide="plus" class="w-4 h-4"></i> Tambah Manual
+            <button onclick="openModalSiswa()" class="px-3.5 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-4 h-4"></i> Tambah
             </button>
-            <label class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-2">
+            <button onclick="syncSiswaToGoogleSheet()" class="px-3.5 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="cloud-upload" class="w-4 h-4"></i> Ekspor ke G-Sheets
+            </button>
+            <button onclick="pullSiswaFromGoogleSheet()" class="px-3.5 py-2 bg-teal-600 text-white text-xs font-semibold rounded-xl hover:bg-teal-700 transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="cloud-download" class="w-4 h-4"></i> Impor dr G-Sheets
+            </button>
+            <label class="px-3.5 py-2 bg-amber-600 text-white text-xs font-semibold rounded-xl hover:bg-amber-700 transition cursor-pointer flex items-center gap-1.5">
               <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV Massal
               <input type="file" accept=".csv" class="hidden" onchange="importSiswaCSV(event)">
-            </label>
-            <label class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700 transition cursor-pointer flex items-center gap-2">
-              <i data-lucide="image" class="w-4 h-4"></i> Unggah Foto Massal
-              <input type="file" multiple accept="image/*" class="hidden" onchange="handleFotoMassal(event)">
             </label>
           </div>
         </div>
@@ -519,12 +521,18 @@
           <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h3 class="text-lg font-bold text-slate-800">Data Guru & Tenaga Pendidik</h3>
-              <div class="flex gap-2">
-                <button onclick="openModalGuru()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-1">
-                  <i data-lucide="plus" class="w-4 h-4"></i> Tambah Manual
+              <div class="flex flex-wrap gap-2">
+                <button onclick="openModalGuru()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition flex items-center gap-1">
+                  <i data-lucide="plus" class="w-4 h-4"></i> Tambah
                 </button>
-                <label class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1">
-                  <i data-lucide="upload" class="w-4 h-4"></i> Impor Guru CSV
+                <button onclick="syncGuruToGoogleSheet()" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 transition flex items-center gap-1">
+                  <i data-lucide="cloud-upload" class="w-4 h-4"></i> Ekspor ke G-Sheets
+                </button>
+                <button onclick="pullGuruFromGoogleSheet()" class="px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-xl hover:bg-teal-700 transition flex items-center gap-1">
+                  <i data-lucide="cloud-download" class="w-4 h-4"></i> Impor dr G-Sheets
+                </button>
+                <label class="px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold rounded-xl hover:bg-amber-700 transition cursor-pointer flex items-center gap-1">
+                  <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV
                   <input type="file" accept=".csv" class="hidden" onchange="importGuruCSV(event)">
                 </label>
               </div>
@@ -1236,19 +1244,12 @@
       }
     }
 
-  function handleLogout() {
-  currentUserSession = null;
-  
-  // Hapus hanya sesi login pengguna (JANGAN gunakan localStorage.clear())
-  localStorage.removeItem('USER_SESSION');
-  
-  // Tampilkan kembali modal login
-  document.getElementById('modalLogin').classList.remove('hidden');
-  document.getElementById('loginUsername').value = '';
-  document.getElementById('loginPassword').value = '';
-  
-  showAlert('Berhasil Logout', 'Anda telah keluar dari sistem.');
-}
+    function handleLogout() {
+      currentUserSession = null;
+      document.getElementById('modalLogin').classList.remove('hidden');
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+    }
 
     function openModalLupaPassword() {
       document.getElementById('modalLupaPassword').classList.remove('hidden');
@@ -1273,6 +1274,7 @@
         acc.password = newPass;
         closeModalLupaPassword();
         renderUserAccountsTable();
+      loadSavedGoogleConfig();
         showAlert('Reset Berhasil', `Password untuk akun ${username} telah diperbarui. Silakan login.`);
       } else {
         showAlert('Gagal', 'Username tidak ditemukan atau password baru masih kosong!');
@@ -1331,6 +1333,7 @@
         userAccountsStore.push({ username, password, name, role });
         closeModalUserAccount();
         renderUserAccountsTable();
+      loadSavedGoogleConfig();
         showAlert('Akun Ditambahkan', `Pengguna ${name} (${role}) berhasil dibuat.`);
       }
     }
@@ -1338,6 +1341,7 @@
     function deleteUserAccount(idx) {
       userAccountsStore.splice(idx, 1);
       renderUserAccountsTable();
+      loadSavedGoogleConfig();
     }
 
     // --- INITIALIZATION ---
@@ -1352,6 +1356,7 @@
       renderKartuA4();
       renderRekapPrint();
       renderUserAccountsTable();
+      loadSavedGoogleConfig();
 
       setInterval(() => {
         const clockEl = document.getElementById('liveClock');
@@ -1450,6 +1455,7 @@
       if (tabId === 'tab-kartu') renderKartuA4();
       if (tabId === 'tab-rekap') renderRekapPrint();
       if (tabId === 'tab-users') renderUserAccountsTable();
+      loadSavedGoogleConfig();
     }
 
     // --- CETAK KARTU A4 LOGIC ---
@@ -2103,44 +2109,115 @@
     }
 
     function uploadLogoSekolah() { showAlert('Logo Terunggah', 'Logo sekolah berhasil diperbarui.'); }
-    // SIMPAN KONFIGURASI KE LOCAL STORAGE
-function saveGoogleConfig() {
-  const url = document.getElementById('gsheetUrl').value.trim();
-  const folder = document.getElementById('gdriveFolder').value.trim();
-  const token = document.getElementById('apiSecurityToken').value.trim();
+    
+    // --- INTEGRASI GOOGLE APPS SCRIPT API & LOCAL STORAGE FIX ---
+    function saveGoogleConfig() {
+      const url = document.getElementById('gsheetUrl')?.value.trim() || '';
+      const folder = document.getElementById('gdriveFolder')?.value.trim() || '';
+      const token = document.getElementById('apiSecurityToken')?.value.trim() || '';
 
-  if (!url) {
-    showAlert('Peringatan', 'Google Web App Script URL tidak boleh kosong!');
-    return;
-  }
+      if (!url) {
+        showAlert('Peringatan', 'Google Web App Script URL tidak boleh kosong!');
+        return;
+      }
 
-  // Simpan ke LocalStorage dengan kunci khusus
-  localStorage.setItem('PRESENSI_GSHEET_URL', url);
-  localStorage.setItem('PRESENSI_GDRIVE_FOLDER', folder);
-  localStorage.setItem('PRESENSI_SECURITY_TOKEN', token);
+      localStorage.setItem('PRESENSI_GSHEET_URL', url);
+      localStorage.setItem('PRESENSI_GDRIVE_FOLDER', folder);
+      localStorage.setItem('PRESENSI_SECURITY_TOKEN', token);
 
-  showAlert('Konfigurasi Tersimpan!', 'URL Google Apps Script, Folder ID, dan API Token berhasil tersimpan secara permanen.');
-}
+      showAlert('Konfigurasi Tersimpan!', 'URL Google Apps Script, Folder ID, dan API Token berhasil tersimpan secara permanen.');
+    }
 
-// MUAT OTOMATIS KONFIGURASI SAAT HALAMAN DIBUKA
-function loadSavedGoogleConfig() {
-  const savedUrl = localStorage.getItem('PRESENSI_GSHEET_URL');
-  const savedFolder = localStorage.getItem('PRESENSI_GDRIVE_FOLDER');
-  const savedToken = localStorage.getItem('PRESENSI_SECURITY_TOKEN');
+    function loadSavedGoogleConfig() {
+      const savedUrl = localStorage.getItem('PRESENSI_GSHEET_URL');
+      const savedFolder = localStorage.getItem('PRESENSI_GDRIVE_FOLDER');
+      const savedToken = localStorage.getItem('PRESENSI_SECURITY_TOKEN');
 
-  const elUrl = document.getElementById('gsheetUrl');
-  const elFolder = document.getElementById('gdriveFolder');
-  const elToken = document.getElementById('apiSecurityToken');
+      if (document.getElementById('gsheetUrl') && savedUrl) document.getElementById('gsheetUrl').value = savedUrl;
+      if (document.getElementById('gdriveFolder') && savedFolder) document.getElementById('gdriveFolder').value = savedFolder;
+      if (document.getElementById('apiSecurityToken') && savedToken) document.getElementById('apiSecurityToken').value = savedToken;
+    }
 
-  if (elUrl && savedUrl) elUrl.value = savedUrl;
-  if (elFolder && savedFolder) elFolder.value = savedFolder;
-  if (elToken && savedToken) elToken.value = savedToken;
-}
+    // FIXED LOGOUT (Tidak Menghapus LocalStorage Konfigurasi Google Sheets)
+    function handleLogout() {
+      currentUserSession = null;
+      localStorage.removeItem('USER_SESSION');
+      document.getElementById('modalLogin').classList.remove('hidden');
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      showAlert('Berhasil Logout', 'Anda telah keluar dari sistem.');
+    }
 
-// Panggil otomatis saat DOM siap
-document.addEventListener('DOMContentLoaded', function() {
-  loadSavedGoogleConfig();
-});
+    async function sendToGoogleAppsScript(action, payload = {}) {
+      const gsheetUrl = localStorage.getItem('PRESENSI_GSHEET_URL') || document.getElementById('gsheetUrl')?.value;
+      const token = localStorage.getItem('PRESENSI_SECURITY_TOKEN') || document.getElementById('apiSecurityToken')?.value || 'SECURE_PRESENSI_TOKEN_2026';
+
+      if (!gsheetUrl) {
+        showAlert('Error Sinkronisasi', 'URL Google Web App Script belum dikonfigurasi!');
+        return null;
+      }
+
+      try {
+        const response = await fetch(gsheetUrl, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, token, ...payload })
+        });
+        const resData = await response.json();
+        return resData;
+      } catch (err) {
+        console.error("Gagal sinkronisasi Google Apps Script:", err);
+        return null;
+      }
+    }
+
+    // --- SINKRONISASI MASSAL DATA SISWA & GURU DENGAN GOOGLE SHEETS ---
+    async function syncSiswaToGoogleSheet() {
+      showAlert('Proses Sinkronisasi', 'Sedang mengunggah data siswa ke Google Sheets...');
+      const result = await sendToGoogleAppsScript('sync_siswa', { siswaList: siswaData });
+      if (result && result.status === 'success') {
+        showAlert('Sinkronisasi Sukses', 'Data Siswa berhasil disinkronkan dengan database Google Sheets!');
+      } else {
+        showAlert('Gagal Sinkron', result?.message || 'Terjadi kesalahan saat menghubungkan ke Google Sheets.');
+      }
+    }
+
+    async function pullSiswaFromGoogleSheet() {
+      showAlert('Proses Mengambil Data', 'Mengambil data siswa dari Google Sheets...');
+      const result = await sendToGoogleAppsScript('get_siswa');
+      if (result && result.status === 'success' && result.siswaList) {
+        siswaData = result.siswaList;
+        renderSiswaTable();
+        renderKartuA4();
+        showAlert('Sukses Impor', `${siswaData.length} data siswa berhasil diperbarui dari Google Sheets!`);
+      } else {
+        showAlert('Gagal Ambil Data', result?.message || 'Gagal mengambil data dari Google Sheets.');
+      }
+    }
+
+    async function syncGuruToGoogleSheet() {
+      showAlert('Proses Sinkronisasi', 'Sedang mengunggah data guru & tendik ke Google Sheets...');
+      const result = await sendToGoogleAppsScript('sync_guru', { guruList: guruData });
+      if (result && result.status === 'success') {
+        showAlert('Sinkronisasi Sukses', 'Data Guru & Tendik berhasil disinkronkan dengan database Google Sheets!');
+      } else {
+        showAlert('Gagal Sinkron', result?.message || 'Terjadi kesalahan saat menghubungkan ke Google Sheets.');
+      }
+    }
+
+    async function pullGuruFromGoogleSheet() {
+      showAlert('Proses Mengambil Data', 'Mengambil data guru dari Google Sheets...');
+      const result = await sendToGoogleAppsScript('get_guru');
+      if (result && result.status === 'success' && result.guruList) {
+        guruData = result.guruList;
+        renderGuruTable();
+        showAlert('Sukses Impor', `${guruData.length} data guru berhasil diperbarui dari Google Sheets!`);
+      } else {
+        showAlert('Gagal Ambil Data', result?.message || 'Gagal mengambil data dari Google Sheets.');
+      }
+    }
+
 
     // --- CHARTS INITIALIZATION ---
     function initCharts() {
@@ -2178,49 +2255,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     }
-  
-    // --- INTEGRASI GOOGLE APPS SCRIPT API ---
-    async function sendToGoogleAppsScript(action, payload = {}) {
-      const gsheetUrl = document.getElementById('gsheetUrl')?.value || localStorage.getItem('gsheetUrl');
-      const token = document.getElementById('apiSecurityToken')?.value || 'SECURE_PRESENSI_TOKEN_2026';
-
-      if (!gsheetUrl) {
-        console.warn("URL Google Apps Script belum dikonfigurasi.");
-        return null;
-      }
-
-      try {
-        const response = await fetch(gsheetUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, token, ...payload })
-        });
-        return { status: "success", message: "Data dikirim ke Google Sheets server." };
-      } catch (err) {
-        console.error("Gagal sinkronisasi Google Apps Script:", err);
-        return null;
-      }
-    }
-
-    // Override processPresensi to sync with Apps Script
-    const originalProcessPresensi = processPresensi;
-    processPresensi = function(code) {
-      originalProcessPresensi(code);
-      const siswa = siswaData.find(s => s.nisn === code);
-      if (siswa) {
-        sendToGoogleAppsScript("simpan_presensi", {
-          nisn: siswa.nisn,
-          nama: siswa.nama,
-          role: siswa.kelas,
-          status: "Hadir Tepat Waktu",
-          lat: userCurrentGPS.lat,
-          lng: userCurrentGPS.lng,
-          dist: Math.round(calculateDistance(userCurrentGPS.lat, userCurrentGPS.lng, targetSchoolGPS.lat, targetSchoolGPS.lng))
-        });
-      }
-    };
-
   </script>
 </body>
 </html>

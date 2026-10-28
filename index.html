@@ -111,7 +111,7 @@
           <label class="text-xs font-semibold text-slate-600 mb-1 block">Username / NIP</label>
           <div class="relative">
             <i data-lucide="user" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
-            <input type="text" id="loginUsername" required placeholder="Masukkan username..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+            <input type="text" id="loginUsername" name="loginUsername" required placeholder="Masukkan username..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
           </div>
         </div>
 
@@ -122,7 +122,7 @@
           </div>
           <div class="relative">
             <i data-lucide="key-round" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
-            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+            <input type="password" id="loginPassword" name="loginPassword" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
           </div>
         </div>
 
@@ -151,15 +151,15 @@
       <div class="space-y-3">
         <div>
           <label class="text-xs font-semibold text-slate-600">Username Akun</label>
-          <input type="text" id="resetUsername" placeholder="Ketik username Anda..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <input type="text" id="resetUsername" name="resetUsername" placeholder="Ketik username Anda..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-600">Kode Keamanan Verifikasi (PIN Admin: 9999)</label>
-          <input type="password" id="resetPin" placeholder="Masukkan 4 digit PIN verifikasi..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <input type="password" id="resetPin" name="resetPin" placeholder="Masukkan 4 digit PIN verifikasi..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-600">Password Baru</label>
-          <input type="password" id="resetNewPassword" placeholder="Buat password baru..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <input type="password" id="resetNewPassword" name="resetNewPassword" placeholder="Buat password baru..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
         </div>
       </div>
 
@@ -428,14 +428,17 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <h3 class="text-lg font-bold text-slate-800">Kelola Data Siswa</h3>
           <div class="flex flex-wrap gap-2">
-            <button onclick="openModalSiswa()" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-2">
+            <button onclick="downloadTemplateSiswa()" class="px-3 py-2 bg-slate-700 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition flex items-center gap-1.5" title="Unduh Format CSV">
+              <i data-lucide="download" class="w-4 h-4"></i> Unduh Template CSV
+            </button>
+            <button onclick="openModalSiswa()" class="px-3 py-2 bg-indigo-600 text-white text-xs font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-1.5">
               <i data-lucide="plus" class="w-4 h-4"></i> Tambah Manual
             </button>
-            <label class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-2">
-              <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV Massal
+            <label class="px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5" title="Impor & Timpa Data">
+              <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV (Timpa)
               <input type="file" accept=".csv" class="hidden" onchange="importSiswaCSV(event)">
             </label>
-            <label class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700 transition cursor-pointer flex items-center gap-2">
+            <label class="px-3 py-2 bg-purple-600 text-white text-xs font-medium rounded-xl hover:bg-purple-700 transition cursor-pointer flex items-center gap-1.5">
               <i data-lucide="image" class="w-4 h-4"></i> Unggah Foto Massal
               <input type="file" multiple accept="image/*" class="hidden" onchange="handleFotoMassal(event)">
             </label>
@@ -520,11 +523,14 @@
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h3 class="text-lg font-bold text-slate-800">Data Guru & Tenaga Pendidik</h3>
               <div class="flex gap-2">
+                <button onclick="downloadTemplateGuru()" class="px-3 py-1.5 bg-slate-700 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition flex items-center gap-1" title="Unduh Format CSV">
+                  <i data-lucide="download" class="w-4 h-4"></i> Template CSV
+                </button>
                 <button onclick="openModalGuru()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-xl hover:bg-indigo-700 transition flex items-center gap-1">
                   <i data-lucide="plus" class="w-4 h-4"></i> Tambah Manual
                 </button>
-                <label class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1">
-                  <i data-lucide="upload" class="w-4 h-4"></i> Impor Guru CSV
+                <label class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1" title="Impor & Timpa Data">
+                  <i data-lucide="upload" class="w-4 h-4"></i> Impor CSV (Timpa)
                   <input type="file" accept=".csv" class="hidden" onchange="importGuruCSV(event)">
                 </label>
               </div>
@@ -895,23 +901,23 @@
           </h3>
           <p class="text-sm text-slate-600">Hubungkan web presensi ini dengan Google Apps Script Web App sebagai basis data server utama.</p>
 
-          <div class="space-y-3 max-w-xl">
+          <form id="formGoogleConfig" onsubmit="handleSaveGoogleConfig(event)" class="space-y-3 max-w-xl">
             <div>
-              <label class="text-xs font-medium text-slate-600">Google Web App Script URL</label>
-              <input type="text" id="gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
+              <label for="gsheetUrl" class="text-xs font-medium text-slate-600">Google Web App Script URL</label>
+              <input type="url" id="gsheetUrl" name="gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" required class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
             </div>
             <div>
-              <label class="text-xs font-medium text-slate-600">Folder ID Google Drive (Untuk Simpan Foto)</label>
-              <input type="text" id="gdriveFolder" placeholder="1a2b3c4d5e6f7g8h9..." class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
+              <label for="gdriveFolder" class="text-xs font-medium text-slate-600">Folder ID Google Drive (Untuk Simpan Foto)</label>
+              <input type="text" id="gdriveFolder" name="gdriveFolder" placeholder="1a2b3c4d5e6f7g8h9..." class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
             </div>
             <div>
-              <label class="text-xs font-medium text-slate-600">API Security Token Key (GitHub Deployment Security)</label>
-              <input type="password" id="apiSecurityToken" value="SECURE_PRESENSI_TOKEN_2026" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
+              <label for="apiSecurityToken" class="text-xs font-medium text-slate-600">API Security Token Key (GitHub Deployment Security)</label>
+              <input type="password" id="apiSecurityToken" name="apiSecurityToken" value="SECURE_PRESENSI_TOKEN_2026" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
             </div>
-            <button onclick="saveGoogleConfig()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition">
+            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition">
               Simpan & Uji Koneksi Google Sheets
             </button>
-          </div>
+          </form>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -971,32 +977,30 @@
       <h3 class="text-lg font-bold text-slate-800">Tambah / Edit Data Siswa</h3>
       <div class="space-y-3">
         <div>
-          <label class="text-xs font-semibold text-slate-600">NISN</label>
-          <input type="text" id="inputNISN" placeholder="10 Digit NISN..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label for="inputNISN" class="text-xs font-semibold text-slate-600">NISN</label>
+          <input type="text" id="inputNISN" name="inputNISN" placeholder="10 Digit NISN..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
-          <input type="text" id="inputNamaSiswa" placeholder="Nama lengkap siswa..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label for="inputNamaSiswa" class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
+          <input type="text" id="inputNamaSiswa" name="inputNamaSiswa" placeholder="Nama lengkap siswa..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputKelasSiswa" class="text-xs font-semibold text-slate-600">Kelas (Pilih Opsi atau Ketik Kustom)</label>
-          <div class="grid grid-cols-2 gap-2 mt-1">
-            <select id="selectKelasSiswa" onchange="syncCustomKelasSiswa(this.value)" class="p-2 border border-slate-200 rounded-xl text-sm font-medium">
-              <option value="1/1a">Kelas 1 / 1a</option>
-              <option value="1">Kelas 1</option>
-              <option value="1a">Kelas 1a</option>
-              <option value="2/2a">Kelas 2 / 2a</option>
-              <option value="3">Kelas 3</option>
-              <option value="10-A">Kelas 10-A</option>
-              <option value="11-IPA">Kelas 11-IPA</option>
-              <option value="custom">-- Ketik Kustom --</option>
-            </select>
-            <input type="text" id="inputKelasSiswa" name="inputKelasSiswa" value="1/1a" placeholder="Contoh: 1a, 7-B, 10-IPA 1..." class="p-2 border border-slate-200 rounded-xl text-sm font-mono font-semibold">
-          </div>
+          <label for="inputKelasSiswa" class="text-xs font-semibold text-slate-600">Kelas (Ketik Bebas / Pilih: 1, 1a, 10-A, Dll)</label>
+          <input type="text" id="inputKelasSiswa" name="inputKelasSiswa" placeholder="Ketik nama kelas, misal: 1, 1a, 10-A, 11-IPA..." list="listKelasOptions" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm font-semibold">
+          <datalist id="listKelasOptions">
+            <option value="1"></option>
+            <option value="1a"></option>
+            <option value="1b"></option>
+            <option value="2"></option>
+            <option value="10-A"></option>
+            <option value="10-B"></option>
+            <option value="11-IPA"></option>
+            <option value="12-IPS"></option>
+          </datalist>
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-600">Guru Binaan / Walikelas</label>
-          <input type="text" id="inputBinaanSiswa" value="Pak Budi (Walikelas)" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label for="inputBinaanSiswa" class="text-xs font-semibold text-slate-600">Guru Binaan / Walikelas</label>
+          <input type="text" id="inputBinaanSiswa" name="inputBinaanSiswa" value="Pak Budi (Walikelas)" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
@@ -1012,20 +1016,20 @@
       <h3 class="text-lg font-bold text-slate-800">Tambah / Edit Data Guru</h3>
       <div class="space-y-3">
         <div>
-          <label class="text-xs font-semibold text-slate-600">NIP</label>
-          <input type="text" id="inputNIPGuru" placeholder="NIP 18 digit..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label for="inputNIPGuru" class="text-xs font-semibold text-slate-600">NIP</label>
+          <input type="text" id="inputNIPGuru" name="inputNIPGuru" placeholder="NIP 18 digit..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-600">Nama Lengkap Guru</label>
-          <input type="text" id="inputNamaGuru" placeholder="Nama beserta gelar..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label for="inputNamaGuru" class="text-xs font-semibold text-slate-600">Nama Lengkap Guru</label>
+          <input type="text" id="inputNamaGuru" name="inputNamaGuru" placeholder="Nama beserta gelar..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-600">Mata Pelajaran / Jabatan</label>
-          <input type="text" id="inputMapelGuru" placeholder="misal: Guru PJOK" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label for="inputMapelGuru" class="text-xs font-semibold text-slate-600">Mata Pelajaran / Jabatan</label>
+          <input type="text" id="inputMapelGuru" name="inputMapelGuru" placeholder="misal: Guru PJOK / Walikelas 1a" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-600">Kelas Binaan</label>
-          <input type="text" id="inputKelasBinaan" value="10-A" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label for="inputKelasBinaan" class="text-xs font-semibold text-slate-600">Kelas Binaan (Bebas: 1, 1a, All, Dll)</label>
+          <input type="text" id="inputKelasBinaan" name="inputKelasBinaan" placeholder="Misal: 1, 1a, 10-A, atau All" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm font-semibold">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
@@ -1245,9 +1249,11 @@
 
     function handleLogout() {
       currentUserSession = null;
+      localStorage.removeItem('USER_SESSION');
       document.getElementById('modalLogin').classList.remove('hidden');
       document.getElementById('loginUsername').value = '';
       document.getElementById('loginPassword').value = '';
+      showAlert('Berhasil Logout', 'Anda telah keluar dari sistem.');
     }
 
     function openModalLupaPassword() {
@@ -1273,6 +1279,7 @@
         acc.password = newPass;
         closeModalLupaPassword();
         renderUserAccountsTable();
+      loadSavedGoogleConfig();
         showAlert('Reset Berhasil', `Password untuk akun ${username} telah diperbarui. Silakan login.`);
       } else {
         showAlert('Gagal', 'Username tidak ditemukan atau password baru masih kosong!');
@@ -1331,6 +1338,7 @@
         userAccountsStore.push({ username, password, name, role });
         closeModalUserAccount();
         renderUserAccountsTable();
+      loadSavedGoogleConfig();
         showAlert('Akun Ditambahkan', `Pengguna ${name} (${role}) berhasil dibuat.`);
       }
     }
@@ -1338,6 +1346,7 @@
     function deleteUserAccount(idx) {
       userAccountsStore.splice(idx, 1);
       renderUserAccountsTable();
+      loadSavedGoogleConfig();
     }
 
     // --- INITIALIZATION ---
@@ -1352,6 +1361,7 @@
       renderKartuA4();
       renderRekapPrint();
       renderUserAccountsTable();
+      loadSavedGoogleConfig();
 
       setInterval(() => {
         const clockEl = document.getElementById('liveClock');
@@ -1450,6 +1460,7 @@
       if (tabId === 'tab-kartu') renderKartuA4();
       if (tabId === 'tab-rekap') renderRekapPrint();
       if (tabId === 'tab-users') renderUserAccountsTable();
+      loadSavedGoogleConfig();
     }
 
     // --- CETAK KARTU A4 LOGIC ---
@@ -2103,7 +2114,298 @@
     }
 
     function uploadLogoSekolah() { showAlert('Logo Terunggah', 'Logo sekolah berhasil diperbarui.'); }
-    function saveGoogleConfig() { showAlert('Google Integration', 'Koneksi database Google Sheets berhasil disimpan.'); }
+    
+    // --- STATE EDIT ---
+    let editSiswaIndex = null;
+    let editGuruIndex = null;
+
+    // --- SAVE & LOAD GOOGLE CONFIG (LOCALSTORAGE FIX) ---
+    function handleSaveGoogleConfig(event) {
+      if (event) event.preventDefault();
+
+      const urlInput = document.getElementById('gsheetUrl');
+      const folderInput = document.getElementById('gdriveFolder');
+      const tokenInput = document.getElementById('apiSecurityToken');
+
+      if (!urlInput || !urlInput.value.trim()) {
+        showAlert('Peringatan', 'Google Web App Script URL tidak boleh kosong!');
+        return;
+      }
+
+      const url = urlInput.value.trim();
+      const folder = folderInput ? folderInput.value.trim() : '';
+      const token = tokenInput ? tokenInput.value.trim() : '';
+
+      localStorage.setItem('PRESENSI_GSHEET_URL', url);
+      localStorage.setItem('PRESENSI_GDRIVE_FOLDER', folder);
+      localStorage.setItem('PRESENSI_SECURITY_TOKEN', token);
+
+      showAlert('Konfigurasi Tersimpan!', 'URL Google Apps Script, Folder ID, dan API Security Token berhasil tersimpan secara permanen di browser ini.');
+    }
+
+    function loadSavedGoogleConfig() {
+      const savedUrl = localStorage.getItem('PRESENSI_GSHEET_URL');
+      const savedFolder = localStorage.getItem('PRESENSI_GDRIVE_FOLDER');
+      const savedToken = localStorage.getItem('PRESENSI_SECURITY_TOKEN');
+
+      const elUrl = document.getElementById('gsheetUrl');
+      const elFolder = document.getElementById('gdriveFolder');
+      const elToken = document.getElementById('apiSecurityToken');
+
+      if (elUrl && savedUrl) elUrl.value = savedUrl;
+      if (elFolder && savedFolder) elFolder.value = savedFolder;
+      if (elToken && savedToken) elToken.value = savedToken;
+    }
+
+    async function sendToGoogleAppsScript(action, payload = {}) {
+      const gsheetUrl = localStorage.getItem('PRESENSI_GSHEET_URL') || document.getElementById('gsheetUrl')?.value;
+      const token = localStorage.getItem('PRESENSI_SECURITY_TOKEN') || document.getElementById('apiSecurityToken')?.value || 'SECURE_PRESENSI_TOKEN_2026';
+
+      if (!gsheetUrl) {
+        console.warn("URL Google Apps Script belum dikonfigurasi.");
+        return null;
+      }
+
+      try {
+        const response = await fetch(gsheetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, token, ...payload })
+        });
+        return { status: "success", message: "Data dikirim ke Google Sheets server." };
+      } catch (err) {
+        console.error("Gagal sinkronisasi Google Apps Script:", err);
+        return null;
+      }
+    }
+
+    // --- TEMPLATE DOWNLOAD ---
+    function downloadTemplateSiswa() {
+      const csvContent = "data:text/csv;charset=utf-8,NISN,Nama,Kelas,Binaan\n0051234561,Ahmad Fauzi,1,Pak Budi (Walikelas)\n0051234562,Siti Nurhaliza,1a,Pak Budi (Walikelas)\n0051234563,Budi Santoso,10-A,Bu Ani (PJOK)";
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Template_Data_Siswa.csv");
+      document.body.appendChild(link);
+      link.click();
+    }
+
+    function downloadTemplateGuru() {
+      const csvContent = "data:text/csv;charset=utf-8,NIP,Nama,Mapel,Kelas\n198501012010011001,Budi Hartono S.Pd,Walikelas 1a,1a\n198803152012022003,Ani Wijaya S.Pd,Guru PJOK,All";
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Template_Data_Guru.csv");
+      document.body.appendChild(link);
+      link.click();
+    }
+
+    // --- CRUD SISWA WITH EDIT & DELETE ---
+    function renderSiswaTable() {
+      const query = document.getElementById('searchSiswa')?.value.toLowerCase() || '';
+      const tbody = document.getElementById('tableSiswaBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const filtered = siswaData.filter(s => s.nama.toLowerCase().includes(query) || s.nisn.includes(query) || s.kelas.toLowerCase().includes(query));
+      if (document.getElementById('countSiswa')) document.getElementById('countSiswa').innerText = filtered.length;
+
+      filtered.forEach((s, index) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-4"><img src="${s.foto}" class="w-10 h-10 rounded-full object-cover border"></td>
+            <td class="p-4 font-mono text-xs font-bold">${s.nisn}</td>
+            <td class="p-4 font-medium text-slate-800">${s.nama}</td>
+            <td class="p-4"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-lg">${s.kelas}</span></td>
+            <td class="p-4">${s.binaan}</td>
+            <td class="p-4 text-center space-x-1">
+              <button onclick="editSiswa(${index})" class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100" title="Edit Data"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+              <button onclick="deleteSiswa(${index})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function editSiswa(index) {
+      editSiswaIndex = index;
+      const s = siswaData[index];
+      document.getElementById('inputNISN').value = s.nisn;
+      document.getElementById('inputNamaSiswa').value = s.nama;
+      document.getElementById('inputKelasSiswa').value = s.kelas;
+      document.getElementById('inputBinaanSiswa').value = s.binaan;
+      openModalSiswa();
+    }
+
+    function saveSiswa() {
+      const nisn = document.getElementById('inputNISN').value.trim();
+      const nama = document.getElementById('inputNamaSiswa').value.trim();
+      const kelas = document.getElementById('inputKelasSiswa').value.trim() || '1';
+      const binaan = document.getElementById('inputBinaanSiswa').value.trim();
+
+      if (!nisn || !nama) {
+        showAlert('Perhatian', 'NISN dan Nama Siswa wajib diisi!');
+        return;
+      }
+
+      const payload = { nisn, nama, kelas, binaan, foto: 'https://placehold.co/100x120/indigo/white?text=' + nama.split(' ')[0] };
+
+      if (editSiswaIndex !== null) {
+        siswaData[editSiswaIndex] = payload;
+        editSiswaIndex = null;
+      } else {
+        siswaData.push(payload);
+      }
+
+      closeModalSiswa();
+      renderSiswaTable();
+      renderKartuA4();
+      sendToGoogleAppsScript("sync_siswa", { siswaList: siswaData, mode: "timpa" });
+    }
+
+    function deleteSiswa(index) {
+      if (confirm("Apakah Anda yakin ingin menghapus data siswa ini?")) {
+        siswaData.splice(index, 1);
+        renderSiswaTable();
+        renderKartuA4();
+        sendToGoogleAppsScript("sync_siswa", { siswaList: siswaData, mode: "timpa" });
+      }
+    }
+
+    function importSiswaCSV(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const lines = evt.target.result.split('\n');
+          let newSiswaList = [];
+          lines.forEach((line, idx) => {
+            if (idx > 0 && line.trim()) {
+              const [nisn, nama, kelas, binaan] = line.split(',');
+              if (nisn && nama) {
+                newSiswaList.push({
+                  nisn: nisn.trim(),
+                  nama: nama.trim(),
+                  kelas: kelas ? kelas.trim() : '1',
+                  binaan: binaan ? binaan.trim() : 'Walikelas',
+                  foto: 'https://placehold.co/100x120/indigo/white?text=' + nama.trim().split(' ')[0]
+                });
+              }
+            }
+          });
+
+          if (newSiswaList.length > 0) {
+            siswaData = newSiswaList;
+            renderSiswaTable();
+            renderKartuA4();
+            sendToGoogleAppsScript("sync_siswa", { siswaList: siswaData, mode: "timpa" });
+            showAlert('Impor Massal Sukses', `Data siswa berhasil ditimpa dengan ${siswaData.length} data baru dari CSV.`);
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    // --- CRUD GURU WITH EDIT & DELETE ---
+    function renderGuruTable() {
+      const tbody = document.getElementById('tableGuruBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      guruData.forEach((g, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono text-xs">${g.nip}</td>
+            <td class="p-3 font-medium text-slate-800">${g.nama}</td>
+            <td class="p-3">${g.mapel}</td>
+            <td class="p-3"><span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-lg">${g.kelas}</span></td>
+            <td class="p-3 text-center space-x-1">
+              <button onclick="editGuru(${idx})" class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100" title="Edit Data"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+              <button onclick="deleteGuru(${idx})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function editGuru(index) {
+      editGuruIndex = index;
+      const g = guruData[index];
+      document.getElementById('inputNIPGuru').value = g.nip;
+      document.getElementById('inputNamaGuru').value = g.nama;
+      document.getElementById('inputMapelGuru').value = g.mapel;
+      document.getElementById('inputKelasBinaan').value = g.kelas;
+      openModalGuru();
+    }
+
+    function saveGuru() {
+      const nip = document.getElementById('inputNIPGuru').value.trim();
+      const nama = document.getElementById('inputNamaGuru').value.trim();
+      const mapel = document.getElementById('inputMapelGuru').value.trim();
+      const kelas = document.getElementById('inputKelasBinaan').value.trim() || 'All';
+
+      if (!nip || !nama) {
+        showAlert('Perhatian', 'NIP dan Nama Guru wajib diisi!');
+        return;
+      }
+
+      const payload = { nip, nama, mapel, kelas };
+
+      if (editGuruIndex !== null) {
+        guruData[editGuruIndex] = payload;
+        editGuruIndex = null;
+      } else {
+        guruData.push(payload);
+      }
+
+      closeModalGuru();
+      renderGuruTable();
+      sendToGoogleAppsScript("sync_guru", { guruList: guruData, mode: "timpa" });
+    }
+
+    function deleteGuru(index) {
+      if (confirm("Apakah Anda yakin ingin menghapus data guru ini?")) {
+        guruData.splice(index, 1);
+        renderGuruTable();
+        sendToGoogleAppsScript("sync_guru", { guruList: guruData, mode: "timpa" });
+      }
+    }
+
+    function importGuruCSV(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const lines = evt.target.result.split('\n');
+          let newGuruList = [];
+          lines.forEach((line, idx) => {
+            if (idx > 0 && line.trim()) {
+              const [nip, nama, mapel, kelas] = line.split(',');
+              if (nip && nama) {
+                newGuruList.push({
+                  nip: nip.trim(),
+                  nama: nama.trim(),
+                  mapel: mapel ? mapel.trim() : 'Guru',
+                  kelas: kelas ? kelas.trim() : 'All'
+                });
+              }
+            }
+          });
+
+          if (newGuruList.length > 0) {
+            guruData = newGuruList;
+            renderGuruTable();
+            sendToGoogleAppsScript("sync_guru", { guruList: guruData, mode: "timpa" });
+            showAlert('Impor Massal Sukses', `Data guru/tendik berhasil ditimpa dengan ${guruData.length} data baru dari CSV.`);
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
 
     // --- CHARTS INITIALIZATION ---
     function initCharts() {
@@ -2141,65 +2443,6 @@
         });
       }
     }
-  
-    // --- HELPER KELAS KUSTOM & DYNAMIC DROPDOWN ---
-    function syncCustomKelasSiswa(val) {
-      const inputEl = document.getElementById('inputKelasSiswa');
-      if (!inputEl) return;
-      if (val !== 'custom') {
-        inputEl.value = val;
-      } else {
-        inputEl.value = '';
-        inputEl.focus();
-      }
-    }
-
-    function refreshAllClassDropdowns() {
-      // Dapatkan semua nama kelas unik dari siswaData
-      const uniqueClasses = Array.from(new Set(siswaData.map(s => s.kelas).filter(Boolean))).sort();
-
-      // Update Filter Scope Cetak Kartu A4
-      const kartuScope = document.getElementById('kartuTargetScope');
-      if (kartuScope) {
-        const currentVal = kartuScope.value;
-        let htmlOpts = '<option value="all">Semua Siswa Terdaftar (Batch A4)</option>';
-        uniqueClasses.forEach(c => {
-          htmlOpts += `<option value="${c}" ${currentVal === c ? 'selected' : ''}>Hanya Kelas ${c}</option>`;
-        });
-        kartuScope.innerHTML = htmlOpts;
-      }
-
-      // Update Filter Rekapitulasi
-      const rekapScope = document.getElementById('filterBinaanRekap');
-      if (rekapScope) {
-        const currentVal = rekapScope.value;
-        let htmlOpts = '<option value="all">Semua Kelas / Rombel</option>';
-        uniqueClasses.forEach(c => {
-          htmlOpts += `<option value="${c}" ${currentVal === c ? 'selected' : ''}>Kelas ${c}</option>`;
-        });
-        rekapScope.innerHTML = htmlOpts;
-      }
-
-      // Update Target Sesi Presensi Per Kelas
-      const sesiScope = document.getElementById('sesiKelasTarget');
-      if (sesiScope) {
-        const currentVal = sesiScope.value;
-        let htmlOpts = '';
-        uniqueClasses.forEach(c => {
-          htmlOpts += `<option value="${c}" ${currentVal === c ? 'selected' : ''}>Kelas ${c}</option>`;
-        });
-        if (uniqueClasses.length === 0) htmlOpts = '<option value="1/1a">Kelas 1/1a</option>';
-        sesiScope.innerHTML = htmlOpts;
-      }
-    }
-
-    // Override renderSiswaTable & renderGuruTable to trigger refreshAllClassDropdowns
-    const originalRenderSiswaTable = typeof renderSiswaTable === 'function' ? renderSiswaTable : null;
-    renderSiswaTable = function() {
-      if (originalRenderSiswaTable) originalRenderSiswaTable();
-      refreshAllClassDropdowns();
-    };
-
   </script>
 </body>
 </html>

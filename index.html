@@ -6,16 +6,6 @@
   <title>Sistem Absensi QR Code Siswa & Guru</title>
   
   <!-- Tailwind CSS -->
-    <!-- Tailwind CSS & Console Warning Suppressor -->
-  <script>
-    const originalWarn = console.warn;
-    console.warn = function(...args) {
-      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
-        return;
-      }
-      originalWarn.apply(console, args);
-    };
-  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Font Inter -->
@@ -118,21 +108,21 @@
 
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label for="loginUsername" class="text-xs font-semibold text-slate-600 mb-1 block">Username / NIP</label>
+          <label class="text-xs font-semibold text-slate-600 mb-1 block">Username / NIP</label>
           <div class="relative">
             <i data-lucide="user" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
-            <input type="text" id="loginUsername" name="loginUsername" required placeholder="Masukkan username..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+            <input type="text" id="loginUsername" required placeholder="Masukkan username..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
           </div>
         </div>
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label for="loginPassword" class="text-xs font-semibold text-slate-600">Password</label>
+            <label class="text-xs font-semibold text-slate-600">Password</label>
             <button type="button" onclick="openModalLupaPassword()" class="text-xs text-indigo-600 font-semibold hover:underline">Lupa Password?</button>
           </div>
           <div class="relative">
             <i data-lucide="key-round" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
-            <input type="password" id="loginPassword" name="loginPassword" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition">
           </div>
         </div>
 
@@ -160,16 +150,16 @@
 
       <div class="space-y-3">
         <div>
-          <label for="resetUsername" class="text-xs font-semibold text-slate-600">Username Akun</label>
-          <input type="text" id="resetUsername" name="resetUsername" placeholder="Ketik username Anda..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Username Akun</label>
+          <input type="text" id="resetUsername" placeholder="Ketik username Anda..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="resetPin" class="text-xs font-semibold text-slate-600">Kode Keamanan Verifikasi (PIN Admin: 9999)</label>
-          <input type="password" id="resetPin" name="resetPin" placeholder="Masukkan 4 digit PIN verifikasi..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Kode Keamanan Verifikasi (PIN Admin: 9999)</label>
+          <input type="password" id="resetPin" placeholder="Masukkan 4 digit PIN verifikasi..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="resetNewPassword" class="text-xs font-semibold text-slate-600">Password Baru</label>
-          <input type="password" id="resetNewPassword" name="resetNewPassword" placeholder="Buat password baru..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Password Baru</label>
+          <input type="password" id="resetNewPassword" placeholder="Buat password baru..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
         </div>
       </div>
 
@@ -421,9 +411,9 @@
 
             <!-- Manual Input Form -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <label for="manualInputCode" class="font-bold text-slate-800 text-sm block">Input NISN/NIP Manual</label>
+              <h4 class="font-bold text-slate-800 text-sm">Input NISN/NIP Manual</h4>
               <div class="flex gap-2">
-                <input type="text" id="manualInputCode" name="manualInputCode" placeholder="Masukkan NISN / NIP..." class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500">
+                <input type="text" id="manualInputCode" placeholder="Masukkan NISN / NIP..." class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500">
                 <button onclick="processPresensiManual()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition">
                   Submit
                 </button>
@@ -454,8 +444,7 @@
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-4">
-            <label for="searchSiswa" class="sr-only">Cari Siswa</label>
-            <input type="text" id="searchSiswa" name="searchSiswa" onkeyup="renderSiswaTable()" placeholder="Cari Nama, NISN, atau Kelas..." class="px-3 py-2 text-sm border border-slate-200 rounded-xl w-64 focus:outline-none focus:border-indigo-500">
+            <input type="text" id="searchSiswa" onkeyup="renderSiswaTable()" placeholder="Cari Nama, NISN, atau Kelas..." class="px-3 py-2 text-sm border border-slate-200 rounded-xl w-64 focus:outline-none focus:border-indigo-500">
             <span class="text-xs text-slate-500">Total: <span id="countSiswa" class="font-bold text-slate-800">0</span> Siswa</span>
           </div>
 
@@ -493,16 +482,7 @@
             <div class="space-y-3 text-xs">
               <div>
                 <label class="font-medium text-slate-600">Pilih Kelas</label>
-                <label for="sesiKelasTarget" class="font-medium text-slate-600">Nama Kelas (Ketik Bebas: 1, 1a, 10-A, Dll)</label>
-            <input type="text" id="sesiKelasTarget" name="sesiKelasTarget" value="1a" oninput="loadSesiKelas(this.value)" placeholder="Misal: 1, 1a, 1b, 10-A..." list="listSesiKelasOptions" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm font-bold text-indigo-700">
-            <datalist id="listSesiKelasOptions">
-              <option value="1"></option>
-              <option value="1a"></option>
-              <option value="1b"></option>
-              <option value="2"></option>
-              <option value="10-A"></option>
-              <option value="11-IPA"></option>
-            </datalist>
+                <select id="sesiKelasTarget" onchange="loadSesiKelas(this.value)" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm font-semibold">
                   <option value="10-A">Kelas 10-A</option>
                   <option value="10-B">Kelas 10-B</option>
                   <option value="11-IPA">Kelas 11-IPA</option>
@@ -511,22 +491,22 @@
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label for="sesiMasuk" class="font-medium text-slate-600">Jam Masuk Pagi</label>
-                  <input type="time" id="sesiMasuk" name="sesiMasuk" value="07:00" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
+                  <label class="font-medium text-slate-600">Jam Masuk Pagi</label>
+                  <input type="time" id="sesiMasuk" value="07:00" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
                 </div>
                 <div>
-                  <label for="sesiToleransi" class="font-medium text-slate-600">Batas Toleransi</label>
-                  <input type="time" id="sesiToleransi" name="sesiToleransi" value="07:15" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
+                  <label class="font-medium text-slate-600">Batas Toleransi</label>
+                  <input type="time" id="sesiToleransi" value="07:15" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label for="sesiSiang" class="font-medium text-slate-600">Presensi Siang</label>
-                  <input type="time" id="sesiSiang" name="sesiSiang" value="12:00" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
+                  <label class="font-medium text-slate-600">Presensi Siang</label>
+                  <input type="time" id="sesiSiang" value="12:00" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
                 </div>
                 <div>
-                  <label for="sesiPulang" class="font-medium text-slate-600">Jam Pulang</label>
-                  <input type="time" id="sesiPulang" name="sesiPulang" value="15:00" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
+                  <label class="font-medium text-slate-600">Jam Pulang</label>
+                  <input type="time" id="sesiPulang" value="15:00" class="w-full mt-1 p-2 border border-slate-200 rounded-xl">
                 </div>
               </div>
               <button onclick="saveSesiSettings()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition">
@@ -638,8 +618,7 @@
             <p class="text-xs text-slate-500">Formasi 5 hari belajar aktif (Senin–Jumat). Sabtu & Minggu dihitung Libur.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <label for="rekapFilterBulan" class="sr-only">Bulan Rekap</label>
-            <select id="rekapFilterBulan" name="rekapFilterBulan" onchange="renderRekapPrint()" class="p-2 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
+            <select id="rekapFilterBulan" onchange="renderRekapPrint()" class="p-2 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
               <option value="1">Januari</option>
               <option value="2">Februari</option>
               <option value="3">Maret</option>
@@ -653,14 +632,12 @@
               <option value="11">November</option>
               <option value="12">Desember</option>
             </select>
-            <label for="rekapFilterTahun" class="sr-only">Tahun Rekap</label>
-            <select id="rekapFilterTahun" name="rekapFilterTahun" onchange="renderRekapPrint()" class="p-2 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
+            <select id="rekapFilterTahun" onchange="renderRekapPrint()" class="p-2 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
               <option value="2025">2025</option>
               <option value="2026" selected>2026</option>
               <option value="2027">2027</option>
             </select>
-            <label for="filterBinaanRekap" class="sr-only">Filter Kelas Rekap</label>
-            <select id="filterBinaanRekap" name="filterBinaanRekap" onchange="renderRekapPrint()" class="p-2 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
+            <select id="filterBinaanRekap" onchange="renderRekapPrint()" class="p-2 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium">
               <option value="all">Semua Guru Binaan / Kelas</option>
               <option value="10-A">Walikelas (Kelas 10-A)</option>
               <option value="10-B">Kelas 10-B</option>
@@ -746,8 +723,8 @@
           <!-- Quick Config Controls -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
             <div>
-              <label for="kartuTargetScope" class="font-semibold text-slate-700">Filter Target Cetak Kartu</label>
-              <select id="kartuTargetScope" name="kartuTargetScope" onchange="renderKartuA4()" class="w-full mt-1 p-2 border border-slate-200 rounded-xl font-medium focus:outline-none focus:border-indigo-500">
+              <label class="font-semibold text-slate-700">Filter Target Cetak Kartu</label>
+              <select id="kartuTargetScope" onchange="renderKartuA4()" class="w-full mt-1 p-2 border border-slate-200 rounded-xl font-medium focus:outline-none focus:border-indigo-500">
                 <option value="all">Semua Siswa Terdaftar (Batch A4)</option>
                 <option value="10-A">Hanya Kelas 10-A</option>
                 <option value="10-B">Hanya Kelas 10-B</option>
@@ -757,21 +734,21 @@
             </div>
 
             <div>
-              <label for="cardOrientation" class="font-semibold text-slate-700">Orientasi Ukuran Kartu</label>
-              <select id="cardOrientation" name="cardOrientation" onchange="setCardOrientation(this.value)" class="w-full mt-1 p-2 border border-slate-200 rounded-xl font-medium focus:outline-none focus:border-indigo-500">
+              <label class="font-semibold text-slate-700">Orientasi Ukuran Kartu</label>
+              <select id="cardOrientation" onchange="setCardOrientation(this.value)" class="w-full mt-1 p-2 border border-slate-200 rounded-xl font-medium focus:outline-none focus:border-indigo-500">
                 <option value="portrait">Potrait (54mm x 86mm)</option>
                 <option value="landscape">Landscape (86mm x 54mm)</option>
               </select>
             </div>
 
             <div>
-              <label for="editCardHeader" class="font-semibold text-slate-700">Header Teks Utama</label>
-              <input type="text" id="editCardHeader" name="editCardHeader" value="SMA NEGERI 1 SCHOOLDATA" oninput="updateCardHeaderTexts()" class="w-full mt-1 p-2 border rounded-xl focus:outline-none focus:border-indigo-500">
+              <label class="font-semibold text-slate-700">Header Teks Utama</label>
+              <input type="text" id="editCardHeader" value="SMA NEGERI 1 SCHOOLDATA" oninput="updateCardHeaderTexts()" class="w-full mt-1 p-2 border rounded-xl focus:outline-none focus:border-indigo-500">
             </div>
 
             <div>
-              <label for="editCardSubHeader" class="font-semibold text-slate-700">Sub-Header Teks</label>
-              <input type="text" id="editCardSubHeader" name="editCardSubHeader" value="KARTU PRESENSI DIGITAL" oninput="updateCardHeaderTexts()" class="w-full mt-1 p-2 border rounded-xl focus:outline-none focus:border-indigo-500">
+              <label class="font-semibold text-slate-700">Sub-Header Teks</label>
+              <input type="text" id="editCardSubHeader" value="KARTU PRESENSI DIGITAL" oninput="updateCardHeaderTexts()" class="w-full mt-1 p-2 border rounded-xl focus:outline-none focus:border-indigo-500">
             </div>
           </div>
 
@@ -843,27 +820,27 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
               <div>
-                <label for="profNamaSekolah" class="text-xs font-semibold text-slate-600">Nama Sekolah</label>
-                <input type="text" id="profNamaSekolah" name="profNamaSekolah" value="SMA NEGERI 1 SCHOOLDATA" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-medium">
+                <label class="text-xs font-semibold text-slate-600">Nama Sekolah</label>
+                <input type="text" id="profNamaSekolah" value="SMA NEGERI 1 SCHOOLDATA" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-medium">
               </div>
               <div>
-                <label for="profNPSN" class="text-xs font-semibold text-slate-600">NPSN / Kode Sekolah</label>
-                <input type="text" id="profNPSN" name="profNPSN" value="20261024" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm">
+                <label class="text-xs font-semibold text-slate-600">NPSN / Kode Sekolah</label>
+                <input type="text" id="profNPSN" value="20261024" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm">
               </div>
               <div>
-                <label for="profAlamat" class="text-xs font-semibold text-slate-600">Alamat Lengkap Sekolah</label>
-                <textarea id="profAlamat" name="profAlamat" rows="3" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm">Jl. Pendidikan No. 45, Kota Cirebon, Jawa Barat</textarea>
+                <label class="text-xs font-semibold text-slate-600">Alamat Lengkap Sekolah</label>
+                <textarea id="profAlamat" rows="3" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm">Jl. Pendidikan No. 45, Kota Cirebon, Jawa Barat</textarea>
               </div>
             </div>
 
             <div class="space-y-4">
               <div>
-                <label for="profKepalaSekolah" class="text-xs font-semibold text-slate-600">Nama Kepala Sekolah</label>
-                <input type="text" id="profKepalaSekolah" name="profKepalaSekolah" value="Dr. H. Supriyadi, M.Pd" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-medium">
+                <label class="text-xs font-semibold text-slate-600">Nama Kepala Sekolah</label>
+                <input type="text" id="profKepalaSekolah" value="Dr. H. Supriyadi, M.Pd" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-medium">
               </div>
               <div>
-                <label for="profNipKepalaSekolah" class="text-xs font-semibold text-slate-600">NIP Kepala Sekolah</label>
-                <input type="text" id="profNipKepalaSekolah" name="profNipKepalaSekolah" value="19700101 199503 1 002" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm">
+                <label class="text-xs font-semibold text-slate-600">NIP Kepala Sekolah</label>
+                <input type="text" id="profNipKepalaSekolah" value="19700101 199503 1 002" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm">
               </div>
               <div>
                 <label class="text-xs font-semibold text-slate-600">Logo Instansi Sekolah (PNG/JPG)</label>
@@ -918,23 +895,23 @@
           </h3>
           <p class="text-sm text-slate-600">Hubungkan web presensi ini dengan Google Apps Script Web App sebagai basis data server utama.</p>
 
-          <form id="formGoogleConfig" onsubmit="handleSaveGoogleConfig(event)" class="space-y-3 max-w-xl">
+          <div class="space-y-3 max-w-xl">
             <div>
-              <label for="gsheetUrl" class="text-xs font-medium text-slate-600">Google Web App Script URL</label>
-              <input type="url" id="gsheetUrl" name="gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" required class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
+              <label class="text-xs font-medium text-slate-600">Google Web App Script URL</label>
+              <input type="text" id="gsheetUrl" name="gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
             </div>
             <div>
-              <label for="gdriveFolder" class="text-xs font-medium text-slate-600">Folder ID Google Drive (Untuk Simpan Foto)</label>
+              <label class="text-xs font-medium text-slate-600">Folder ID Google Drive (Untuk Simpan Foto)</label>
               <input type="text" id="gdriveFolder" name="gdriveFolder" placeholder="1a2b3c4d5e6f7g8h9..." class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
             </div>
             <div>
-              <label for="apiSecurityToken" class="text-xs font-medium text-slate-600">API Security Token Key (GitHub Deployment Security)</label>
+              <label class="text-xs font-medium text-slate-600">API Security Token Key (GitHub Deployment Security)</label>
               <input type="password" id="apiSecurityToken" name="apiSecurityToken" value="SECURE_PRESENSI_TOKEN_2026" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono">
             </div>
-            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition">
+            <button onclick="saveGoogleConfig()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition">
               Simpan & Uji Koneksi Google Sheets
             </button>
-          </form>
+          </div>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -960,20 +937,20 @@
       <h3 class="text-lg font-bold text-slate-800">Tambah / Edit Akun Pengguna</h3>
       <div class="space-y-3">
         <div>
-          <label for="inputAccUsername" class="text-xs font-semibold text-slate-600">Username Login</label>
-          <input type="text" id="inputAccUsername" name="inputAccUsername" placeholder="username..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Username Login</label>
+          <input type="text" id="inputAccUsername" placeholder="username..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputAccName" class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
-          <input type="text" id="inputAccName" name="inputAccName" placeholder="Nama pemilik akun..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
+          <input type="text" id="inputAccName" placeholder="Nama pemilik akun..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="loginPassword" class="text-xs font-semibold text-slate-600">Password</label>
-          <input type="password" id="inputAccPassword" name="inputAccPassword" placeholder="••••••••" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Password</label>
+          <input type="password" id="inputAccPassword" placeholder="••••••••" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputAccRole" class="text-xs font-semibold text-slate-600">Hak Akses Role</label>
-          <select id="inputAccRole" name="inputAccRole" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm font-semibold">
+          <label class="text-xs font-semibold text-slate-600">Hak Akses Role</label>
+          <select id="inputAccRole" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm font-semibold">
             <option value="superadmin">Superadmin (Akses Penuh)</option>
             <option value="admin">Admin Sekolah</option>
             <option value="guru_walikelas">Guru Walikelas</option>
@@ -998,17 +975,22 @@
           <input type="text" id="inputNISN" placeholder="10 Digit NISN..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputAccName" class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
+          <label class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
           <input type="text" id="inputNamaSiswa" placeholder="Nama lengkap siswa..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-600">Kelas</label>
-          <select id="inputKelasSiswa" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
-            <option value="10-A">Kelas 10-A</option>
-            <option value="10-B">Kelas 10-B</option>
-            <option value="11-IPA">Kelas 11-IPA</option>
-            <option value="12-IPS">Kelas 12-IPS</option>
-          </select>
+          <input type="text" id="inputKelasSiswa" list="listKelasOptions" placeholder="Ketik atau pilih kelas (Contoh: Kelas 1, 1a, 10-A)..." class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm">
+          <datalist id="listKelasOptions">
+            <option value="Kelas 1">
+            <option value="Kelas 1a">
+            <option value="Kelas 1b">
+            <option value="Kelas 2">
+            <option value="10-A">
+            <option value="10-B">
+            <option value="11-IPA">
+            <option value="12-IPS">
+          </datalist>
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-600">Guru Binaan / Walikelas</label>
@@ -1028,20 +1010,20 @@
       <h3 class="text-lg font-bold text-slate-800">Tambah / Edit Data Guru</h3>
       <div class="space-y-3">
         <div>
-          <label for="inputNIPGuru" class="text-xs font-semibold text-slate-600">NIP</label>
-          <input type="text" id="inputNIPGuru" name="inputNIPGuru" placeholder="NIP 18 digit..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">NIP</label>
+          <input type="text" id="inputNIPGuru" placeholder="NIP 18 digit..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputNamaGuru" class="text-xs font-semibold text-slate-600">Nama Lengkap Guru</label>
-          <input type="text" id="inputNamaGuru" name="inputNamaGuru" placeholder="Nama beserta gelar..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Nama Lengkap Guru</label>
+          <input type="text" id="inputNamaGuru" placeholder="Nama beserta gelar..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputMapelGuru" class="text-xs font-semibold text-slate-600">Mata Pelajaran / Jabatan</label>
-          <input type="text" id="inputMapelGuru" name="inputMapelGuru" placeholder="misal: Guru PJOK / Walikelas 1a" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Mata Pelajaran / Jabatan</label>
+          <input type="text" id="inputMapelGuru" placeholder="misal: Guru PJOK" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputKelasBinaan" class="text-xs font-semibold text-slate-600">Kelas Binaan (Bebas: 1, 1a, All, Dll)</label>
-          <input type="text" id="inputKelasBinaan" name="inputKelasBinaan" placeholder="Misal: 1, 1a, 10-A, atau All" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm font-semibold">
+          <label class="text-xs font-semibold text-slate-600">Kelas Binaan</label>
+          <input type="text" id="inputKelasBinaan" value="10-A" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
@@ -1058,12 +1040,12 @@
       <input type="hidden" id="editLogIndex">
       <div class="space-y-3">
         <div>
-          <label for="editLogNama" class="text-xs font-semibold text-slate-600">Nama Siswa / Guru</label>
-          <input type="text" id="editLogNama" name="editLogNama" class="w-full mt-1 p-2 border rounded-xl text-sm" readonly>
+          <label class="text-xs font-semibold text-slate-600">Nama Siswa / Guru</label>
+          <input type="text" id="editLogNama" class="w-full mt-1 p-2 border rounded-xl text-sm" readonly>
         </div>
         <div>
-          <label for="editLogStatus" class="text-xs font-semibold text-slate-600">Status Kehadiran</label>
-          <select id="editLogStatus" name="editLogStatus" class="w-full mt-1 p-2 border rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Status Kehadiran</label>
+          <select id="editLogStatus" class="w-full mt-1 p-2 border rounded-xl text-sm">
             <option value="Hadir Tepat Waktu">Hadir Tepat Waktu</option>
             <option value="Terlambat">Terlambat</option>
             <option value="Izin">Izin</option>
@@ -1072,8 +1054,8 @@
           </select>
         </div>
         <div>
-          <label for="editLogGps" class="text-xs font-semibold text-slate-600">Status GPS / Keterangan</label>
-          <input type="text" id="editLogGps" name="editLogGps" class="w-full mt-1 p-2 border rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Status GPS / Keterangan</label>
+          <input type="text" id="editLogGps" class="w-full mt-1 p-2 border rounded-xl text-sm">
         </div>
       </div>
       <div class="flex justify-end gap-2">
@@ -1089,25 +1071,25 @@
       <h3 class="text-lg font-bold text-slate-800">Tambah Log Presensi Manual</h3>
       <div class="space-y-3">
         <div>
-          <label for="addLogSiswaSelect" class="text-xs font-semibold text-slate-600">Pilih Siswa / Enter NISN atau NIP Manual</label>
+          <label class="text-xs font-semibold text-slate-600">Pilih Siswa / Enter NISN atau NIP Manual</label>
           <div class="grid grid-cols-1 gap-2 mt-1">
-            <select id="addLogSiswaSelect" name="addLogSiswaSelect" onchange="autoFillAddLogInfo(this.value)" class="w-full p-2 border border-slate-200 rounded-xl text-sm font-medium">
+            <select id="addLogSiswaSelect" onchange="autoFillAddLogInfo(this.value)" class="w-full p-2 border border-slate-200 rounded-xl text-sm font-medium">
               <option value="">-- Pilih dari Daftar Siswa --</option>
             </select>
-            <input type="text" id="addLogNisn" name="addLogNisn" placeholder="Atau ketik NISN / NIP Manual..." class="w-full p-2 border border-slate-200 rounded-xl text-sm">
+            <input type="text" id="addLogNisn" placeholder="Atau ketik NISN / NIP Manual..." class="w-full p-2 border border-slate-200 rounded-xl text-sm">
           </div>
         </div>
         <div>
-          <label for="inputAccName" class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
-          <input type="text" id="addLogNama" name="addLogNama" placeholder="Nama siswa / guru..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Nama Lengkap</label>
+          <input type="text" id="addLogNama" placeholder="Nama siswa / guru..." class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="addLogRole" class="text-xs font-semibold text-slate-600">Kelas / Role</label>
-          <input type="text" id="addLogRole" name="addLogRole" placeholder="misal: Kelas 10-A atau Guru" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Kelas / Role</label>
+          <input type="text" id="addLogRole" placeholder="misal: Kelas 10-A atau Guru" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="editLogStatus" class="text-xs font-semibold text-slate-600">Status Kehadiran</label>
-          <select id="addLogStatus" name="addLogStatus" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Status Kehadiran</label>
+          <select id="addLogStatus" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
             <option value="Hadir Tepat Waktu">Hadir Tepat Waktu</option>
             <option value="Terlambat">Terlambat</option>
             <option value="Izin">Izin</option>
@@ -1116,8 +1098,8 @@
           </select>
         </div>
         <div>
-          <label for="addLogGps" class="text-xs font-semibold text-slate-600">Keterangan / Status GPS</label>
-          <input type="text" id="addLogGps" name="addLogGps" value="Input Manual (Admin)" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Keterangan / Status GPS</label>
+          <input type="text" id="addLogGps" value="Input Manual (Admin)" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
@@ -1133,16 +1115,16 @@
       <h3 class="text-lg font-bold text-slate-800">Tambah Agenda / Libur</h3>
       <div class="space-y-3">
         <div>
-          <label for="inputTanggalAgenda" class="text-xs font-semibold text-slate-600">Tanggal</label>
-          <input type="date" id="inputTanggalAgenda" name="inputTanggalAgenda" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Tanggal</label>
+          <input type="date" id="inputTanggalAgenda" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputNamaAgenda" class="text-xs font-semibold text-slate-600">Nama Agenda</label>
-          <input type="text" id="inputNamaAgenda" name="inputNamaAgenda" placeholder="Misal: Rapat Guru / Ujian Semester" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Nama Agenda</label>
+          <input type="text" id="inputNamaAgenda" placeholder="Misal: Rapat Guru / Ujian Semester" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
         <div>
-          <label for="inputJenisAgenda" class="text-xs font-semibold text-slate-600">Jenis Agenda</label>
-          <select id="inputJenisAgenda" name="inputJenisAgenda" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+          <label class="text-xs font-semibold text-slate-600">Jenis Agenda</label>
+          <select id="inputJenisAgenda" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
             <option value="kegiatan">Kegiatan Sekolah</option>
             <option value="libur">Hari Libur</option>
           </select>
@@ -1359,8 +1341,8 @@
     // --- INITIALIZATION ---
     window.onload = function() {
       initGPS();
-      renderSiswaTable();
-      renderGuruTable();
+      renderSiswaTable(); updateClassDropdownsUI();
+      renderGuruTable(); updateClassDropdownsUI();
       renderLogTable();
       renderCalendar(currentMonth, currentYear);
       initCharts();
@@ -1687,7 +1669,7 @@
       if (nisn && nama) {
         siswaData.push({ nisn, nama, kelas, binaan, foto: 'https://placehold.co/100x120/indigo/white?text=' + nama.split(' ')[0] });
         closeModalSiswa();
-        renderSiswaTable();
+        renderSiswaTable(); updateClassDropdownsUI();
         renderKartuA4();
         showAlert('Sukses', 'Data siswa berhasil ditambahkan.');
       }
@@ -1695,7 +1677,7 @@
 
     function deleteSiswa(index) {
       siswaData.splice(index, 1);
-      renderSiswaTable();
+      renderSiswaTable(); updateClassDropdownsUI();
       renderKartuA4();
     }
 
@@ -1713,7 +1695,7 @@
               }
             }
           });
-          renderSiswaTable();
+          renderSiswaTable(); updateClassDropdownsUI();
           renderKartuA4();
           showAlert('Impor Massal Sukses', 'Data siswa dari CSV berhasil dimasukkan.');
         };
@@ -1739,7 +1721,7 @@
             <td class="p-3">${g.mapel}</td>
             <td class="p-3">${g.kelas}</td>
             <td class="p-3 text-center">
-              <button onclick="guruData.splice(${idx},1); renderGuruTable();" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              <button onclick="guruData.splice(${idx},1); renderGuruTable(); updateClassDropdownsUI();" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </td>
           </tr>
         `;
@@ -1759,7 +1741,7 @@
       if (nip && nama) {
         guruData.push({ nip, nama, mapel, kelas });
         closeModalGuru();
-        renderGuruTable();
+        renderGuruTable(); updateClassDropdownsUI();
       }
     }
 
@@ -1796,7 +1778,7 @@
               }
             }
           });
-          renderGuruTable();
+          renderGuruTable(); updateClassDropdownsUI();
           showAlert('Impor Guru Sukses', 'Data guru dari CSV berhasil dimasukkan.');
         };
         reader.readAsText(file);

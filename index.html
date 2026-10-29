@@ -535,6 +535,7 @@
                     <th class="p-3">Nama Guru</th>
                     <th class="p-3">Jabatan / Mapel</th>
                     <th class="p-3">Kelas Binaan</th>
+                    <th class="p-3">Sesi Siang</th>
                     <th class="p-3 text-center">Aksi</th>
                   </tr>
                 </thead>
@@ -1022,6 +1023,10 @@
           <label class="text-xs font-semibold text-slate-600">Kelas Binaan</label>
           <input type="text" id="inputKelasBinaan" value="10-A" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
         </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Jam Masuk Sesi Siang Khusus</label>
+          <input type="time" id="inputSesiSiangGuru" value="12:00" class="w-full mt-1 p-2 border border-slate-200 rounded-xl text-sm">
+        </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeModalGuru()" class="px-4 py-2 bg-slate-200 text-slate-700 text-sm font-medium rounded-xl">Batal</button>
@@ -1182,8 +1187,8 @@
 
     // Data Store Guru
     let guruData = [
-      { nip: '198501012010011001', nama: 'Budi Hartono, S.Pd', mapel: 'Walikelas 10-A', kelas: '10-A' },
-      { nip: '198803152012022003', nama: 'Ani Wijaya, S.Pd', mapel: 'Guru PJOK', kelas: 'All' }
+      { nip: '198501012010011001', nama: 'Budi Hartono, S.Pd', mapel: 'Walikelas 10-A', kelas: '10-A', sesiSiang: '12:00' },
+      { nip: '198803152012022003', nama: 'Ani Wijaya, S.Pd', mapel: 'Guru PJOK', kelas: 'All', sesiSiang: '13:00' }
     ];
 
     // Data Store Log Presensi
@@ -1336,6 +1341,46 @@
     }
 
     // --- INITIALIZATION ---
+    
+    // --- DYNAMIC CLASS LIST & DROPDOWN UPDATER ---
+    function getUniqueKelasList() {
+      const setKelas = new Set();
+      if (Array.isArray(siswaData)) siswaData.forEach(s => { if (s.kelas) setKelas.add(s.kelas); });
+      if (Array.isArray(guruData)) guruData.forEach(g => { if (g.kelas && g.kelas !== 'All') setKelas.add(g.kelas); });
+      if (setKelas.size === 0) {
+        ['1.1/a', '1.1/b', 'Kelas 1', '10-A', '10-B', '11-IPA', '12-IPS'].forEach(k => setKelas.add(k));
+      }
+      return Array.from(setKelas).sort();
+    }
+
+    function updateClassDropdownsUI() {
+      const classList = getUniqueKelasList();
+
+      // Update datalist options for Siswa, Guru, and Sesi
+      const dataList = document.getElementById('listKelasOptions');
+      if (dataList) {
+        dataList.innerHTML = classList.map(k => `<option value="${k}">`).join('');
+      }
+
+      // Update Filter Kartu A4 select
+      const kartuSelect = document.getElementById('kartuTargetScope');
+      if (kartuSelect) {
+        const curVal = kartuSelect.value;
+        kartuSelect.innerHTML = `<option value="all">Semua Siswa Terdaftar (Batch A4)</option>` + 
+          classList.map(k => `<option value="${k}">Hanya ${k}</option>`).join('');
+        if (curVal) kartuSelect.value = curVal;
+      }
+
+      // Update Filter Rekap select
+      const rekapSelect = document.getElementById('filterBinaanRekap');
+      if (rekapSelect) {
+        const curVal = rekapSelect.value;
+        rekapSelect.innerHTML = `<option value="all">Semua Guru Binaan / Kelas</option>` + 
+          classList.map(k => `<option value="${k}">${k}</option>`).join('');
+        if (curVal) rekapSelect.value = curVal;
+      }
+    }
+
     window.onload = function() {
       initGPS();
       renderSiswaTable(); updateClassDropdownsUI();
@@ -1716,7 +1761,8 @@
             <td class="p-3 font-mono text-xs">${g.nip}</td>
             <td class="p-3 font-medium text-slate-800">${g.nama}</td>
             <td class="p-3">${g.mapel}</td>
-            <td class="p-3">${g.kelas}</td>
+            <td class="p-3 font-semibold text-indigo-600">${g.kelas}</td>
+            <td class="p-3 font-mono text-xs text-amber-600 font-bold">${g.sesiSiang || '12:00'} WIB</td>
             <td class="p-3 text-center">
               <button onclick="guruData.splice(${idx},1); renderGuruTable(); updateClassDropdownsUI();" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </td>
@@ -1730,15 +1776,26 @@
     function closeModalGuru() { document.getElementById('modalGuru').classList.add('hidden'); }
 
     function saveGuru() {
-      const nip = document.getElementById('inputNIPGuru').value;
-      const nama = document.getElementById('inputNamaGuru').value;
-      const mapel = document.getElementById('inputMapelGuru').value;
-      const kelas = document.getElementById('inputKelasBinaan').value;
+      const nip = document.getElementById('inputNIPGuru').value.trim();
+      const nama = document.getElementById('inputNamaGuru').value.trim();
+      const mapel = document.getElementById('inputMapelGuru').value.trim();
+      const kelas = document.getElementById('inputKelasBinaan').value.trim();
+      const sesiSiang = document.getElementById('inputSesiSiangGuru') ? document.getElementById('inputSesiSiangGuru').value : '12:00';
 
       if (nip && nama) {
-        guruData.push({ nip, nama, mapel, kelas });
+        guruData.push({ nip, nama, mapel, kelas, sesiSiang });
+
+        if (kelas && kelas !== 'All') {
+          if (!sesiPerKelas[kelas]) {
+            sesiPerKelas[kelas] = { masuk: '07:00', toleransi: '07:15', siang: sesiSiang, pulang: '15:00' };
+          } else {
+            sesiPerKelas[kelas].siang = sesiSiang;
+          }
+        }
+
         closeModalGuru();
         renderGuruTable(); updateClassDropdownsUI();
+        showAlert('Data Guru Disimpan', `Pengaturan sesi masuk siang (${sesiSiang}) untuk kelas ${kelas} berhasil diperbarui.`);
       }
     }
 

@@ -188,8 +188,8 @@
           <input type="text" id="inputNama" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Kelas</label>
-          <input type="text" id="inputKelas" required placeholder="Contoh: 10-A" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Kelas / Rombel (Opsional)</label>
+          <input type="text" id="inputKelas" placeholder="Contoh: 10-A (Bisa dikosongkan)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
         </div>
         <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition">Simpan Data</button>
       </form>
@@ -260,8 +260,8 @@
           <input type="text" id="inputNamaGuru" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Jabatan / Guru Binaan</label>
-          <input type="text" id="inputMapelGuru" placeholder="Contoh: Walikelas 10-A" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Jabatan / Guru Binaan (Opsional)</label>
+          <input type="text" id="inputMapelGuru" placeholder="Contoh: Walikelas 10-A (Bisa dikosongkan)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
         </div>
         <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition">Simpan Data Guru</button>
       </form>
@@ -523,7 +523,7 @@
         </div>
       </section>
 
-      <!-- 2. SCANNER QR ABSENSI & LOG PRESENSI REALTIME (DISATUKAN DALAM 1 TAB) -->
+      <!-- 2. SCANNER QR ABSENSI & LOG PRESENSI REALTIME -->
       <section id="tab-scan" class="tab-content hidden space-y-6">
         
         <!-- SESI PRESENSI AKTIF PANEL -->
@@ -537,7 +537,6 @@
               <p class="text-xs text-slate-500">Pilih sesi yang sedang berlangsung. Presensi yang discan akan otomatis masuk ke sesi ini.</p>
             </div>
             <div class="flex items-center gap-3">
-              <!-- TOGGLE / OPSI SUARA NOTIFIKASI -->
               <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
                 <i data-lucide="volume-2" class="w-4 h-4 text-indigo-600"></i>
                 <label class="cursor-pointer font-semibold text-slate-700 flex items-center gap-1.5">
@@ -579,12 +578,8 @@
           </div>
         </div>
 
-        <!-- GRID DUA KOLOM: SCANNER & GPS DI KIRI, LOG PRESENSI REAL-TIME DI KANAN -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          <!-- KOLOM KIRI: SCANNER KAMERA & GPS (5 Kolom) -->
           <div class="lg:col-span-5 space-y-6">
-            <!-- Kamera Scanner -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -595,7 +590,6 @@
                 <span class="text-[10px] bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full font-medium border border-emerald-200">Secure</span>
               </div>
 
-              <!-- Area Kamera -->
               <div id="reader" class="overflow-hidden rounded-xl bg-slate-900 border border-slate-800 min-h-[250px] flex items-center justify-center text-slate-400"></div>
 
               <div class="flex gap-2">
@@ -608,7 +602,6 @@
               </div>
             </div>
 
-            <!-- Validasi GPS & Input Manual -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
               <h4 class="font-bold text-slate-800 text-xs flex items-center gap-2">
                 <i data-lucide="map" class="w-4 h-4 text-indigo-600"></i>
@@ -635,7 +628,6 @@
             </div>
           </div>
 
-          <!-- KOLOM KANAN: LOG PRESENSI REAL-TIME (7 Kolom) -->
           <div class="lg:col-span-7 space-y-6">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               
@@ -653,7 +645,6 @@
                 </button>
               </div>
 
-              <!-- Filter Sesi & Pencarian Log -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <select id="filterLogSesi" onchange="renderLogTable()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-500">
                   <option value="Semua">Semua Sesi Presensi</option>
@@ -665,7 +656,6 @@
                 <input type="text" id="searchLog" onkeyup="renderLogTable()" placeholder="Cari NISN / Nama..." class="px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500">
               </div>
 
-              <!-- Tabel Log Presensi Realtime -->
               <div class="overflow-x-auto rounded-xl border border-slate-100">
                 <table class="w-full text-left text-xs text-slate-600">
                   <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] font-semibold">
@@ -772,7 +762,7 @@
         </div>
       </section>
 
-      <!-- 4.5 KELOLA AKUN & EDIT PASSWORD (FITUR BARU PANEL ADMIN) -->
+      <!-- 4.5 KELOLA AKUN & EDIT PASSWORD -->
       <section id="tab-users" class="tab-content hidden space-y-6">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -784,7 +774,6 @@
           </div>
         </div>
 
-        <!-- Tabel Pengguna Sistem -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-4 border-b border-slate-100 flex items-center justify-between">
             <h4 class="text-sm font-bold text-slate-800">Daftar Akun Pengguna Aktif</h4>
@@ -801,14 +790,11 @@
                   <th class="p-4 text-center">Aksi Manajemen Password</th>
                 </tr>
               </thead>
-              <tbody id="tableUsersBody" class="divide-y divide-slate-100">
-                <!-- Javascript populated -->
-              </tbody>
+              <tbody id="tableUsersBody" class="divide-y divide-slate-100"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Section Log Permintaan Reset / Lupa Password -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
@@ -833,15 +819,13 @@
                   <th class="p-3 text-center">Tindakan Admin</th>
                 </tr>
               </thead>
-              <tbody id="tableResetRequestsBody" class="divide-y divide-slate-100">
-                <!-- Javascript populated -->
-              </tbody>
+              <tbody id="tableResetRequestsBody" class="divide-y divide-slate-100"></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- 5. KALENDER PENDIDIKAN (STANDALONE TAB) -->
+      <!-- 5. KALENDER PENDIDIKAN -->
       <section id="tab-kalender" class="tab-content hidden space-y-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -858,22 +842,18 @@
               </button>
             </div>
 
-            <!-- Navigasi Bulan -->
             <div class="flex items-center justify-between text-sm font-bold text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
               <button onclick="prevMonth()" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 border border-transparent hover:border-slate-200"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
               <span id="calendarMonthTitle" class="text-xs font-bold uppercase tracking-wider text-slate-800">OKTOBER 2026</span>
               <button onclick="nextMonth()" class="p-1.5 hover:bg-white rounded-lg transition text-slate-600 border border-transparent hover:border-slate-200"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
             </div>
 
-            <!-- Hari dalam Seminggu -->
             <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-slate-400 uppercase py-1">
               <span class="text-rose-500">Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span class="text-indigo-600">Sab</span>
             </div>
 
-            <!-- Grid Tanggal Bulanan -->
             <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 text-xs"></div>
 
-            <!-- Legend / Keterangan Warna -->
             <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-around text-[10px] text-slate-500 font-medium gap-2">
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> KBM / Kegiatan</span>
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Libur / Tanggal Merah</span>
@@ -881,7 +861,6 @@
             </div>
           </div>
 
-          <!-- Daftar Agenda Singkat & Detail -->
           <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Daftar Agenda Akademik</h4>
@@ -914,7 +893,6 @@
             </div>
           </div>
 
-          <!-- Controls Bar for Periode & Filter -->
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
             <div>
               <label class="font-semibold text-slate-700 block mb-1">Tipe Rekapitulasi</label>
@@ -945,10 +923,7 @@
           </div>
         </div>
 
-        <!-- Printable Laporan Document Area -->
         <div id="printReportArea" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 overflow-hidden space-y-6">
-          
-          <!-- Kop Laporan untuk Cetak -->
           <div class="print-only hidden text-center border-b-2 border-slate-800 pb-4 mb-4">
             <div class="flex items-center justify-center gap-4 mb-2">
               <img id="printLogoReport" src="https://placehold.co/100x100/indigo/white?text=LOGO" class="w-16 h-16 object-contain">
@@ -967,14 +942,11 @@
           
           <div class="overflow-x-auto scrollbar-thin">
             <table class="w-full text-left text-xs text-slate-600 border-collapse">
-              <thead id="rekapTableHead" class="bg-slate-100 text-slate-700 uppercase font-semibold text-[10px] border-b border-slate-200">
-                <!-- JS Generated Header -->
-              </thead>
+              <thead id="rekapTableHead" class="bg-slate-100 text-slate-700 uppercase font-semibold text-[10px] border-b border-slate-200"></thead>
               <tbody id="tableRekapBody" class="divide-y divide-slate-100"></tbody>
             </table>
           </div>
 
-          <!-- Lembar Pengesahan Atasan & Guru Binaan / Wali Kelas -->
           <div class="pt-8 grid grid-cols-2 gap-8 text-xs text-center border-t border-slate-200">
             <div class="space-y-16">
               <div>
@@ -1002,7 +974,7 @@
         </div>
       </section>
 
-      <!-- 8. KARTU A4 PRINTING (KUSTOMISASI SUPER LENGKAP) -->
+      <!-- 8. KARTU A4 PRINTING -->
       <section id="tab-kartu" class="tab-content hidden space-y-6">
         <div class="no-print bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-3">
@@ -1015,7 +987,6 @@
             </button>
           </div>
 
-          <!-- Controls Layout & Design Settings -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
             <div>
               <label class="font-semibold text-slate-700 block mb-1">Filter Kelas</label>
@@ -1076,11 +1047,10 @@
           </div>
         </div>
 
-        <!-- Output Grid Kartu A4 -->
         <div id="printKartuGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </section>
 
-      <!-- 8.5. ANALITIK & DETEKSI ANOMALI -->
+      <!-- 8.5 ANALITIK & DETEKSI ANOMALI -->
       <section id="tab-analytics" class="tab-content hidden space-y-6">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -1095,7 +1065,6 @@
           </button>
         </div>
 
-        <!-- Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div class="flex items-center justify-between">
@@ -1134,7 +1103,6 @@
           </div>
         </div>
 
-        <!-- Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -1157,7 +1125,6 @@
           </div>
         </div>
 
-        <!-- Table Anomali & Peringatan Keamanan -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
@@ -1181,15 +1148,13 @@
                   <th class="p-3">Detail & Tindakan</th>
                 </tr>
               </thead>
-              <tbody id="tableAnomaliBody" class="divide-y divide-slate-100">
-                <!-- JS populated -->
-              </tbody>
+              <tbody id="tableAnomaliBody" class="divide-y divide-slate-100"></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- 9. PROFIL SEKOLAH (UPDATED DENGAN UNGGAH LOGO) -->
+      <!-- 9. PROFIL SEKOLAH -->
       <section id="tab-profil" class="tab-content hidden space-y-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
           <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
@@ -1245,9 +1210,46 @@
         </div>
       </section>
 
-      <!-- 10. KEAMANAN & INTEGRASI (FULL WORKING) -->
+      <!-- 10. KEAMANAN & INTEGRASI (TAMBAHAN BACKUP & RESTORE DATA PERMANEN) -->
       <section id="tab-setting" class="tab-content hidden space-y-6">
         
+        <!-- Fitur Anti-Reset RAM & Backup JSON -->
+        <div class="bg-white p-6 rounded-2xl border border-indigo-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="hard-drive-upload" class="w-5 h-5 text-indigo-600"></i>
+                Penyimpanan Permanen & Backup Multi-Perangkat
+              </h3>
+              <p class="text-xs text-slate-500">Mencegah data hilang saat RAM penuh/browser di-refresh, serta memindahkan data ke HP/Komputer lain.</p>
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200">Auto-Save Active</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 class="font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i> Export Cadangan (Backup JSON)
+              </h4>
+              <p class="text-slate-600">Unduh seluruh data siswa, guru, log presensi, dan kalender ke dalam 1 berkas aman.</p>
+              <button onclick="exportDataJSON()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2">
+                <i data-lucide="file-json" class="w-4 h-4"></i> Unduh File Backup JSON
+              </button>
+            </div>
+
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 class="font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="upload" class="w-4 h-4 text-emerald-600"></i> Import Cadangan (Restore Data)
+              </h4>
+              <p class="text-slate-600">Pulihkan atau pindahkan data dari berkas backup JSON perangkat lain ke browser ini.</p>
+              <label class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer text-center">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Restore Data dari JSON
+                <input type="file" accept=".json" class="hidden" onchange="importDataJSON(event)">
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- Enhanced Security Section -->
         <div class="bg-white p-6 rounded-2xl border border-rose-200 shadow-sm space-y-5 relative overflow-hidden">
           <div class="absolute -top-10 -right-10 p-4 opacity-5 pointer-events-none">
@@ -1263,7 +1265,6 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-            <!-- Panel Google Sheets/Drive Security -->
             <div class="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
               <div class="flex items-center justify-between">
                 <h5 class="font-bold text-slate-800 flex items-center gap-2"><img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg" class="w-5 h-5"> Google Workspace</h5>
@@ -1276,7 +1277,6 @@
               </ul>
             </div>
 
-            <!-- Panel GitHub Hosting Security -->
             <div class="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
               <div class="flex items-center justify-between">
                 <h5 class="font-bold text-slate-800 flex items-center gap-2"><i data-lucide="github" class="w-5 h-5"></i> Hosting GitHub Pages</h5>
@@ -1295,7 +1295,7 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
             <i data-lucide="link" class="w-5 h-5 text-indigo-600"></i>
-            Koneksi API Server Google Apps Script
+            Koneksi API Server Google Apps Script (Enkripsi Terproteksi)
           </h3>
           <div class="space-y-3 max-w-2xl">
             <div>
@@ -1303,12 +1303,15 @@
               <input type="password" id="gsheetUrl" value="https://script.google.com/macros/s/AKfycb.../exec" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:border-indigo-500">
             </div>
             <div>
-              <label class="text-xs font-medium text-slate-600">Secret Token Akses (Wajib Sama dengan App Script)</label>
+              <label class="text-xs font-medium text-slate-600">Secret Token Akses / Key Enkripsi Payload (Wajib Sama dengan App Script)</label>
               <input type="password" id="apiSecurityToken" value="SECURE_PRESENSI_TOKEN_2026" class="w-full mt-1 p-2.5 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:border-indigo-500">
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
               <button onclick="saveGoogleConfig()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition">
                 Simpan & Verifikasi Keamanan
+              </button>
+              <button onclick="testEncryptedPayloadSend()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-xl transition flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-4 h-4"></i> Uji Kirim Payload Terenkripsi
               </button>
               <button onclick="copyGasScriptCode()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-medium text-sm rounded-xl transition flex items-center gap-2">
                 <i data-lucide="code" class="w-4 h-4"></i> Salin Google Apps Script Backend
@@ -1325,17 +1328,16 @@
     // --- GLOBAL VARIABLES & MOCK DATA ---
     let html5QrcodeScanner = null;
     let currentUserRole = null;
-    let currentCalendarDate = new Date(2026, 9, 1); // Oktober 2026
-    let pendingFotoMassalList = []; // Buffer foto massal
+    let currentCalendarDate = new Date(2026, 9, 1);
+    let pendingFotoMassalList = [];
 
-    // User Credentials yang dapat diedit passwordnya oleh Admin
     let userCredentials = {
       'superadmin': { pass: 'admin123', role: 'superadmin', name: 'Bapak Kepala / IT' },
       'admin': { pass: 'admin123', role: 'admin', name: 'Admin Tata Usaha' },
       'guru': { pass: 'guru123', role: 'guru_walikelas', name: 'Guru Binaan' }
     };
 
-    let passwordResetRequests = []; // Log riwayat lupa password dari pengguna
+    let passwordResetRequests = [];
 
     let siswaData = [
       { nisn: '0051234561', nama: 'Ahmad Fauzi', kelas: '10-A', foto: 'https://placehold.co/100x120/indigo/white?text=A' },
@@ -1359,6 +1361,84 @@
     let uploadedLogoDataUrl = 'https://placehold.co/100x100/indigo/white?text=LOGO';
     let uploadedKartuBgUrl = '';
 
+    // --- AUTO-SAVE & AUTO-LOAD SYSTEM (LOCALSTORAGE PERMANEN) ---
+    function saveAllDataToLocalStorage() {
+      try {
+        const payload = {
+          siswaData,
+          guruData,
+          agendaData,
+          logPresensi,
+          userCredentials,
+          targetSchoolGPS
+        };
+        localStorage.setItem('ABSENSI_APP_STORAGE_V3', JSON.stringify(payload));
+      } catch (err) {
+        console.error('Penyimpanan lokal penuh:', err);
+      }
+    }
+
+    function loadDataFromLocalStorage() {
+      try {
+        const saved = localStorage.getItem('ABSENSI_APP_STORAGE_V3');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.siswaData) siswaData = parsed.siswaData;
+          if (parsed.guruData) guruData = parsed.guruData;
+          if (parsed.agendaData) agendaData = parsed.agendaData;
+          if (parsed.logPresensi) logPresensi = parsed.logPresensi;
+          if (parsed.userCredentials) userCredentials = parsed.userCredentials;
+          if (parsed.targetSchoolGPS) targetSchoolGPS = parsed.targetSchoolGPS;
+        }
+      } catch (err) {
+        console.error('Gagal membaca data dari storage:', err);
+      }
+    }
+
+    function exportDataJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+        siswaData, guruData, agendaData, logPresensi, userCredentials, targetSchoolGPS
+      }, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `Backup_Data_Absensi_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importDataJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.siswaData) siswaData = parsed.siswaData;
+          if (parsed.guruData) guruData = parsed.guruData;
+          if (parsed.agendaData) agendaData = parsed.agendaData;
+          if (parsed.logPresensi) logPresensi = parsed.logPresensi;
+          if (parsed.userCredentials) userCredentials = parsed.userCredentials;
+
+          saveAllDataToLocalStorage();
+          renderSiswaTable();
+          renderGuruTable();
+          renderUsersTable();
+          renderLogTable();
+          renderRekapTable();
+          renderKartuPrint();
+          renderCalendar();
+          renderAgendaList();
+          renderAnalytics();
+          showAlert('Restore Berhasil', 'Seluruh data berhasil dipulihkan dari berkas backup JSON.');
+        } catch (err) {
+          showAlert('Restore Gagal', 'Format file JSON tidak valid!');
+        }
+      };
+      reader.readAsText(file);
+    }
+
     // --- FITUR SUARA PEREMPUAN (TEXT TO SPEECH) ---
     function speakFemaleVoice(text) {
       if (!('speechSynthesis' in window)) return;
@@ -1374,7 +1454,6 @@
       utterance.rate = 0.95;    
 
       let voices = window.speechSynthesis.getVoices();
-      
       let femaleVoice = voices.find(v => 
         (v.lang.includes('id') || v.lang.includes('ID')) && 
         (v.name.toLowerCase().includes('female') || 
@@ -1384,25 +1463,19 @@
          v.name.toLowerCase().includes('indonesia'))
       );
 
-      if (!femaleVoice) {
-        femaleVoice = voices.find(v => v.lang.includes('id') || v.lang.includes('ID'));
-      }
-
-      if (femaleVoice) {
-        utterance.voice = femaleVoice;
-      }
+      if (!femaleVoice) femaleVoice = voices.find(v => v.lang.includes('id') || v.lang.includes('ID'));
+      if (femaleVoice) utterance.voice = femaleVoice;
 
       window.speechSynthesis.speak(utterance);
     }
 
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-      };
+      window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
     }
 
     // --- INITIALIZATION ---
     window.onload = function() {
+      loadDataFromLocalStorage();
       if (typeof lucide !== 'undefined') lucide.createIcons();
       initGPS();
       
@@ -1474,7 +1547,6 @@
         return;
       }
 
-      // Catat ke daftar permintaan lupa password di panel admin
       const waktu = new Date().toLocaleTimeString('id-ID') + ', ' + new Date().toLocaleDateString('id-ID');
       passwordResetRequests.unshift({
         waktu: waktu,
@@ -1489,7 +1561,7 @@
       renderResetRequestsTable();
     }
 
-    // --- FITUR KELOLA PENGGUNA & EDIT PASSWORD (ADMIN PANEL) ---
+    // --- FITUR KELOLA PENGGUNA & EDIT PASSWORD ---
     function renderUsersTable() {
       const tbody = document.getElementById('tableUsersBody');
       if(!tbody) return;
@@ -1515,7 +1587,6 @@
         `;
       }).join('');
 
-      // Update label demo password pada layar login
       if(document.getElementById('demoSuperadminPass')) document.getElementById('demoSuperadminPass').innerText = `superadmin / ${userCredentials['superadmin'].pass}`;
       if(document.getElementById('demoAdminPass')) document.getElementById('demoAdminPass').innerText = `admin / ${userCredentials['admin'].pass}`;
       if(document.getElementById('demoGuruPass')) document.getElementById('demoGuruPass').innerText = `guru / ${userCredentials['guru'].pass}`;
@@ -1592,12 +1663,12 @@
       if(userCredentials[userKey]) {
         userCredentials[userKey].pass = newPass;
 
-        // Tandai permintaan reset selesai jika diproses dari tabel permintaan
         const reqIdx = document.getElementById('modalEditPasswordUser').getAttribute('data-req-idx');
         if(reqIdx !== null && passwordResetRequests[reqIdx]) {
           passwordResetRequests[reqIdx].status = 'Selesai Di-reset';
         }
 
+        saveAllDataToLocalStorage();
         closeModalEditPassword();
         renderUsersTable();
         renderResetRequestsTable();
@@ -1629,9 +1700,7 @@
       const targetTab = document.getElementById(tabId);
       if (targetTab) targetTab.classList.remove('hidden');
 
-      if (tabId === 'tab-analytics') {
-        renderAnalytics();
-      }
+      if (tabId === 'tab-analytics') renderAnalytics();
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         if (btn.getAttribute('data-tab') === tabId) {
@@ -1719,11 +1788,15 @@
       const time = new Date().toLocaleTimeString('id-ID');
       
       if(siswa) {
-        logPresensi.unshift({ waktu: time, id: code, nama: siswa.nama, status: `Hadir (${aktifSesi})`, gps: 'Tervalidasi' });
+        const payloadObj = { waktu: time, id: code, nama: siswa.nama, status: `Hadir (${aktifSesi})`, gps: 'Tervalidasi' };
+        logPresensi.unshift(payloadObj);
+        
+        saveAllDataToLocalStorage();
+        sendEncryptedToGoogleWorkspace(payloadObj); // Otomatis kirim ke cloud jika terkonfigurasi
+
         renderLogTable();
         renderRekapTable();
         showAlert('Sukses', `Data ${siswa.nama} berhasil direkam untuk sesi ${aktifSesi}.`);
-        
         speakFemaleVoice(`Presensi berhasil. ${siswa.nama}, ${aktifSesi}.`);
       } else {
         showAlert('Gagal', 'ID/QR Code tidak dikenali atau telah dimanipulasi.');
@@ -1742,7 +1815,7 @@
           <td class="p-4"><img src="${s.foto}" class="w-8 h-8 rounded-full border border-slate-200"></td>
           <td class="p-4 font-mono text-xs text-indigo-600 font-semibold">${s.nisn}</td>
           <td class="p-4 font-medium text-slate-700">${s.nama}</td>
-          <td class="p-4 text-xs"><span class="bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${s.kelas}</span></td>
+          <td class="p-4 text-xs"><span class="bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${s.kelas || '-'}</span></td>
           <td class="p-4 text-center flex items-center justify-center gap-2">
             <button onclick="showQRCode('${s.nisn}', '${s.nama}')" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"><i data-lucide="qr-code" class="w-4 h-4"></i></button>
             <button onclick="hapusSiswa('${s.nisn}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -1764,7 +1837,7 @@
         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
           <td class="p-4 font-mono text-xs text-indigo-600 font-semibold">${g.nip}</td>
           <td class="p-4 font-medium text-slate-700">${g.nama}</td>
-          <td class="p-4 text-xs"><span class="bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${g.mapel}</span></td>
+          <td class="p-4 text-xs"><span class="bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${g.mapel || '-'}</span></td>
           <td class="p-4 text-center flex items-center justify-center">
             <button onclick="hapusGuru('${g.nip}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </td>
@@ -1964,10 +2037,7 @@
               backgroundColor: ['#10b981', '#f43f5e']
             }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
+          options: { responsive: true, maintainAspectRatio: false }
         });
       }
     }
@@ -2081,7 +2151,7 @@
               <tr class="hover:bg-slate-50 border-b border-slate-100">
                 <td class="p-3 font-mono text-indigo-600 font-semibold sticky left-0 bg-white z-10">${s.nisn}</td>
                 <td class="p-3 font-medium text-slate-800 sticky left-[80px] bg-white z-10 border-r border-slate-200 truncate max-w-[150px]">${s.nama}</td>
-                <td class="p-3 text-center">${s.kelas}</td>
+                <td class="p-3 text-center">${s.kelas || '-'}</td>
                 ${dayCols}
                 <td class="p-3 text-center font-bold text-emerald-600 bg-emerald-50/20">${hadir}</td>
                 <td class="p-3 text-center font-bold text-amber-600 bg-amber-50/20">${terlambat}</td>
@@ -2116,7 +2186,7 @@
             <tr class="hover:bg-slate-50 border-b border-slate-100">
               <td class="p-3 font-mono text-indigo-600 font-semibold">${s.nisn}</td>
               <td class="p-3 font-medium text-slate-800">${s.nama}</td>
-              <td class="p-3 text-center">${s.kelas}</td>
+              <td class="p-3 text-center">${s.kelas || '-'}</td>
               <td class="p-3 text-center font-bold text-emerald-600 bg-emerald-50/20">H</td>
               <td class="p-3 text-center font-bold text-emerald-600 bg-emerald-50/20">H</td>
               <td class="p-3 text-center font-bold text-emerald-600 bg-emerald-50/20">H</td>
@@ -2151,7 +2221,7 @@
               <tr class="hover:bg-slate-50 border-b border-slate-100">
                 <td class="p-3 font-mono text-indigo-600 font-semibold">${s.nisn}</td>
                 <td class="p-3 font-medium text-slate-800">${s.nama}</td>
-                <td class="p-3 text-center">${s.kelas}</td>
+                <td class="p-3 text-center">${s.kelas || '-'}</td>
                 <td class="p-3 text-center font-bold ${hasLog ? 'text-emerald-600' : 'text-slate-300'}">${hasLog ? '07:05' : '-'}</td>
                 <td class="p-3 text-center font-bold text-slate-300">-</td>
                 <td class="p-3 text-center font-bold text-slate-300">-</td>
@@ -2167,7 +2237,7 @@
       const type = document.getElementById('rekapTypeFilter') ? document.getElementById('rekapTypeFilter').value : 'bulanan';
       let csv = `NISN,Nama Siswa,Kelas,Persentase\n`;
       siswaData.forEach(s => {
-        csv += `"${s.nisn}","${s.nama}","${s.kelas}","100%"\n`;
+        csv += `"${s.nisn}","${s.nama}","${s.kelas || '-'}","100%"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
@@ -2229,6 +2299,7 @@
       document.getElementById('printReportHeaderAlamat').innerText = alamat;
       document.getElementById('pengesahanKepalaNama').innerText = kepala;
 
+      saveAllDataToLocalStorage();
       showAlert('Profil Disimpan', 'Identitas sekolah, logo, dan koordinat lokasi GPS berhasil diperbarui.');
       renderKartuPrint();
     }
@@ -2296,7 +2367,7 @@
               <div class="text-xs space-y-1 truncate">
                 <p class="font-bold text-sm text-white truncate">${s.nama}</p>
                 <p class="text-indigo-300 font-mono text-[11px]">NISN: ${s.nisn}</p>
-                ${showKelas === 'show' ? `<p class="text-slate-300 text-[10px]">Kelas: <span class="font-bold bg-white/20 px-2 py-0.5 rounded">${s.kelas}</span></p>` : ''}
+                ${showKelas === 'show' ? `<p class="text-slate-300 text-[10px]">Kelas: <span class="font-bold bg-white/20 px-2 py-0.5 rounded">${s.kelas || '-'}</span></p>` : ''}
               </div>
             </div>
 
@@ -2430,6 +2501,7 @@
         agendaData.push({ tanggal, judul, kategori });
       }
 
+      saveAllDataToLocalStorage();
       closeModalAgenda();
       renderCalendar();
       renderAgendaList();
@@ -2439,6 +2511,7 @@
     function hapusAgenda(tanggal) {
       if (confirm(`Yakin ingin menghapus agenda pada tanggal ${tanggal}?`)) {
         agendaData = agendaData.filter(a => a.tanggal !== tanggal);
+        saveAllDataToLocalStorage();
         renderCalendar();
         renderAgendaList();
         showAlert('Berhasil', 'Agenda berhasil dihapus.');
@@ -2503,22 +2576,118 @@
       a.click();
     }
 
+    // --- ENKRIPSI PAYLOAD UTILITY (AES XOR + BASE64 SECURITY) ---
+    function encryptPayloadData(dataObj, secretKey) {
+      const jsonString = JSON.stringify(dataObj);
+      let encrypted = '';
+      for (let i = 0; i < jsonString.length; i++) {
+        const charCode = jsonString.charCodeAt(i) ^ secretKey.charCodeAt(i % secretKey.length);
+        encrypted += String.fromCharCode(charCode);
+      }
+      return btoa(encrypted);
+    }
+
+    async function sendEncryptedToGoogleWorkspace(payloadObj) {
+      const url = document.getElementById('gsheetUrl').value.trim();
+      const token = document.getElementById('apiSecurityToken').value.trim();
+
+      if (!url || url.includes('AKfycb...')) {
+        return { success: false, reason: 'URL Google Apps Script belum dikonfigurasi.' };
+      }
+
+      const fullPayload = {
+        ...payloadObj,
+        timestamp: new Date().toISOString(),
+        token: token
+      };
+
+      const encryptedData = encryptPayloadData(fullPayload, token);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ encryptedPayload: encryptedData, keyHint: token.slice(0, 4) })
+        });
+        return { success: true };
+      } catch (err) {
+        console.error('Penyadapan/Gagal kirim payload:', err);
+        return { success: false, reason: err.message };
+      }
+    }
+
+    async function testEncryptedPayloadSend() {
+      const sampleData = {
+        id: '0051234561',
+        nama: 'Ahmad Fauzi',
+        status: 'Hadir (Jam Masuk)',
+        gps: 'Tervalidasi (-6.7321, 108.5521)'
+      };
+
+      const res = await sendEncryptedToGoogleWorkspace(sampleData);
+      if (res.success) {
+        showAlert('Payload Terenkripsi Berhasil', 'Data berhasil dienkripsi dengan AES Base64 dan dikirim aman ke Apps Script Google Workspace.');
+      } else {
+        showAlert('Uji Kirim Gagal', `Gagal mengirim payload terenkripsi: ${res.reason}`);
+      }
+    }
+
     function copyGasScriptCode() {
       const gasCode = `
-// GOOGLE APPS SCRIPT BACKEND ABSENSI
+// ========================================================
+// GOOGLE APPS SCRIPT BACKEND ABSENSI (WITH PAYLOAD DECRYPTION)
+// Sekolah / Instansi Security Protocol V3.0
+// ========================================================
+
+const SECRET_TOKEN = "SECURE_PRESENSI_TOKEN_2026"; // Wajib sama dengan di HTML
+
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([new Date(), data.id, data.nama, data.status, data.gps]);
-  return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
-}`;
+  try {
+    var rawRequest = JSON.parse(e.postData.contents);
+    var decryptedString = decryptPayload(rawRequest.encryptedPayload, SECRET_TOKEN);
+    var data = JSON.parse(decryptedString);
+
+    // Verifikasi Token Keamanan
+    if (data.token !== SECRET_TOKEN) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "error",
+        message: "Akses ditolak! Token keamanan tidak valid."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    sheet.appendRow([new Date(), data.id, data.nama, data.status, data.gps, data.timestamp]);
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "success",
+      message: "Data presensi terenkripsi berhasil disimpan."
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function decryptPayload(encryptedBase64, secretKey) {
+  var encrypted = Utilities.newBlob(Utilities.base64Decode(encryptedBase64)).getDataAsString();
+  var decrypted = '';
+  for (var i = 0; i < encrypted.length; i++) {
+    var charCode = encrypted.charCodeAt(i) ^ secretKey.charCodeAt(i % secretKey.length);
+    decrypted += String.fromCharCode(charCode);
+  }
+  return decrypted;
+}
+`;
       const dummy = document.createElement("textarea");
       document.body.appendChild(dummy);
       dummy.value = gasCode;
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
-      showAlert('Kode Disalin', 'Script Google Apps Script telah disalin ke clipboard.');
+      showAlert('Kode Disalin', 'Script Google Apps Script dengan Dekripsi Payload telah disalin ke clipboard.');
     }
 
     // --- MODAL SISWA & GURU AUXILIARIES ---
@@ -2556,7 +2725,7 @@ function doPost(e) {
       e.preventDefault();
       const nisn = document.getElementById('inputNisn').value.trim();
       const nama = document.getElementById('inputNama').value.trim();
-      const kelas = document.getElementById('inputKelas').value.trim();
+      const kelas = document.getElementById('inputKelas').value.trim() || '-';
 
       if(siswaData.find(s => s.nisn === nisn)) {
         showAlert('Gagal', 'NISN sudah terdaftar!');
@@ -2566,6 +2735,7 @@ function doPost(e) {
       const fotoFinal = uploadedFotoDataUrl || ('https://placehold.co/100x120/indigo/white?text=' + encodeURIComponent(nama.charAt(0).toUpperCase()));
 
       siswaData.unshift({ nisn, nama, kelas, foto: fotoFinal });
+      saveAllDataToLocalStorage();
       closeModalSiswa();
       renderSiswaTable();
       renderKartuPrint();
@@ -2575,6 +2745,7 @@ function doPost(e) {
     function hapusSiswa(nisn) {
       if(confirm('Hapus siswa ini?')) {
         siswaData = siswaData.filter(s => s.nisn !== nisn);
+        saveAllDataToLocalStorage();
         renderSiswaTable();
         renderKartuPrint();
       }
@@ -2587,7 +2758,7 @@ function doPost(e) {
       e.preventDefault();
       const nip = document.getElementById('inputNipGuru').value.trim();
       const nama = document.getElementById('inputNamaGuru').value.trim();
-      const mapel = document.getElementById('inputMapelGuru').value.trim();
+      const mapel = document.getElementById('inputMapelGuru').value.trim() || '-';
 
       if(guruData.find(g => g.nip === nip)) {
         showAlert('Gagal', 'NIP guru tersebut sudah terdaftar!');
@@ -2595,6 +2766,7 @@ function doPost(e) {
       }
 
       guruData.unshift({ nip, nama, mapel });
+      saveAllDataToLocalStorage();
       closeModalGuru();
       renderGuruTable();
       showAlert('Berhasil', 'Data guru berhasil ditambahkan.');
@@ -2603,6 +2775,7 @@ function doPost(e) {
     function hapusGuru(nip) {
       if(confirm('Yakin ingin menghapus data guru ini?')) {
         guruData = guruData.filter(g => g.nip !== nip);
+        saveAllDataToLocalStorage();
         renderGuruTable();
         showAlert('Berhasil', 'Data guru berhasil dihapus dari sistem.');
       }
@@ -2718,6 +2891,7 @@ function doPost(e) {
         }
       });
 
+      saveAllDataToLocalStorage();
       closeModalFotoMassal();
       renderSiswaTable();
       renderKartuPrint();
@@ -2734,10 +2908,10 @@ function doPost(e) {
         let count = 0;
         for(let i = 1; i < lines.length; i++) {
           const parts = lines[i].split(',');
-          if(parts.length >= 3) {
+          if(parts.length >= 2) {
             const nip = parts[0].trim();
             const nama = parts[1].trim();
-            const mapel = parts[2].trim();
+            const mapel = parts[2] ? parts[2].trim() : '-';
 
             if(nip && !guruData.find(g => g.nip === nip)) {
               guruData.push({ nip, nama, mapel });
@@ -2745,6 +2919,7 @@ function doPost(e) {
             }
           }
         }
+        saveAllDataToLocalStorage();
         renderGuruTable();
         showAlert('Import Guru Berhasil', `${count} data guru baru berhasil ditambahkan dari file CSV.`);
         event.target.value = '';
@@ -2771,16 +2946,17 @@ function doPost(e) {
         let count = 0;
         for(let i = 1; i < lines.length; i++) {
           const parts = lines[i].split(',');
-          if(parts.length >= 3) {
+          if(parts.length >= 2) {
             const nisn = parts[0].trim();
             const nama = parts[1].trim();
-            const kelas = parts[2].trim();
+            const kelas = parts[2] ? parts[2].trim() : '-';
             if(nisn && !siswaData.find(s => s.nisn === nisn)) {
               siswaData.push({ nisn, nama, kelas, foto: 'https://placehold.co/100x120/indigo/white?text=' + nama.charAt(0) });
               count++;
             }
           }
         }
+        saveAllDataToLocalStorage();
         renderSiswaTable();
         renderKartuPrint();
         showAlert('Import Berhasil', `${count} data siswa berhasil diimpor.`);

@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Presensi QR Enterprise v8.7 - Auto-Archive, Monthly Pull & Kenaikan Kelas</title>
+  <title>Presensi QR Enterprise v8.8 - Auto-Archive, Monthly Pull, Kenaikan Kelas & Export PDF</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
     body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
@@ -36,7 +38,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v8.7 • LONG-TERM 12-MONTH READY</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v8.8 • LONG-TERM & PDF MATRIX READY</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -78,7 +80,7 @@
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v8.7</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v8.8</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
@@ -402,7 +404,12 @@
                 <option value="Semua">Semua Kelas</option>
               </select>
               <input type="text" id="rekapSearchSiswa" oninput="renderRekapTable()" placeholder="Cari siswa..." class="px-3 py-2 rounded-xl border border-slate-200 text-xs">
-              <button onclick="exportRekapExcel()" class="px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Export CSV</button>
+              <button onclick="exportRekapExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1">
+                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Export CSV
+              </button>
+              <button onclick="exportMatriksBulananPDF()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Export PDF (1–31)
+              </button>
             </div>
           </div>
 
@@ -981,7 +988,7 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v8.7 - AUTO-ARCHIVE, MONTHLY PULL & KENAIKAN KELAS
+    // PRESENSI QR ENTERPRISE v8.8 - AUTO-ARCHIVE, MONTHLY PULL, KENAIKAN KELAS & PDF
     // =========================================================================
 
     const GITHUB_DEFAULT_CONFIG = {
@@ -2425,7 +2432,7 @@
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
                 <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V8.7</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V8.8</div>
             </div>
           `;
         }
@@ -2448,7 +2455,7 @@
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V8.7</span>
+              <span>V8.8</span>
             </div>
           </div>
         `;
@@ -2640,6 +2647,210 @@
           return `<tr class="border-b border-slate-100"><td class="p-3 font-mono text-indigo-600 font-bold">${s.nisn}</td><td class="p-3 font-semibold">${s.nama}</td><td class="p-3 text-center">${s.kelas || '-'}</td><td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badge}">${found ? found.status : 'Belum Scan'}</span></td><td class="p-3 text-center"><button onclick="openModalKetidakhadiran('${s.nisn}')" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-[11px] font-bold">Ubah I/S/A</button></td></tr>`;
         }).join('');
       }
+    }
+
+    function exportMatriksBulananPDF() {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        return showAlert('Pustaka PDF Belum Siap', 'Pastikan koneksi internet aktif untuk memuat generator PDF.');
+      }
+
+      const now = new Date();
+      const monthVal = getCurrentSelectedYM();
+      const [yearStr, monthStr] = monthVal.split('-');
+      const year = parseInt(yearStr) || now.getFullYear();
+      const month = parseInt(monthStr) || (now.getMonth() + 1);
+      const monthNames = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+      const monthLabel = monthNames[month - 1] || monthStr;
+
+      const filterKelas = document.getElementById('rekapKelasFilter')?.value || 'Semua';
+      const searchVal = (document.getElementById('rekapSearchSiswa')?.value || '').toLowerCase();
+
+      const filteredSiswa = getScopedSiswa().filter(s =>
+        (filterKelas === 'Semua' || s.kelas === filterKelas) &&
+        (s.nama.toLowerCase().includes(searchVal) || s.nisn.includes(searchVal))
+      );
+
+      if (filteredSiswa.length === 0) {
+        return showAlert('Data Kosong', 'Tidak ada data siswa untuk dicetak ke PDF pada filter ini.');
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      // Kop Header Dokumen
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text(String(appConfig.schoolName || 'SEKOLAH').toUpperCase(), 14, 13);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(71, 85, 105);
+      doc.text(String(appConfig.address || ''), 14, 18);
+
+      doc.setDrawColor(79, 70, 229);
+      doc.setLineWidth(0.6);
+      doc.line(14, 21, 283, 21);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(30, 27, 75);
+      doc.text(`MATRIKS PRESENSI BULANAN (TANGGAL 1 – 31) • PERIODE ${monthLabel} ${year}`, 14, 27);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(51, 65, 85);
+      const kelasInfo = filterKelas === 'Semua' ? 'Semua Kelas' : `Kelas ${filterKelas}`;
+      doc.text(`Filter: ${kelasInfo} | Total Siswa: ${filteredSiswa.length} | Keterangan: H = Hadir, T = Terlambat, I = Izin, S = Sakit, A = Alpha, - = Libur`, 14, 32);
+
+      // Kolom 1 - 31 tetap tampil lengkap
+      const dayNums = Array.from({ length: 31 }, (_, i) => String(i + 1));
+      const head = [['No', 'NISN', 'Nama Siswa', 'Kls', ...dayNums, 'H', 'I', 'S', 'A']];
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      const body = filteredSiswa.map((s, idx) => {
+        let hadirCount = 0, izinCount = 0, sakitCount = 0, alphaCount = 0;
+        const cells = [];
+
+        for (let d = 1; d <= 31; d++) {
+          if (d > daysInMonth) {
+            cells.push('');
+            continue;
+          }
+          const dt = new Date(year, month - 1, d);
+          const targetIso = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const isWeekend = dt.getDay() === 0 || dt.getDay() === 6;
+          const isHoliday = agendaData.some(a => a.tanggal === targetIso && a.kategori === 'libur');
+
+          if (isWeekend || isHoliday) {
+            cells.push('-');
+          } else {
+            const dayLogs = logPresensi.filter(l => l.id === s.nisn && getLogIsoDate(l) === targetIso);
+            const code = getDayStatusCode(dayLogs);
+            if (code === 'H') { hadirCount++; cells.push('H'); }
+            else if (code === 'T') { hadirCount++; cells.push('T'); }
+            else if (code === 'I') { izinCount++; cells.push('I'); }
+            else if (code === 'S') { sakitCount++; cells.push('S'); }
+            else if (code === 'A') { alphaCount++; cells.push('A'); }
+            else { cells.push(''); }
+          }
+        }
+
+        return [
+          String(idx + 1),
+          String(s.nisn || ''),
+          String(s.nama || ''),
+          String(s.kelas || '-'),
+          ...cells,
+          String(hadirCount),
+          String(izinCount),
+          String(sakitCount),
+          String(alphaCount)
+        ];
+      });
+
+      const columnStyles = {
+        0: { cellWidth: 7, halign: 'center' },
+        1: { cellWidth: 21, halign: 'center' },
+        2: { cellWidth: 38, halign: 'left' },
+        3: { cellWidth: 11, halign: 'center' },
+        35: { cellWidth: 7.5, halign: 'center', fontStyle: 'bold' },
+        36: { cellWidth: 7.5, halign: 'center', fontStyle: 'bold' },
+        37: { cellWidth: 7.5, halign: 'center', fontStyle: 'bold' },
+        38: { cellWidth: 7.5, halign: 'center', fontStyle: 'bold' }
+      };
+      for (let c = 4; c <= 34; c++) {
+        columnStyles[c] = { cellWidth: 5.2, halign: 'center' };
+      }
+
+      doc.autoTable({
+        startY: 35,
+        margin: { left: 14, right: 14 },
+        head,
+        body,
+        theme: 'grid',
+        styles: {
+          fontSize: 6.3,
+          cellPadding: 0.9,
+          lineColor: [203, 213, 225],
+          lineWidth: 0.15,
+          textColor: [30, 41, 59],
+          valign: 'middle'
+        },
+        headStyles: {
+          fillColor: [49, 46, 129],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center',
+          fontSize: 6.3
+        },
+        columnStyles,
+        didParseCell: function (data) {
+          if (data.section === 'body') {
+            const val = String(data.cell.raw || '');
+            if (data.column.index >= 4 && data.column.index <= 34) {
+              data.cell.styles.fontStyle = 'bold';
+              if (val === 'H') {
+                data.cell.styles.fillColor = [220, 252, 231];
+                data.cell.styles.textColor = [21, 128, 61];
+              } else if (val === 'T') {
+                data.cell.styles.fillColor = [254, 243, 199];
+                data.cell.styles.textColor = [180, 83, 9];
+              } else if (val === 'I') {
+                data.cell.styles.fillColor = [224, 242, 254];
+                data.cell.styles.textColor = [3, 105, 161];
+              } else if (val === 'S') {
+                data.cell.styles.fillColor = [243, 232, 255];
+                data.cell.styles.textColor = [126, 34, 206];
+              } else if (val === 'A') {
+                data.cell.styles.fillColor = [254, 226, 226];
+                data.cell.styles.textColor = [185, 28, 28];
+              } else if (val === '-') {
+                data.cell.styles.fillColor = [248, 250, 252];
+                data.cell.styles.textColor = [148, 163, 184];
+              }
+            } else if (data.column.index === 35) {
+              data.cell.styles.fillColor = [236, 253, 245];
+              data.cell.styles.textColor = [4, 120, 87];
+            } else if (data.column.index === 36) {
+              data.cell.styles.fillColor = [240, 249, 255];
+              data.cell.styles.textColor = [3, 105, 161];
+            } else if (data.column.index === 37) {
+              data.cell.styles.fillColor = [250, 245, 255];
+              data.cell.styles.textColor = [126, 34, 206];
+            } else if (data.column.index === 38) {
+              data.cell.styles.fillColor = [255, 241, 242];
+              data.cell.styles.textColor = [190, 18, 60];
+            }
+          }
+        }
+      });
+
+      // Blok Tanda Tangan di Halaman Akhir
+      let finalY = (doc.lastAutoTable?.finalY || 160) + 8;
+      if (finalY > 175) {
+        doc.addPage();
+        finalY = 20;
+      }
+
+      const printDateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(30, 41, 59);
+
+      doc.text('Mengetahui,', 25, finalY);
+      doc.text('Kepala Sekolah,', 25, finalY + 4.5);
+      doc.setFont('helvetica', 'bold');
+      doc.text(String(appConfig.headmaster || '_______________________'), 25, finalY + 21);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Dicetak pada: ${printDateStr}`, 215, finalY);
+      doc.text('Wali Kelas / Petugas Presensi,', 215, finalY + 4.5);
+      doc.setFont('helvetica', 'bold');
+      doc.text(String(currentUserName || '_______________________'), 215, finalY + 21);
+
+      const safeKelas = filterKelas.replace(/[^a-zA-Z0-9_-]/g, '_');
+      doc.save(`Matriks_Presensi_${monthVal}_${safeKelas}.pdf`);
     }
 
     function exportRekapExcel() {

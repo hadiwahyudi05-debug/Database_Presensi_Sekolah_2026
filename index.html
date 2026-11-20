@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Presensi QR Enterprise v8.8 - Auto-Archive, Monthly Pull, Kenaikan Kelas & Export PDF</title>
+  <title>Presensi QR Enterprise v8.9 - High-Speed Camera Selector, PDF Matrix & Cloud</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -38,7 +38,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v8.8 • LONG-TERM & PDF MATRIX READY</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v8.9 • HIGH-SPEED SCANNER & PDF MATRIX</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -80,7 +80,7 @@
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v8.8</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v8.9</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
@@ -147,6 +147,7 @@
             <div class="flex items-center justify-between">
               <h2 class="font-extrabold text-slate-900 flex items-center gap-2 text-sm">
                 <i data-lucide="qr-code" class="w-4 h-4 text-indigo-600"></i> Pemindai Presensi QR
+                <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-mono font-bold">20 FPS</span>
               </h2>
               <span id="liveClock" class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-900 text-emerald-400">00:00:00</span>
             </div>
@@ -185,6 +186,20 @@
             <div id="titipWarning" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
               <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>
               <span>Peringatan: Lokasi berada di luar radius sekolah atau GPS tidak tervalidasi!</span>
+            </div>
+
+            <!-- Pemilih Lensa Kamera (Belakang / Depan / Webcam USB) -->
+            <div class="flex items-center gap-2">
+              <div class="flex-1 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-600 flex-shrink-0"></i>
+                <select id="cameraSelect" onchange="onCameraSelectChange()" class="w-full bg-transparent text-xs font-bold text-slate-700 focus:outline-none truncate">
+                  <option value="environment">Kamera Belakang (Otomatis)</option>
+                  <option value="user">Kamera Depan / Selfie</option>
+                </select>
+              </div>
+              <button type="button" onclick="refreshCameraDevices(true)" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 transition" title="Deteksi Ulang Lensa Kamera">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              </button>
             </div>
 
             <!-- Camera Viewport -->
@@ -988,7 +1003,7 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v8.8 - AUTO-ARCHIVE, MONTHLY PULL, KENAIKAN KELAS & PDF
+    // PRESENSI QR ENTERPRISE v8.9 - CAMERA SELECTOR, 20 FPS, PDF MATRIX & CLOUD
     // =========================================================================
 
     const GITHUB_DEFAULT_CONFIG = {
@@ -999,6 +1014,7 @@
 
     const STORAGE_KEY = 'PRESENSI_QR_ENTERPRISE_V8';
     const SESSION_STORAGE_KEY = 'PRESENSI_QR_ACTIVE_SESSION_V8';
+    const CAMERA_PREF_KEY = 'PRESENSI_QR_PREFERRED_CAMERA_V8';
     const DEFAULT_LOGO_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%234f46e5'/><path d='M20 22h10v10H20zm14 0h10v10H34zM20 36h10v10H20zm18 0h6v6h-6zm-4 6h4v4h-4zm6 0h4v4h-4z' fill='white'/></svg>";
     const DEFAULT_SISWA_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='120'><rect width='100%' height='100%' fill='%234f46e5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-size='18' font-weight='bold'>FOTO</text></svg>";
 
@@ -2015,30 +2031,95 @@
       inp.value = '';
     }
 
-    // --- QR CAMERA SCANNER ---
-    function startQrScanner() {
+    // --- QR CAMERA SCANNER (20 FPS + PEMILIH LENSA KAMERA) ---
+    async function refreshCameraDevices(notify = false) {
+      if (typeof Html5Qrcode === 'undefined' || !Html5Qrcode.getCameras) return;
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        const sel = document.getElementById('cameraSelect');
+        if (!sel || !Array.isArray(devices) || devices.length === 0) return;
+
+        const savedPref = localStorage.getItem(CAMERA_PREF_KEY) || sel.value;
+        const baseOptions = [
+          `<option value="environment">Kamera Belakang (Otomatis)</option>`,
+          `<option value="user">Kamera Depan / Selfie</option>`
+        ];
+        const deviceOptions = devices.map((cam, idx) => {
+          const cleanLabel = (cam.label || `Kamera ${idx + 1}`).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          return `<option value="${cam.id}">${cleanLabel}</option>`;
+        });
+
+        sel.innerHTML = baseOptions.concat(deviceOptions).join('');
+        if ([...sel.options].some(o => o.value === savedPref)) {
+          sel.value = savedPref;
+        }
+        if (notify) {
+          showAlert('Lensa Terdeteksi', `Ditemukan ${devices.length} kamera pada perangkat ini.`);
+        }
+      } catch (e) {
+        if (notify) {
+          showAlert('Izin Kamera Diperlukan', 'Klik "Aktifkan Kamera" terlebih dahulu untuk mengizinkan browser membaca daftar lensa kamera.');
+        }
+      }
+    }
+
+    async function onCameraSelectChange() {
+      const sel = document.getElementById('cameraSelect');
+      if (!sel) return;
+      try {
+        localStorage.setItem(CAMERA_PREF_KEY, sel.value);
+      } catch (e) {}
+
+      if (html5QrCodeInstance && html5QrCodeInstance.isScanning) {
+        await stopQrScanner();
+        startQrScanner();
+      }
+    }
+
+    async function startQrScanner() {
       if (typeof Html5Qrcode === 'undefined') return showAlert('Pustaka Belum Siap', 'Pustaka kamera belum termuat.');
       document.getElementById('cameraPlaceholder').classList.add('hidden');
       if (!html5QrCodeInstance) {
         html5QrCodeInstance = new Html5Qrcode("qrReader");
       }
-      html5QrCodeInstance.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decodedText) => processPresensi(decodedText, false),
-        () => {}
-      ).catch(err => {
+      if (html5QrCodeInstance.isScanning) return;
+
+      const selectedVal = document.getElementById('cameraSelect')?.value || 'environment';
+      const cameraConfig = (selectedVal === 'environment' || selectedVal === 'user')
+        ? { facingMode: selectedVal }
+        : { deviceId: { exact: selectedVal } };
+
+      const scanConfig = {
+        fps: 20,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const boxSize = Math.max(180, Math.min(270, Math.floor(minEdge * 0.72)));
+          return { width: boxSize, height: boxSize };
+        },
+        aspectRatio: 1.777778
+      };
+
+      try {
+        await html5QrCodeInstance.start(
+          cameraConfig,
+          scanConfig,
+          (decodedText) => processPresensi(decodedText, false),
+          () => {}
+        );
+        refreshCameraDevices(false);
+      } catch (err) {
         document.getElementById('cameraPlaceholder').classList.remove('hidden');
         showAlert('Kamera Gagal', 'Tidak dapat mengakses kamera: ' + err);
-      });
+      }
     }
 
-    function stopQrScanner() {
+    async function stopQrScanner() {
       if (html5QrCodeInstance && html5QrCodeInstance.isScanning) {
-        html5QrCodeInstance.stop().then(() => {
-          document.getElementById('cameraPlaceholder').classList.remove('hidden');
-        }).catch(() => {});
+        try {
+          await html5QrCodeInstance.stop();
+        } catch (e) {}
       }
+      document.getElementById('cameraPlaceholder')?.classList.remove('hidden');
     }
 
     // --- IMAGE COMPRESSION ---
@@ -2432,7 +2513,7 @@
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
                 <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V8.8</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V8.9</div>
             </div>
           `;
         }
@@ -2455,7 +2536,7 @@
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V8.8</span>
+              <span>V8.9</span>
             </div>
           </div>
         `;
@@ -4171,6 +4252,7 @@ function jsonOut_(obj) {
       renderAllViews();
       initGPS();
       syncSesiModeUI();
+      refreshCameraDevices(false);
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
       restoreActiveSession();

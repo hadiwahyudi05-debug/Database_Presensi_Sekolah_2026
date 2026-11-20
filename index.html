@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Presensi QR Enterprise v8.6 - Izin/Sakit/Alpha & Persistent Session</title>
+  <title>Presensi QR Enterprise v8.7 - Auto-Archive, Monthly Pull & Kenaikan Kelas</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -36,7 +36,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v8.6 • ANTI-REPLAY & 6-SHEET SYNC</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v8.7 • LONG-TERM 12-MONTH READY</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -78,7 +78,7 @@
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v8.6</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v8.7</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
@@ -270,11 +270,14 @@
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h2 class="font-extrabold text-slate-900 text-base">Database Siswa</h2>
-              <p class="text-xs text-slate-500">Mendukung soft-delete anti-resurrection pada sinkronisasi 2 arah</p>
+              <p class="text-xs text-slate-500">Mendukung soft-delete anti-resurrection & kenaikan kelas massal</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <button onclick="openModalSiswa()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Siswa
+              </button>
+              <button onclick="openModalKenaikanKelas()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
+                <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Kenaikan Kelas
               </button>
               <button onclick="openModalFotoMassal()" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
                 <i data-lucide="images" class="w-3.5 h-3.5"></i> Foto Massal
@@ -394,7 +397,7 @@
                 <option value="bulanan">Matriks Bulanan</option>
                 <option value="harian">Rekap Harian</option>
               </select>
-              <input type="month" id="rekapMonthPicker" onchange="renderRekapTable()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold">
+              <input type="month" id="rekapMonthPicker" onchange="onRekapMonthChange()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold">
               <select id="rekapKelasFilter" onchange="renderRekapTable()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold">
                 <option value="Semua">Semua Kelas</option>
               </select>
@@ -561,19 +564,19 @@
           </div>
         </div>
 
-        <!-- Cloud 2-Way Sync -->
+        <!-- Cloud 2-Way Sync & Retensi Log -->
         <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 class="font-extrabold text-slate-900 text-sm">Sinkronisasi 2-Arah Google Sheets (6 Sheet: Siswa, Guru, Log, Agenda, Users, Pengaturan)</h3>
-              <p class="text-xs text-slate-500">Dilengkapi tanda tangan HMAC-SHA256, Anti-Replay Nonce & Auto-Drive Foto</p>
+              <h3 class="font-extrabold text-slate-900 text-sm">Sinkronisasi 2-Arah Google Sheets & Retensi Log 12 Bulan</h3>
+              <p class="text-xs text-slate-500">Filter pull bulanan otomatis + auto-arsip memori lokal mencegah browser penuh</p>
             </div>
             <button onclick="copyGasScriptCode()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
-              <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v8.6
+              <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v8.7
             </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             <div>
               <label class="font-bold text-slate-600 block mb-1">Google Apps Script Web App URL (/exec)</label>
               <input type="url" id="gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono">
@@ -585,20 +588,37 @@
                 <button type="button" onclick="generateRandomSecret()" class="px-3 py-2 bg-slate-100 rounded-xl font-bold">Acak</button>
               </div>
             </div>
+            <div>
+              <label class="font-bold text-slate-600 block mb-1">Auto-Arsip Log Lokal Browser</label>
+              <div class="flex gap-2">
+                <select id="localRetentionDays" class="flex-1 px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+                  <option value="30">Simpan 30 Hari Terakhir</option>
+                  <option value="45" selected>Simpan 45 Hari Terakhir (Rekomendasi)</option>
+                  <option value="60">Simpan 60 Hari Terakhir</option>
+                  <option value="90">Simpan 90 Hari Terakhir</option>
+                  <option value="0">Tanpa Batas (Semua)</option>
+                </select>
+                <button type="button" onclick="runManualLocalArchive()" class="px-3 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl font-bold" title="Bersihkan log lokal lama sekarang">Bersihkan</button>
+              </div>
+            </div>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
-              <input type="checkbox" id="toggleAutoSync" checked class="rounded text-indigo-600">
-              Auto-Sync Real-Time saat ada perubahan data
-            </label>
+            <div class="flex flex-wrap items-center gap-4">
+              <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="toggleAutoSync" checked class="rounded text-indigo-600">
+                Auto-Sync Real-Time
+              </label>
+              <span id="storageUsageIndicator" class="text-[11px] font-mono text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">Memori Lokal: 0 KB</span>
+            </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="saveGoogleConfig()" class="px-3.5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">Simpan Konfigurasi</button>
               <button onclick="copyShareableSetupLink()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Salin link GitHub dengan konfigurasi otomatis untuk perangkat lain">
                 <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Salin Link Perangkat Lain
               </button>
               <button onclick="syncTwoWayNow()" class="px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Sync 2-Arah Sekarang</button>
-              <button onclick="pullDataFromCloud()" class="px-3.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Pull Cloud</button>
+              <button onclick="pullDataFromCloud(false)" class="px-3.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Pull Bulan Ini</button>
+              <button onclick="pullDataFromCloud(true)" class="px-3.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold" title="Tarik seluruh riwayat dari awal tahun">Pull Semua Riwayat</button>
               <button onclick="pushDataToCloud(false)" class="px-3.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Push Lokal</button>
               <button onclick="exportDataJSON()" class="px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-bold">Backup JSON</button>
               <label class="px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-bold cursor-pointer">
@@ -656,6 +676,32 @@
   </div>
 
   <!-- MODALS -->
+  <!-- Modal Kenaikan Kelas Massal & Kelulusan -->
+  <div id="modalKenaikanKelas" class="hidden fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-emerald-600"></i> Kenaikan Kelas Massal & Kelulusan
+        </h3>
+        <button type="button" onclick="closeModalKenaikanKelas()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+        <p class="font-bold">Disarankan Backup Sebelum Kenaikan Kelas:</p>
+        <p>Tentukan kelas tujuan untuk setiap kelas saat ini. Pilih <strong>Lulus / Hapus dari Aktif</strong> untuk siswa tingkat akhir.</p>
+        <button type="button" onclick="exportDataJSON()" class="mt-1 px-2.5 py-1 bg-amber-600 text-white rounded-lg text-[11px] font-bold">Unduh Backup JSON Dulu</button>
+      </div>
+      <form onsubmit="prosesKenaikanKelasMassal(event)" class="space-y-3 text-xs">
+        <div id="listMappingKelas" class="max-h-64 overflow-y-auto space-y-2 pr-1"></div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModalKenaikanKelas()" class="flex-1 py-2.5 bg-slate-100 rounded-xl font-bold">Batal</button>
+          <button type="submit" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold">Terapkan Kenaikan Kelas</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal Catat Izin / Sakit / Alpha (Keperluan Mendadak) -->
   <div id="modalKetidakhadiran" class="hidden fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
@@ -935,11 +981,11 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v8.6 - IZIN/SAKIT/ALPHA, PERSISTENT SESSION & 2-WAY SYNC
+    // PRESENSI QR ENTERPRISE v8.7 - AUTO-ARCHIVE, MONTHLY PULL & KENAIKAN KELAS
     // =========================================================================
 
     const GITHUB_DEFAULT_CONFIG = {
-      gsheetUrl: '', // Tempel URL Web App Google Apps Script (/exec) di sini jika ingin permanen
+      gsheetUrl: '',
       apiToken: 'ENTERPRISE_KEY_2026_SECURE',
       autoPullOnLoad: true
     };
@@ -962,6 +1008,7 @@
       gsheetUrl: GITHUB_DEFAULT_CONFIG.gsheetUrl || '',
       apiToken: GITHUB_DEFAULT_CONFIG.apiToken || 'ENTERPRISE_KEY_2026_SECURE',
       autoSync: true,
+      localRetentionDays: 45,
       schoolLogo: DEFAULT_LOGO_SVG,
       updatedAt: 1700000000000
     };
@@ -1020,6 +1067,161 @@
     let currentCalendarDate = new Date();
     let html5QrCodeInstance = null;
     let lastScanTimestamps = {};
+    let loadedMonthsCache = new Set();
+
+    // --- 1. FITUR AUTO-ARSIP LOG LOKAL (RETENSI BROWSER) ---
+    function pruneExpiredLocalLogs(forceDays = null) {
+      const days = forceDays !== null ? Number(forceDays) : Number(appConfig.localRetentionDays ?? 45);
+      if (!days || days <= 0) return 0;
+      const cutoffTs = Date.now() - (days * 24 * 60 * 60 * 1000);
+      const beforeCount = logPresensi.length;
+      logPresensi = logPresensi.filter(l => {
+        const ts = Number(l.timestamp) || Date.parse(getLogIsoDate(l) + 'T00:00:00');
+        return !ts || ts >= cutoffTs;
+      });
+      return beforeCount - logPresensi.length;
+    }
+
+    async function runManualLocalArchive() {
+      const selDays = Number(document.getElementById('localRetentionDays')?.value ?? 45);
+      appConfig.localRetentionDays = selDays;
+      const removed = pruneExpiredLocalLogs(selDays);
+      await saveAllData();
+      renderLogTable();
+      renderRekapTable();
+      renderAnalytics();
+      updateStorageUsageUI();
+      showAlert('Auto-Arsip Lokal Selesai', removed > 0
+        ? `${removed} log lama di atas ${selDays} hari berhasil dibersihkan dari memori lokal browser (riwayat tetap tersimpan di Google Sheets).`
+        : `Tidak ada log lokal yang melebihi batas retensi ${selDays} hari.`);
+    }
+
+    function updateStorageUsageUI() {
+      const el = document.getElementById('storageUsageIndicator');
+      if (!el) return;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || '';
+        const kb = Math.round((raw.length * 2) / 1024);
+        el.innerText = `Memori Lokal: ${kb} KB (${logPresensi.length} log)`;
+      } catch (e) {}
+    }
+
+    // --- 2. FITUR KENAIKAN KELAS MASSAL & KELULUSAN ---
+    function suggestNextClassName(kelas) {
+      const clean = String(kelas || '').trim();
+      if (/^12(\b|[-_\s/])/i.test(clean) || /^XII(\b|[-_\s/])/i.test(clean) || /^9(\b|[-_\s/])/i.test(clean) || /^IX(\b|[-_\s/])/i.test(clean) || /^6(\b|[-_\s/])/i.test(clean) || /^VI(\b|[-_\s/])/i.test(clean)) {
+        return '__LULUS__';
+      }
+      if (/^10(\b|[-_\s/])/.test(clean)) return clean.replace(/^10/, '11');
+      if (/^11(\b|[-_\s/])/.test(clean)) return clean.replace(/^11/, '12');
+      if (/^X(\b|[-_\s/])/i.test(clean)) return clean.replace(/^X/i, 'XI');
+      if (/^XI(\b|[-_\s/])/i.test(clean)) return clean.replace(/^XI/i, 'XII');
+      if (/^7(\b|[-_\s/])/.test(clean)) return clean.replace(/^7/, '8');
+      if (/^8(\b|[-_\s/])/.test(clean)) return clean.replace(/^8/, '9');
+      return clean;
+    }
+
+    function openModalKenaikanKelas() {
+      if (guardGuruAccess('mengelola kenaikan kelas massal')) return;
+      const kelasList = [...new Set(siswaData.map(s => s.kelas || '-'))].sort();
+      const container = document.getElementById('listMappingKelas');
+      if (!container) return;
+
+      if (kelasList.length === 0) {
+        return showAlert('Data Kosong', 'Belum ada data siswa yang dapat diproses kenaikan kelas.');
+      }
+
+      container.innerHTML = kelasList.map(kls => {
+        const count = siswaData.filter(s => (s.kelas || '-') === kls).length;
+        const suggested = suggestNextClassName(kls);
+        const isGrad = suggested === '__LULUS__';
+        return `
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+            <div>
+              <p class="font-extrabold text-slate-800">Kelas ${kls}</p>
+              <p class="text-[11px] text-slate-500">${count} siswa</p>
+            </div>
+            <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+            <div class="w-48 space-y-1">
+              <select data-from-kelas="${kls}" onchange="toggleCustomNextKelas(this)" class="kelas-map-select w-full px-2.5 py-1.5 rounded-xl border border-slate-200 font-bold bg-white">
+                <option value="__TETAP__" ${!isGrad && suggested === kls ? 'selected' : ''}>Tetap (${kls})</option>
+                ${!isGrad && suggested !== kls ? `<option value="${suggested}" selected>Naik ke ${suggested}</option>` : ''}
+                <option value="__CUSTOM__">Ketik Kelas Tujuan...</option>
+                <option value="__LULUS__" ${isGrad ? 'selected' : ''}>Lulus / Hapus dari Aktif</option>
+              </select>
+              <input type="text" data-custom-for="${kls}" placeholder="Nama kelas baru..." class="hidden w-full px-2.5 py-1 rounded-lg border border-indigo-300 text-xs font-bold">
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('modalKenaikanKelas').classList.remove('hidden');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function toggleCustomNextKelas(sel) {
+      const fromKls = sel.getAttribute('data-from-kelas');
+      const customInp = document.querySelector(`input[data-custom-for="${fromKls}"]`);
+      if (!customInp) return;
+      customInp.classList.toggle('hidden', sel.value !== '__CUSTOM__');
+      if (sel.value === '__CUSTOM__') customInp.focus();
+    }
+
+    function closeModalKenaikanKelas() {
+      document.getElementById('modalKenaikanKelas').classList.add('hidden');
+    }
+
+    async function prosesKenaikanKelasMassal(e) {
+      e.preventDefault();
+      if (guardGuruAccess('mengelola kenaikan kelas massal')) return;
+
+      const selects = Array.from(document.querySelectorAll('.kelas-map-select'));
+      const mapping = {};
+      for (const sel of selects) {
+        const fromKls = sel.getAttribute('data-from-kelas');
+        let target = sel.value;
+        if (target === '__CUSTOM__') {
+          const customInp = document.querySelector(`input[data-custom-for="${fromKls}"]`);
+          target = (customInp?.value || '').trim();
+          if (!target) return showAlert('Kelas Tujuan Kosong', `Isi nama kelas baru untuk kelas ${fromKls}.`);
+        }
+        mapping[fromKls] = target;
+      }
+
+      const ok = await showConfirm('Konfirmasi Kenaikan Kelas', 'Perubahan kelas akan diterapkan ke seluruh siswa terpilih dan disinkronkan ke Cloud. Lanjutkan?');
+      if (!ok) return;
+
+      let naikCount = 0;
+      let lulusCount = 0;
+      const now = Date.now();
+      const updatedSiswa = [];
+
+      for (const s of siswaData) {
+        const oldKls = s.kelas || '-';
+        const dest = mapping[oldKls];
+        if (!dest || dest === '__TETAP__') {
+          updatedSiswa.push(s);
+        } else if (dest === '__LULUS__') {
+          deletedRecords.siswa[String(s.nisn)] = now;
+          lulusCount++;
+        } else {
+          updatedSiswa.push({ ...s, kelas: dest, updatedAt: now });
+          naikCount++;
+        }
+      }
+
+      siswaData = updatedSiswa;
+      await saveAllData();
+      await triggerAutoSync('syncSiswa', siswaData);
+
+      closeModalKenaikanKelas();
+      populateKelasFilters();
+      renderSiswaTable();
+      renderKartuPrint();
+      renderRekapTable();
+      recordAudit('KENAIKAN_KELAS', `Kenaikan kelas massal: ${naikCount} siswa naik kelas, ${lulusCount} siswa lulus.`);
+      showAlert('Kenaikan Kelas Selesai', `Berhasil memproses ${naikCount} siswa naik kelas dan ${lulusCount} siswa lulus/diarsipkan.`);
+    }
 
     // --- PENJAGA HAK AKSES (RBAC GUARD) ---
     function isLimitedPresensiRole() {
@@ -1080,7 +1282,7 @@
       if (getEffectiveRole() === 'public_kiosk') return;
       const nisn = document.getElementById('selectSiswaAbsen').value;
       const tanggal = document.getElementById('inputTanggalAbsen').value;
-      const jenis = document.getElementById('selectStatusAbsen').value; // Izin | Sakit | Alpha
+      const jenis = document.getElementById('selectStatusAbsen').value;
       const alasan = document.getElementById('inputAlasanAbsen').value.trim();
 
       const siswa = getScopedSiswa().find(s => s.nisn === nisn);
@@ -1091,7 +1293,6 @@
       const statusLabel = `${jenis} (Manual)`;
       const ketLabel = alasan ? `${jenis}: ${alasan}` : `Dicatat oleh ${currentUserName || 'Admin'}`;
 
-      // Hapus entri Izin/Sakit/Alpha sebelumnya di tanggal yang sama agar tidak ganda
       logPresensi = logPresensi.filter(l => !(l.id === nisn && getLogIsoDate(l) === tanggal && /^(Izin|Sakit|Alpha)/i.test(l.status)));
 
       const logEntry = {
@@ -1186,6 +1387,7 @@
 
     // --- STORAGE PERSISTENCE ---
     async function saveAllData() {
+      pruneExpiredLocalLogs();
       const payload = {
         appConfig,
         targetSchoolGPS,
@@ -1203,9 +1405,11 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       } catch (e) {
-        auditLogs = auditLogs.slice(0, 30);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...payload, auditLogs }));
+        auditLogs = auditLogs.slice(0, 20);
+        pruneExpiredLocalLogs(14);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...payload, logPresensi, auditLogs }));
       }
+      updateStorageUsageUI();
     }
 
     function applyLoadedState(parsed) {
@@ -1228,6 +1432,7 @@
       if (Array.isArray(parsed.offlineSyncQueue)) offlineSyncQueue = parsed.offlineSyncQueue;
       if (Array.isArray(parsed.auditLogs)) auditLogs = parsed.auditLogs;
       uploadedLogoDataUrl = appConfig.schoolLogo || DEFAULT_LOGO_SVG;
+      pruneExpiredLocalLogs();
     }
 
     function loadAllData() {
@@ -1299,7 +1504,7 @@
         renderAllViews();
         if (appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
           if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
-          silentPullFromCloud();
+          silentPullFromCloud(getCurrentSelectedYM());
         }
       } else {
         failedLoginAttempts++;
@@ -1625,7 +1830,7 @@
       return { valid: true, id: clean };
     }
 
-    // --- GPS & GEOFENCING (ZERO BYPASS) ---
+    // --- GPS & GEOFENCING ---
     function initGPS() {
       const statusBadge = document.getElementById('gpsStatusBadge');
       const coordText = document.getElementById('gpsCoordText');
@@ -2220,7 +2425,7 @@
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
                 <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V8.6</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V8.7</div>
             </div>
           `;
         }
@@ -2243,7 +2448,7 @@
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V8.6</span>
+              <span>V8.7</span>
             </div>
           </div>
         `;
@@ -2338,13 +2543,26 @@
       return 'H';
     }
 
-    function renderRekapTable() {
-      const type = document.getElementById('rekapTypeFilter')?.value || 'bulanan';
+    function getCurrentSelectedYM() {
       const now = new Date();
       const defaultYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const picker = document.getElementById('rekapMonthPicker');
       if (picker && !picker.value) picker.value = defaultYM;
-      const monthVal = picker?.value || defaultYM;
+      return picker?.value || defaultYM;
+    }
+
+    async function onRekapMonthChange() {
+      const ym = getCurrentSelectedYM();
+      renderRekapTable();
+      if (appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://') && !loadedMonthsCache.has(ym)) {
+        await silentPullFromCloud(ym);
+      }
+    }
+
+    function renderRekapTable() {
+      const type = document.getElementById('rekapTypeFilter')?.value || 'bulanan';
+      const now = new Date();
+      const monthVal = getCurrentSelectedYM();
 
       const filterKelas = document.getElementById('rekapKelasFilter')?.value || 'Semua';
       const searchVal = (document.getElementById('rekapSearchSiswa')?.value || '').toLowerCase();
@@ -2748,9 +2966,10 @@
       appConfig.gsheetUrl = document.getElementById('gsheetUrl').value.trim();
       appConfig.apiToken = document.getElementById('apiSecurityToken').value.trim();
       appConfig.autoSync = document.getElementById('toggleAutoSync').checked;
+      appConfig.localRetentionDays = Number(document.getElementById('localRetentionDays')?.value ?? 45);
       await saveAllData();
       updateCloudIndicator();
-      showAlert('Konfigurasi Disimpan', 'URL Endpoint dan Secret Key HMAC-SHA256 telah disimpan.');
+      showAlert('Konfigurasi Disimpan', 'URL Endpoint, Secret Key HMAC-SHA256, dan pengaturan auto-arsip lokal telah disimpan.');
     }
 
     function exportDataJSON() {
@@ -2780,7 +2999,7 @@
       reader.readAsText(file);
     }
 
-    // --- 2-WAY CLOUD SYNCHRONIZATION ENGINE (ANTI-RESURRECTION & 6-SHEET) ---
+    // --- 2-WAY CLOUD SYNCHRONIZATION ENGINE (FILTER PULL PER BULAN) ---
     function createSecureEnvelope(payloadObj) {
       const enrichedPayload = { ...payloadObj, actorRole: getEffectiveRole() || 'guest' };
       const payloadStr = JSON.stringify(enrichedPayload);
@@ -2922,15 +3141,17 @@
       }
     }
 
-    async function silentPullFromCloud() {
+    async function silentPullFromCloud(targetMonthYM = '') {
       const url = appConfig.gsheetUrl;
       if (!url || !url.startsWith('https://')) return;
+      const ym = targetMonthYM || getCurrentSelectedYM();
       try {
-        updateCloudIndicator("Auto-Syncing...", true);
+        updateCloudIndicator(`Sync (${ym})...`, true);
         const sig = CryptoJS.HmacSHA256("GET_DATA", appConfig.apiToken).toString();
-        const res = await fetch(`${url}?action=getData&sig=${sig}&_t=${Date.now()}`, { redirect: 'follow', cache: 'no-store' });
+        const res = await fetch(`${url}?action=getData&month=${encodeURIComponent(ym)}&sig=${sig}&_t=${Date.now()}`, { redirect: 'follow', cache: 'no-store' });
         const result = await parseGasJsonResponse(res);
         if (result.status === 'success') {
+          loadedMonthsCache.add(ym);
           if (Array.isArray(result.siswaData)) {
             siswaData = result.siswaData
               .filter(s => s.nisn)
@@ -2982,7 +3203,7 @@
           refreshAllUI();
           syncSesiModeUI();
           renderAllViews();
-          updateCloudIndicator("Synced ✔", true);
+          updateCloudIndicator(`Synced (${ym}) ✔`, true);
         } else {
           updateCloudIndicator("Auth Failed", false);
         }
@@ -2991,18 +3212,21 @@
       }
     }
 
-    async function pullDataFromCloud() {
+    async function pullDataFromCloud(pullAllHistory = false) {
       const url = appConfig.gsheetUrl;
       if (!url || !url.startsWith('https://')) {
         return showAlert('URL Belum Diatur', 'Masukkan URL Web App Google Apps Script di menu Security & Cloud.');
       }
+      const ym = pullAllHistory ? '' : getCurrentSelectedYM();
       try {
-        updateCloudIndicator("Pulling...", true);
+        updateCloudIndicator(pullAllHistory ? "Pulling All..." : `Pulling (${ym})...`, true);
         const sig = CryptoJS.HmacSHA256("GET_DATA", appConfig.apiToken).toString();
-        const res = await fetch(`${url}?action=getData&sig=${sig}&_t=${Date.now()}`, { redirect: 'follow', cache: 'no-store' });
+        const monthQuery = ym ? `&month=${encodeURIComponent(ym)}` : '';
+        const res = await fetch(`${url}?action=getData${monthQuery}&sig=${sig}&_t=${Date.now()}`, { redirect: 'follow', cache: 'no-store' });
         const result = await parseGasJsonResponse(res);
 
         if (result.status === 'success') {
+          if (ym) loadedMonthsCache.add(ym);
           if (Array.isArray(result.siswaData)) siswaData = result.siswaData.filter(s => s.nisn).map(normalizeSiswaRecord);
           if (Array.isArray(result.guruData)) {
             guruData = result.guruData.filter(g => g.nip).map(g => ({
@@ -3010,11 +3234,19 @@
             }));
           }
           if (Array.isArray(result.logPresensi)) {
-            logPresensi = result.logPresensi.filter(l => l.id).map(l => ({
+            const incoming = result.logPresensi.filter(l => l.id).map(l => ({
               tanggal: String(l.tanggal || ''), waktu: String(l.waktu || ''), id: String(l.id),
               nama: String(l.nama || ''), status: String(l.status || ''), gps: String(l.gps || ''),
               timestamp: Number(l.timestamp) || Date.now()
             }));
+            if (pullAllHistory) {
+              logPresensi = incoming;
+            } else {
+              const logMap = new Map();
+              incoming.forEach(l => logMap.set(`${l.id}_${l.waktu}_${l.status}`, l));
+              logPresensi.forEach(l => logMap.set(`${l.id}_${l.waktu}_${l.status}`, l));
+              logPresensi = Array.from(logMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            }
           }
           if (Array.isArray(result.agendaData)) {
             agendaData = result.agendaData.filter(a => a.tanggal).map(a => ({
@@ -3042,7 +3274,7 @@
           syncSesiModeUI();
           renderAllViews();
           updateCloudIndicator("Synced ✔", true);
-          showAlert('Tarik Data Berhasil', `Berhasil memperbarui ${siswaData.length} siswa, ${guruData.length} guru, ${logPresensi.length} log, dan ${agendaData.length} agenda.`);
+          showAlert('Tarik Data Berhasil', `Berhasil memperbarui ${siswaData.length} siswa, ${guruData.length} guru, ${logPresensi.length} log${ym ? ` (Periode ${ym})` : ' (Semua Riwayat)'}, dan ${agendaData.length} agenda.`);
         } else {
           updateCloudIndicator("Auth Failed", false);
           showAlert('Gagal Verifikasi', result.message || 'Signature atau token tidak cocok.');
@@ -3055,7 +3287,7 @@
 
     async function pushDataToCloud(silent = false) {
       if (getEffectiveRole() === 'guru_walikelas') {
-        if (!silent) showAlert('Akses Dibatasi', 'Akun Guru hanya diizinkan mengirim log presensi saat scan.');
+        if (!silent) showAlert('Akses Ditolak', 'Akun Guru hanya diizinkan mengirim log presensi saat scan.');
         return false;
       }
       const url = appConfig.gsheetUrl;
@@ -3101,13 +3333,15 @@
       if (!url || !url.startsWith('https://')) {
         return showAlert('Konfigurasi Dibutuhkan', 'Atur URL Web App Google Apps Script di tab Security & Cloud.');
       }
+      const ym = getCurrentSelectedYM();
       try {
         updateCloudIndicator("2-Way Sync...", true);
         const sig = CryptoJS.HmacSHA256("GET_DATA", appConfig.apiToken).toString();
-        const resGet = await fetch(`${url}?action=getData&sig=${sig}`, { redirect: 'follow' });
+        const resGet = await fetch(`${url}?action=getData&month=${encodeURIComponent(ym)}&sig=${sig}`, { redirect: 'follow' });
         const cloud = await parseGasJsonResponse(resGet);
 
         if (cloud.status === 'success') {
+          loadedMonthsCache.add(ym);
           const mergedSiswaMap = new Map();
           (cloud.siswaData || []).forEach(s => { if (s.nisn) mergedSiswaMap.set(String(s.nisn), normalizeSiswaRecord(s)); });
           siswaData.forEach(localS => {
@@ -3175,7 +3409,7 @@
           syncSesiModeUI();
           renderAllViews();
           if (pushed) {
-            showAlert('Sync 2 Arah Berhasil!', `Database Cloud & Lokal tersinkronisasi (${siswaData.length} Siswa, ${guruData.length} Guru, ${logPresensi.length} Log, ${agendaData.length} Agenda).`);
+            showAlert('Sync 2 Arah Berhasil!', `Database Cloud & Lokal tersinkronisasi (${siswaData.length} Siswa, ${guruData.length} Guru, ${logPresensi.length} Log periode ${ym}, ${agendaData.length} Agenda).`);
           }
         } else {
           updateCloudIndicator("Auth Failed", false);
@@ -3189,7 +3423,7 @@
 
     function copyGasScriptCode() {
       const gasBackend = `// ============================================================================
-// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v8.6
+// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v8.7
 // ============================================================================
 
 const SECRET_TOKEN = "${appConfig.apiToken || 'ENTERPRISE_KEY_2026_SECURE'}";
@@ -3274,6 +3508,7 @@ function doGet(e) {
   const ss = setupSheets();
   const action = (e && e.parameter && e.parameter.action) || "";
   const sig = (e && e.parameter && e.parameter.sig) || "";
+  const monthFilter = String((e && e.parameter && e.parameter.month) || "").trim();
 
   const expectedSig = computeHmacSha256_("GET_DATA", SECRET_TOKEN);
   if (sig !== expectedSig) {
@@ -3281,11 +3516,15 @@ function doGet(e) {
   }
 
   if (action === "getData") {
+    let logs = readSheetObjects_(ss.getSheetByName(SHEET_LOG), ["tanggal", "id"]);
+    if (/^\\d{4}-\\d{2}$/.test(monthFilter)) {
+      logs = logs.filter(l => String(l.tanggal || l.waktu || "").indexOf(monthFilter) === 0);
+    }
     return jsonOut_({
       status: "success",
       siswaData: readSheetObjects_(ss.getSheetByName(SHEET_SISWA), ["nisn", "kelas"]),
       guruData: readSheetObjects_(ss.getSheetByName(SHEET_GURU), ["nip"]),
-      logPresensi: readSheetObjects_(ss.getSheetByName(SHEET_LOG), ["tanggal", "id"]),
+      logPresensi: logs,
       agendaData: readSheetObjects_(ss.getSheetByName(SHEET_AGENDA), ["tanggal"]),
       usersData: readSheetObjects_(ss.getSheetByName(SHEET_USERS), ["username", "kelasBinaan"]),
       settingsData: readSettingsObject_(ss.getSheetByName(SHEET_SETTINGS))
@@ -3345,7 +3584,7 @@ function doPost(e) {
     if (req.action === "appendLog" && req.data) {
       appendUniqueLog_(ss.getSheetByName(SHEET_LOG), req.data);
     } else if (req.action === "syncLog" && Array.isArray(req.data)) {
-      writeLogSheet_(ss.getSheetByName(SHEET_LOG), req.data);
+      mergeLogSheet_(ss.getSheetByName(SHEET_LOG), req.data);
     } else if (req.action === "syncSiswa" && Array.isArray(req.data)) {
       writeSiswaSheet_(ss.getSheetByName(SHEET_SISWA), req.data);
     } else if (req.action === "syncGuru" && Array.isArray(req.data)) {
@@ -3359,14 +3598,14 @@ function doPost(e) {
     } else if (req.action === "syncAll") {
       if (Array.isArray(req.siswaData))   writeSiswaSheet_(ss.getSheetByName(SHEET_SISWA), req.siswaData);
       if (Array.isArray(req.guruData))    writeGuruSheet_(ss.getSheetByName(SHEET_GURU), req.guruData);
-      if (Array.isArray(req.logPresensi)) writeLogSheet_(ss.getSheetByName(SHEET_LOG), req.logPresensi);
+      if (Array.isArray(req.logPresensi)) mergeLogSheet_(ss.getSheetByName(SHEET_LOG), req.logPresensi);
       if (Array.isArray(req.agendaData))  writeAgendaSheet_(ss.getSheetByName(SHEET_AGENDA), req.agendaData);
       if (Array.isArray(req.usersData))   writeUsersSheet_(ss.getSheetByName(SHEET_USERS), req.usersData);
       if (req.settingsData && typeof req.settingsData === "object") writeSettingsSheet_(ss.getSheetByName(SHEET_SETTINGS), req.settingsData);
     }
 
     SpreadsheetApp.flush();
-    return jsonOut_({ status: "success", message: "Data tersimpan aman ke Google Sheets & Drive v8.6" });
+    return jsonOut_({ status: "success", message: "Data tersimpan aman ke Google Sheets & Drive v8.7" });
   } catch (err) {
     return jsonOut_({ status: "error", message: err.toString() });
   } finally {
@@ -3399,6 +3638,43 @@ function appendUniqueLog_(sheet, d) {
     String(d.gps || ""),
     Number(d.timestamp || Date.now())
   ]]);
+}
+
+function mergeLogSheet_(sheet, incomingList) {
+  if (!sheet || !Array.isArray(incomingList)) return;
+  const existing = readSheetObjects_(sheet, ["tanggal", "id"]);
+  const map = {};
+  existing.forEach(l => {
+    const key = String(l.id) + "_" + String(l.waktu) + "_" + String(l.status);
+    map[key] = [
+      String(l.tanggal || ""),
+      String(l.waktu || ""),
+      String(l.id || ""),
+      String(l.nama || ""),
+      String(l.status || ""),
+      String(l.gps || ""),
+      Number(l.timestamp || Date.now())
+    ];
+  });
+  incomingList.forEach(l => {
+    const key = String(l.id) + "_" + String(l.waktu) + "_" + String(l.status);
+    map[key] = [
+      String(l.tanggal || ""),
+      String(l.waktu || ""),
+      String(l.id || ""),
+      String(l.nama || ""),
+      String(l.status || ""),
+      String(l.gps || ""),
+      Number(l.timestamp || Date.now())
+    ];
+  });
+  const rows = Object.keys(map).map(k => map[k]);
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
+  if (rows.length === 0) return;
+  sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
+  sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
+  sheet.getRange(2, 1, rows.length, 7).setValues(rows);
 }
 
 function saveBase64PhotoToDrive_(nisn, dataUrl) {
@@ -3465,25 +3741,6 @@ function writeGuruSheet_(sheet, list) {
   ]);
   sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
   sheet.getRange(2, 1, rows.length, 4).setValues(rows);
-}
-
-function writeLogSheet_(sheet, list) {
-  if (!sheet || !Array.isArray(list)) return;
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
-  if (list.length === 0) return;
-  const rows = list.map(l => [
-    String(l.tanggal || ""),
-    String(l.waktu || ""),
-    String(l.id || ""),
-    String(l.nama || ""),
-    String(l.status || ""),
-    String(l.gps || ""),
-    Number(l.timestamp || Date.now())
-  ]);
-  sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 1, rows.length, 7).setValues(rows);
 }
 
 function writeAgendaSheet_(sheet, list) {
@@ -3580,7 +3837,7 @@ function jsonOut_(obj) {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Kode Backend v8.6 Disalin', 'Kode Google Apps Script v8.6 telah disalin ke clipboard.');
+      showAlert('Kode Backend v8.7 Disalin', 'Kode Google Apps Script v8.7 telah disalin ke clipboard. Tempel di editor Apps Script lalu Deploy ulang sebagai New Version.');
     }
 
     // --- UI & NAVIGATION HELPERS ---
@@ -3640,6 +3897,9 @@ function jsonOut_(obj) {
       document.getElementById('gsheetUrl').value = appConfig.gsheetUrl || '';
       document.getElementById('apiSecurityToken').value = appConfig.apiToken || '';
       document.getElementById('toggleAutoSync').checked = !!appConfig.autoSync;
+      const retSel = document.getElementById('localRetentionDays');
+      if (retSel) retSel.value = String(appConfig.localRetentionDays ?? 45);
+      updateStorageUsageUI();
       updateSesiDisplayUI();
       updateCloudIndicator();
     }
@@ -3702,12 +3962,11 @@ function jsonOut_(obj) {
       syncSesiModeUI();
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
-      // Pulihkan sesi login / mode presensi sebelumnya jika halaman di-refresh
       restoreActiveSession();
 
       if (GITHUB_DEFAULT_CONFIG.autoPullOnLoad && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
         if (offlineSyncQueue.length > 0) await flushOfflineQueue(false);
-        silentPullFromCloud();
+        silentPullFromCloud(getCurrentSelectedYM());
       }
 
       setInterval(() => {

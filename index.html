@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Presensi QR Enterprise v8.9 - High-Speed Camera Selector, PDF Matrix & Cloud</title>
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.json">
+  <title>Presensi QR Enterprise v9.0 - PWA Offline Kiosk, Camera Selector & Cloud</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -38,7 +42,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v8.9 • HIGH-SPEED SCANNER & PDF MATRIX</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.0 • PWA OFFLINE KIOSK & CLOUD</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -80,13 +84,18 @@
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v8.9</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.0</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2.5 flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div id="pwaStatusBadge" class="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-[11px] font-bold text-indigo-700" title="Status PWA Offline Cache">
+            <i data-lucide="hard-drive-download" class="w-3 h-3"></i>
+            <span id="pwaStatusText">PWA Cache...</span>
+          </div>
+
           <div id="cloudStatusBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-600">
             <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
             <span id="cloudStatusText">Local Mode</span>
@@ -593,9 +602,14 @@
               <h3 class="font-extrabold text-slate-900 text-sm">Sinkronisasi 2-Arah Google Sheets & Retensi Log 12 Bulan</h3>
               <p class="text-xs text-slate-500">Filter pull bulanan otomatis + auto-arsip memori lokal mencegah browser penuh</p>
             </div>
-            <button onclick="copyGasScriptCode()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
-              <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v8.7
-            </button>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="forceUpdatePwaCache()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Perbarui Cache Offline PWA
+              </button>
+              <button onclick="copyGasScriptCode()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
+                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v8.7
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -1003,7 +1017,7 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v8.9 - CAMERA SELECTOR, 20 FPS, PDF MATRIX & CLOUD
+    // PRESENSI QR ENTERPRISE v9.0 - PWA OFFLINE KIOSK, CAMERA SELECTOR & CLOUD
     // =========================================================================
 
     const GITHUB_DEFAULT_CONFIG = {
@@ -1020,6 +1034,56 @@
 
     function hashPassword(raw) {
       return CryptoJS.SHA256('QR_SALT_2026_' + String(raw)).toString();
+    }
+
+    // --- SERVICE WORKER / PWA REGISTRATION ---
+    function updatePwaStatusUI(label, isReady = true) {
+      const badge = document.getElementById('pwaStatusBadge');
+      const txt = document.getElementById('pwaStatusText');
+      if (!badge || !txt) return;
+      txt.innerText = label;
+      badge.className = isReady
+        ? 'hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-700'
+        : 'hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-700';
+    }
+
+    async function registerPwaServiceWorker() {
+      if (!('serviceWorker' in navigator)) {
+        updatePwaStatusUI('PWA Tidak Didukung', false);
+        return;
+      }
+      try {
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        if (reg.active) {
+          updatePwaStatusUI('Offline Ready ✔', true);
+        } else {
+          updatePwaStatusUI('Caching PWA...', false);
+          navigator.serviceWorker.ready.then(() => updatePwaStatusUI('Offline Ready ✔', true));
+        }
+      } catch (err) {
+        updatePwaStatusUI('PWA Local Only', false);
+      }
+    }
+
+    async function forceUpdatePwaCache() {
+      if (!('serviceWorker' in navigator)) {
+        return showAlert('Tidak Didukung', 'Browser ini tidak mendukung Service Worker PWA.');
+      }
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const r of regs) {
+          await r.update();
+        }
+        const keys = await caches.keys();
+        for (const k of keys) {
+          await caches.delete(k);
+        }
+        await registerPwaServiceWorker();
+        showAlert('Cache PWA Diperbarui', 'Seluruh file offline aplikasi berhasil diperbarui. Halaman akan dimuat ulang.');
+        setTimeout(() => window.location.reload(), 1200);
+      } catch (e) {
+        showAlert('Gagal Update Cache', 'Pastikan koneksi internet aktif saat memperbarui cache PWA.');
+      }
     }
 
     // State Utama
@@ -1525,7 +1589,7 @@
         persistActiveSession();
         recordAudit('LOGIN', `Pengguna ${userVal} berhasil masuk (${user.role})`);
         renderAllViews();
-        if (appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+        if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
           if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
           silentPullFromCloud(getCurrentSelectedYM());
         }
@@ -2513,7 +2577,7 @@
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
                 <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V8.9</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.0</div>
             </div>
           `;
         }
@@ -2536,7 +2600,7 @@
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V8.9</span>
+              <span>V9.0</span>
             </div>
           </div>
         `;
@@ -2642,7 +2706,7 @@
     async function onRekapMonthChange() {
       const ym = getCurrentSelectedYM();
       renderRekapTable();
-      if (appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://') && !loadedMonthsCache.has(ym)) {
+      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://') && !loadedMonthsCache.has(ym)) {
         await silentPullFromCloud(ym);
       }
     }
@@ -2732,7 +2796,7 @@
 
     function exportMatriksBulananPDF() {
       if (!window.jspdf || !window.jspdf.jsPDF) {
-        return showAlert('Pustaka PDF Belum Siap', 'Pastikan koneksi internet aktif untuk memuat generator PDF.');
+        return showAlert('Pustaka PDF Belum Siap', 'Pastikan aplikasi pernah dibuka saat online agar modul PDF tersimpan di cache.');
       }
 
       const now = new Date();
@@ -2784,7 +2848,6 @@
       const kelasInfo = filterKelas === 'Semua' ? 'Semua Kelas' : `Kelas ${filterKelas}`;
       doc.text(`Filter: ${kelasInfo} | Total Siswa: ${filteredSiswa.length} | Keterangan: H = Hadir, T = Terlambat, I = Izin, S = Sakit, A = Alpha, - = Libur`, 14, 32);
 
-      // Kolom 1 - 31 tetap tampil lengkap
       const dayNums = Array.from({ length: 31 }, (_, i) => String(i + 1));
       const head = [['No', 'NISN', 'Nama Siswa', 'Kls', ...dayNums, 'H', 'I', 'S', 'A']];
       const daysInMonth = new Date(year, month, 0).getDate();
@@ -2907,7 +2970,6 @@
         }
       });
 
-      // Blok Tanda Tangan di Halaman Akhir
       let finalY = (doc.lastAutoTable?.finalY || 160) + 8;
       if (finalY > 175) {
         doc.addPage();
@@ -3268,7 +3330,7 @@
       const blob = new Blob([JSON.stringify({ siswaData, guruData, logPresensi, agendaData, userCredentials, deletedRecords, appConfig }, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `Backup_Enterprise_v8_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `Backup_Enterprise_v9_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
     }
 
@@ -3314,6 +3376,11 @@
       const dot = document.getElementById('cloudStatusDot');
       const txt = document.getElementById('cloudStatusText');
       if (!dot || !txt) return;
+      if (!navigator.onLine) {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        txt.innerText = offlineSyncQueue.length > 0 ? `Offline (${offlineSyncQueue.length} Antrean)` : 'Offline Mode';
+        return;
+      }
       if (!appConfig.gsheetUrl) {
         dot.className = 'w-2 h-2 rounded-full bg-slate-400';
         txt.innerText = 'Local Mode';
@@ -3332,6 +3399,7 @@
       if (!navigator.onLine) {
         offlineSyncQueue.push(envelope);
         await saveAllData();
+        updateCloudIndicator();
         return;
       }
 
@@ -3378,9 +3446,14 @@
         }
       }
       await saveAllData();
+      updateCloudIndicator(offlineSyncQueue.length === 0 ? "Synced ✔" : `Queued (${offlineSyncQueue.length})`, offlineSyncQueue.length === 0);
     }
 
-    window.addEventListener('online', () => flushOfflineQueue(false));
+    window.addEventListener('online', () => {
+      updateCloudIndicator();
+      flushOfflineQueue(false);
+    });
+    window.addEventListener('offline', () => updateCloudIndicator());
 
     function copyShareableSetupLink() {
       if (!appConfig.gsheetUrl || !appConfig.gsheetUrl.startsWith('https://')) {
@@ -3434,6 +3507,10 @@
     }
 
     async function silentPullFromCloud(targetMonthYM = '') {
+      if (!navigator.onLine) {
+        updateCloudIndicator();
+        return;
+      }
       const url = appConfig.gsheetUrl;
       if (!url || !url.startsWith('https://')) return;
       const ym = targetMonthYM || getCurrentSelectedYM();
@@ -4077,7 +4154,7 @@ function writeSettingsSheet_(sheet, obj) {
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
   if (keys.length === 0) return;
-  const rows = keys.map(k => [String(k), String(merged[k] === undefined || merged[k] === null ? "" : merged[k])]);
+  const rows = keys.map(k => [String(k), String(merged[k] === undefined ? "" : merged[k])]);
   sheet.getRange(2, 1, rows.length, 2).setNumberFormat("@");
   sheet.getRange(2, 1, rows.length, 2).setValues(rows);
 }
@@ -4087,41 +4164,59 @@ function readSettingsObject_(sheet) {
   const values = sheet.getDataRange().getValues();
   if (values.length <= 1) return {};
   const obj = {};
-  values.slice(1).forEach(r => {
-    if (r[0] !== "" && r[0] !== null) obj[String(r[0])] = String(r[1] === undefined || r[1] === null ? "" : r[1]);
-  });
+  for (let r = 1; r < values.length; r++) {
+    const k = String(values[r][0] || "").trim();
+    if (k) obj[k] = String(values[r][1] === undefined ? "" : values[r][1]);
+  }
   return obj;
 }
 
-function readSheetObjects_(sheet, stringKeys) {
+function readSheetObjects_(sheet, stringCols) {
   if (!sheet) return [];
   const values = sheet.getDataRange().getValues();
   if (values.length <= 1) return [];
   const headers = values[0];
-  return values.slice(1)
-    .filter(row => row.some(cell => cell !== "" && cell !== null))
-    .map(row => {
-      let obj = {};
-      headers.forEach((h, i) => {
-        obj[h] = (stringKeys && stringKeys.indexOf(h) !== -1) ? String(row[i]) : row[i];
-      });
-      return obj;
-    });
+  const strSet = {};
+  (stringCols || []).forEach(c => { strSet[c] = true; });
+  const list = [];
+  for (let r = 1; r < values.length; r++) {
+    if (values[r].join("").trim() === "") continue;
+    const obj = {};
+    for (let c = 0; c < headers.length; c++) {
+      const h = headers[c];
+      let val = values[r][c];
+      if (val instanceof Date) {
+        if (h === "tanggal") val = Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd");
+        else if (h === "waktu") val = Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+        else val = val.toISOString();
+      } else if (strSet[h]) {
+        val = String(val === null || val === undefined ? "" : val).trim();
+      }
+      obj[h] = val;
+    }
+    list.push(obj);
+  }
+  return list;
 }
 
 function computeHmacSha256_(message, secret) {
-  const rawSig = Utilities.computeHmacSha256Signature(message, secret);
-  return rawSig.map(b => ('0' + (b & 0xFF).toString(16)).slice(-2)).join('');
+  const sigBytes = Utilities.computeHmacSha256Signature(
+    Utilities.newBlob(String(message), "text/plain").getBytes(),
+    Utilities.newBlob(String(secret), "text/plain").getBytes()
+  );
+  return sigBytes.map(b => ("0" + (b < 0 ? b + 256 : b).toString(16)).slice(-2)).join("");
 }
 
 function computeSha256_(message) {
-  const rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, message);
-  return rawHash.map(b => ('0' + (b & 0xFF).toString(16)).slice(-2)).join('');
+  const digest = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    Utilities.newBlob(String(message), "text/plain").getBytes()
+  );
+  return digest.map(b => ("0" + (b < 0 ? b + 256 : b).toString(16)).slice(-2)).join("");
 }
 
 function jsonOut_(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }`;
       const ta = document.createElement('textarea');
       ta.value = gasBackend;
@@ -4129,71 +4224,65 @@ function jsonOut_(obj) {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Kode Backend v8.7 Disalin', 'Kode Google Apps Script v8.7 telah disalin ke clipboard. Tempel di editor Apps Script lalu Deploy ulang sebagai New Version.');
+      showAlert('Kode Apps Script v8.7 Disalin!', 'Paste di script.google.com, jalankan fungsi "testSetup" 1x, lalu Deploy sebagai Web App (Akses: Anyone).');
     }
 
-    // --- UI & NAVIGATION HELPERS ---
-    function switchTab(tabName) {
-      const activeRole = getEffectiveRole();
-      const allowedTabs = activeRole === 'public_kiosk' ? ['tabBtn_scanner'] : (activeRole === 'guru_walikelas' ? ['tabBtn_scanner', 'tabBtn_rekap'] : null);
-      const allowedSections = activeRole === 'public_kiosk' ? ['tab_scanner'] : (activeRole === 'guru_walikelas' ? ['tab_scanner', 'tab_rekap'] : null);
-      if (activeRole === 'public_kiosk' && tabName !== 'scanner') {
-        tabName = 'scanner';
-      } else if (activeRole === 'guru_walikelas' && tabName !== 'scanner' && tabName !== 'rekap') {
-        tabName = 'scanner';
+    // --- UI HELPERS & NAVIGATION ---
+    function switchTab(tabId) {
+      const role = getEffectiveRole();
+      if (role === 'public_kiosk' && tabId !== 'scanner') {
+        tabId = 'scanner';
       }
-      activeTabState = tabName;
-      persistActiveSession();
-
-      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
-      document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.className = 'nav-tab px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap';
+      if (role === 'guru_walikelas' && !['scanner', 'rekap'].includes(tabId)) {
+        tabId = 'scanner';
+      }
+      activeTabState = tabId;
+      document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(b => {
+        b.classList.remove('bg-indigo-600', 'text-white');
+        b.classList.add('text-slate-600');
       });
-      if (allowedTabs) {
-        document.querySelectorAll('.nav-tab').forEach(btn => {
-          if (!allowedTabs.includes(btn.id)) btn.classList.add('hidden');
-        });
+      document.getElementById(`tab_${tabId}`)?.classList.remove('hidden');
+      const activeBtn = document.getElementById(`tabBtn_${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('text-slate-600');
       }
-      const targetSec = document.getElementById(`tab_${tabName}`);
-      const targetBtn = document.getElementById(`tabBtn_${tabName}`);
-      if (targetSec && (!allowedSections || allowedSections.includes(targetSec.id))) {
-        targetSec.classList.remove('hidden');
-      }
-      if (targetBtn) targetBtn.className = 'nav-tab px-3.5 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-1.5 whitespace-nowrap';
-
-      if (tabName === 'analitik' && !isLimitedPresensiRole()) initCharts();
-      if (tabName === 'kartu' && !isLimitedPresensiRole()) renderKartuPrint();
+      persistActiveSession();
+      if (tabId === 'analitik') initCharts();
+      if (tabId === 'kartu') renderKartuPrint();
     }
 
     function populateKelasFilters() {
-      const kelasSet = [...new Set(getScopedSiswa().map(s => s.kelas).filter(Boolean))].sort();
+      const scoped = getScopedSiswa();
+      const kelasList = [...new Set(scoped.map(s => s.kelas || '-'))].sort();
       ['filterKelasSiswa', 'filterKelasKartu', 'rekapKelasFilter'].forEach(id => {
-        const sel = document.getElementById(id);
-        if (!sel) return;
-        const prev = sel.value;
-        sel.innerHTML = '<option value="Semua">Semua Kelas</option>' + kelasSet.map(k => `<option value="${k}">${k}</option>`).join('');
-        if (kelasSet.includes(prev)) sel.value = prev;
+        const el = document.getElementById(id);
+        if (!el) return;
+        const prev = el.value;
+        el.innerHTML = '<option value="Semua">Semua Kelas</option>' + kelasList.map(k => `<option value="${k}">Kelas ${k}</option>`).join('');
+        if ([...el.options].some(o => o.value === prev)) el.value = prev;
       });
     }
 
     function refreshAllUI() {
       document.getElementById('headerSchoolName').innerText = appConfig.schoolName;
-      document.getElementById('headerSchoolLogo').src = appConfig.schoolLogo || DEFAULT_LOGO_SVG;
-      document.getElementById('previewLogoSekolah').src = appConfig.schoolLogo || DEFAULT_LOGO_SVG;
+      document.getElementById('headerSchoolLogo').src = uploadedLogoDataUrl;
+      document.getElementById('previewLogoSekolah').src = uploadedLogoDataUrl;
       document.getElementById('profNamaSekolah').value = appConfig.schoolName;
       document.getElementById('profKepalaSekolah').value = appConfig.headmaster;
       document.getElementById('profAlamat').value = appConfig.address;
+      document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters;
       document.getElementById('profLat').value = targetSchoolGPS.lat;
       document.getElementById('profLng').value = targetSchoolGPS.lng;
-      document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters;
-      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl || '';
-      document.getElementById('apiSecurityToken').value = appConfig.apiToken || '';
-      document.getElementById('toggleAutoSync').checked = !!appConfig.autoSync;
-      const retSel = document.getElementById('localRetentionDays');
-      if (retSel) retSel.value = String(appConfig.localRetentionDays ?? 45);
-      updateStorageUsageUI();
+      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl;
+      document.getElementById('apiSecurityToken').value = appConfig.apiToken;
+      document.getElementById('toggleAutoSync').checked = appConfig.autoSync;
+      const retEl = document.getElementById('localRetentionDays');
+      if (retEl) retEl.value = String(appConfig.localRetentionDays ?? 45);
       updateSesiDisplayUI();
       updateCloudIndicator();
+      updateStorageUsageUI();
     }
 
     function renderAllViews() {
@@ -4205,18 +4294,9 @@ function jsonOut_(obj) {
       renderRekapTable();
       renderCalendar();
       renderAgendaList();
-      renderAnalytics();
       renderUsersTable();
       renderResetRequestsTable();
-    }
-
-    function speakFemaleVoice(text) {
-      if (!('speechSynthesis' in window)) return;
-      if (!document.getElementById('toggleVoiceNotif')?.checked) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'id-ID';
-      window.speechSynthesis.speak(u);
+      renderAnalytics();
     }
 
     function showAlert(title, msg) {
@@ -4225,55 +4305,75 @@ function jsonOut_(obj) {
       document.getElementById('alertModal').classList.remove('hidden');
     }
 
-    function showConfirm(title, msg) {
+    function showConfirm(title, message) {
       return new Promise((resolve) => {
         const modal = document.getElementById('confirmModal');
         document.getElementById('confirmTitle').innerText = title;
-        document.getElementById('confirmMessage').innerText = msg;
+        document.getElementById('confirmMessage').innerText = message;
         modal.classList.remove('hidden');
+
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
 
         const cleanup = (result) => {
           modal.classList.add('hidden');
-          document.getElementById('confirmOkBtn').onclick = null;
-          document.getElementById('confirmCancelBtn').onclick = null;
+          okBtn.removeEventListener('click', onOk);
+          cancelBtn.removeEventListener('click', onCancel);
           resolve(result);
         };
+        const onOk = () => cleanup(true);
+        const onCancel = () => cleanup(false);
 
-        document.getElementById('confirmOkBtn').onclick = () => cleanup(true);
-        document.getElementById('confirmCancelBtn').onclick = () => cleanup(false);
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
       });
     }
 
-    // --- BOOTSTRAP ---
+    function speakFemaleVoice(text) {
+      const enabled = document.getElementById('toggleVoiceNotif')?.checked;
+      if (!enabled || !('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang = 'id-ID';
+        utt.rate = 1.05;
+        window.speechSynthesis.speak(utt);
+      } catch (e) {}
+    }
+
+    setInterval(() => {
+      const now = new Date();
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) clockEl.innerText = now.toTimeString().slice(0, 8);
+      if (document.getElementById('toggleAutoSesi')?.checked) {
+        const autoSesi = getAutoSesiByClock();
+        if (autoSesi !== aktifSesi) {
+          aktifSesi = autoSesi;
+          updateSesiButtonStyles();
+        }
+      }
+    }, 1000);
+
     window.addEventListener('DOMContentLoaded', async () => {
+      registerPwaServiceWorker();
       loadAllData();
       await applyUrlBootstrapParams();
       refreshAllUI();
-      renderAllViews();
-      initGPS();
       syncSesiModeUI();
+      initGPS();
       refreshCameraDevices(false);
+      if (!currentUserRole) {
+        restoreActiveSession();
+      }
+      renderAllViews();
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
-      restoreActiveSession();
-
-      if (GITHUB_DEFAULT_CONFIG.autoPullOnLoad && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
-        if (offlineSyncQueue.length > 0) await flushOfflineQueue(false);
-        silentPullFromCloud(getCurrentSelectedYM());
-      }
-
-      setInterval(() => {
-        const now = new Date();
-        const clk = document.getElementById('liveClock');
-        if (clk) clk.innerText = now.toTimeString().slice(0, 8);
-        if (document.getElementById('toggleAutoSesi')?.checked) {
-          const autoS = getAutoSesiByClock();
-          if (autoS !== aktifSesi) {
-            aktifSesi = autoS;
-            updateSesiButtonStyles();
-          }
+      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+        if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
+        if (GITHUB_DEFAULT_CONFIG.autoPullOnLoad !== false) {
+          silentPullFromCloud(getCurrentSelectedYM());
         }
-      }, 1000);
+      }
     });
   </script>
 </body>

@@ -1158,11 +1158,12 @@
     let lastScanTimestamps = {};
     let loadedMonthsCache = new Set();
 
-    // --- PENGECUALIAN AKSES SELURUH KELAS UNTUK GURU PJOK & PAI ---
+   
+// --- PENGECUALIAN AKSES SELURUH KELAS UNTUK GURU PJOK, PAI & PIKET ---
     function isExemptMapelAllClasses(textStr) {
       const s = String(textStr || '').trim();
       if (!s) return false;
-      return /\b(pjok|pai|penjas|penjasorkes|olahraga|agama\s*islam|semua\s*kelas|all)\b/i.test(s) || /(pjok|pai)/i.test(s);
+      return /\b(pjok|pai|piket|penjas|penjasorkes|olahraga|agama\s*islam|semua\s*kelas|all)\b/i.test(s) || /(pjok|pai|piket)/i.test(s);
     }
 
     function hasAllClassesAccess() {
@@ -1178,6 +1179,7 @@
     function getGuruBadgeText() {
       if (hasAllClassesAccess()) {
         const combined = `${currentUserKelasBinaan} ${currentUserName} ${currentUserUsername}`.toUpperCase();
+        if (combined.includes('PIKET')) return 'GURU PIKET (SEMUA KELAS)';
         if (combined.includes('PJOK') && combined.includes('PAI')) return 'GURU PJOK & PAI (SEMUA KELAS)';
         if (combined.includes('PJOK') || combined.includes('PENJAS')) return 'GURU PJOK (SEMUA KELAS)';
         if (combined.includes('PAI') || combined.includes('AGAMA')) return 'GURU PAI (SEMUA KELAS)';
@@ -1866,7 +1868,7 @@
         );
         let binaanBadge = '';
         if (isAllGuru) {
-          binaanBadge = `<span class="ml-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Semua Kelas (PJOK/PAI)</span>`;
+         binaanBadge = `<span class="ml-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Semua Kelas (PJOK/PAI/Piket)</span>`;
         } else if (u.kelasBinaan) {
           binaanBadge = `<span class="ml-1 px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">Kelas ${u.kelasBinaan}</span>`;
         }

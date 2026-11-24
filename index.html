@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
-  <title>Presensi QR Enterprise v9.2 - PWA Offline Kiosk, Akses PJOK/PAI/Piket & Cloud</title>
+  <title>Presensi QR Enterprise v9.3 - Dual-Token Security, PWA Offline & Cloud</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -42,7 +42,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.2 • PWA OFFLINE KIOSK & CLOUD</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.3 • DUAL-TOKEN SECURITY & CLOUD</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -69,7 +69,7 @@
 
       <div class="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
         <button type="button" onclick="openModalForgotPassword()" class="text-indigo-400 hover:underline font-medium">Lupa Password?</button>
-        <span class="font-mono text-[11px] text-slate-500">admin / operator123 • user_admin / admin123</span>
+        <span class="font-mono text-[11px] text-slate-500">Dual-Token HMAC-SHA256</span>
       </div>
     </div>
   </div>
@@ -84,7 +84,7 @@
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.2</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.3</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
@@ -596,46 +596,53 @@
           </div>
         </div>
 
-        <!-- Cloud 2-Way Sync & Retensi Log -->
+        <!-- Cloud 2-Way Sync & Dual-Token Security -->
         <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 class="font-extrabold text-slate-900 text-sm">Sinkronisasi 2-Arah Google Sheets & Retensi Log 12 Bulan</h3>
-              <p class="text-xs text-slate-500">Filter pull bulanan otomatis + auto-arsip memori lokal mencegah browser penuh</p>
+              <h3 class="font-extrabold text-slate-900 text-sm">Sinkronisasi 2-Arah Google Sheets & Dual-Token Security (Anti-Bocor)</h3>
+              <p class="text-xs text-slate-500">Pisahkan token Admin (akses penuh) dari token Scan/Piket (hanya catat presensi) tanpa menanamkan rahasia di GitHub</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="forceUpdatePwaCache()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Perbarui Cache Offline PWA
               </button>
               <button onclick="copyGasScriptCode()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v9.2
+                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v9.3
               </button>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
             <div>
               <label class="font-bold text-slate-600 block mb-1">Google Apps Script Web App URL (/exec)</label>
               <input type="url" id="gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono">
             </div>
             <div>
-              <label class="font-bold text-slate-600 block mb-1">API Secret Token (HMAC-SHA256)</label>
-              <div class="flex gap-2">
-                <input type="text" id="apiSecurityToken" class="flex-1 px-3 py-2 rounded-xl border border-slate-200 font-mono">
-                <button type="button" onclick="generateRandomSecret()" class="px-3 py-2 bg-slate-100 rounded-xl font-bold">Acak</button>
+              <label class="font-bold text-indigo-700 block mb-1">1. Admin Secret Token (Full Akses)</label>
+              <div class="flex gap-1.5">
+                <input type="password" id="apiSecurityToken" placeholder="Token khusus Admin..." class="flex-1 px-3 py-2 rounded-xl border border-indigo-200 font-mono">
+                <button type="button" onclick="generateRandomSecret('apiSecurityToken', 'ADM_')" class="px-2.5 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold">Acak</button>
+              </div>
+            </div>
+            <div>
+              <label class="font-bold text-emerald-700 block mb-1">2. Scan / Piket Token (Khusus Absen)</label>
+              <div class="flex gap-1.5">
+                <input type="text" id="scanSecurityToken" placeholder="Token perangkat piket/scan..." class="flex-1 px-3 py-2 rounded-xl border border-emerald-200 font-mono">
+                <button type="button" onclick="generateRandomSecret('scanSecurityToken', 'SCN_')" class="px-2.5 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold">Acak</button>
               </div>
             </div>
             <div>
               <label class="font-bold text-slate-600 block mb-1">Auto-Arsip Log Lokal Browser</label>
-              <div class="flex gap-2">
+              <div class="flex gap-1.5">
                 <select id="localRetentionDays" class="flex-1 px-3 py-2 rounded-xl border border-slate-200 font-semibold">
-                  <option value="30">Simpan 30 Hari Terakhir</option>
-                  <option value="45" selected>Simpan 45 Hari Terakhir (Rekomendasi)</option>
-                  <option value="60">Simpan 60 Hari Terakhir</option>
-                  <option value="90">Simpan 90 Hari Terakhir</option>
-                  <option value="0">Tanpa Batas (Semua)</option>
+                  <option value="30">30 Hari Terakhir</option>
+                  <option value="45" selected>45 Hari Terakhir</option>
+                  <option value="60">60 Hari Terakhir</option>
+                  <option value="90">90 Hari Terakhir</option>
+                  <option value="0">Tanpa Batas</option>
                 </select>
-                <button type="button" onclick="runManualLocalArchive()" class="px-3 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl font-bold" title="Bersihkan log lokal lama sekarang">Bersihkan</button>
+                <button type="button" onclick="runManualLocalArchive()" class="px-2.5 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl font-bold" title="Bersihkan log lokal lama sekarang">Bersihkan</button>
               </div>
             </div>
           </div>
@@ -650,10 +657,13 @@
             </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="saveGoogleConfig()" class="px-3.5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">Simpan Konfigurasi</button>
-              <button onclick="copyShareableSetupLink()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Salin link GitHub dengan konfigurasi otomatis untuk perangkat lain">
-                <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Salin Link Perangkat Lain
+              <button onclick="copyShareableScanLink()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Link aman khusus perangkat piket/kiosk (tanpa token admin)">
+                <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> Salin Link Piket / Scan
               </button>
-              <button onclick="syncTwoWayNow()" class="px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Sync 2-Arah Sekarang</button>
+              <button onclick="copyShareableSetupLink()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Link khusus perangkat Admin (menyertakan token admin & scan)">
+                <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Salin Link Admin
+              </button>
+              <button onclick="syncTwoWayNow()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">Sync 2-Arah Sekarang</button>
               <button onclick="pullDataFromCloud(false)" class="px-3.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Pull Bulan Ini</button>
               <button onclick="pullDataFromCloud(true)" class="px-3.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold" title="Tarik seluruh riwayat dari awal tahun">Pull Semua Riwayat</button>
               <button onclick="pushDataToCloud(false)" class="px-3.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Push Lokal</button>
@@ -994,16 +1004,16 @@
         </div>
       </div>
 
-      <!-- Mode 2: Reset Darurat dengan API Secret Token -->
+      <!-- Mode 2: Reset Darurat dengan Admin Secret Token -->
       <form id="panelResetMaster" onsubmit="submitMasterPasswordReset(event)" class="hidden space-y-3 text-xs">
-        <p class="text-slate-500">Reset langsung password akun & buka kunci login menggunakan <strong>API Secret Token</strong>.</p>
+        <p class="text-slate-500">Reset langsung password akun & buka kunci login menggunakan <strong>Admin Secret Token</strong>.</p>
         <div>
           <label class="font-bold text-slate-600 block mb-1">Username Target</label>
           <input type="text" id="masterResetUsername" required value="superadmin" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono">
         </div>
         <div>
-          <label class="font-bold text-slate-600 block mb-1">API Secret Token</label>
-          <input type="password" id="masterResetToken" required placeholder="Default: ENTERPRISE_KEY_2026_SECURE" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono">
+          <label class="font-bold text-slate-600 block mb-1">Admin Secret Token</label>
+          <input type="password" id="masterResetToken" required placeholder="Masukkan Admin Secret Token..." class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono">
         </div>
         <div>
           <label class="font-bold text-slate-600 block mb-1">Password Baru</label>
@@ -1019,12 +1029,14 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v9.2 - PWA OFFLINE KIOSK, PJOK/PAI/PIKET & CLOUD
+    // PRESENSI QR ENTERPRISE v9.3 - DUAL-TOKEN SECURITY & ZERO-LEAK GITHUB
     // =========================================================================
 
+    // BIARKAN KOSONG AGAR TIDAK ADA TOKEN RAHASIA BOCOR DI REPOSITORI GITHUB PUBLIC
     const GITHUB_DEFAULT_CONFIG = {
-      gsheetUrl: 'https://script.google.com/macros/s/AKfycbyoXK8f_ezJm-UBJOkeA40tuS6O_mNzTVax_2LalekRKdztqS7tlONUaLoPlQQLUmchhg/exec',
-      apiToken: 'ENTERPRISE_KEY_2026_SECURE',
+      gsheetUrl: '',
+      apiToken: '',
+      scanToken: '',
       autoPullOnLoad: true
     };
 
@@ -1095,7 +1107,8 @@
       address: 'Jl. Pendidikan No. 1, Cirebon, Jawa Barat',
       maxRadiusMeters: 150,
       gsheetUrl: GITHUB_DEFAULT_CONFIG.gsheetUrl || '',
-      apiToken: GITHUB_DEFAULT_CONFIG.apiToken || 'ENTERPRISE_KEY_2026_SECURE',
+      apiToken: GITHUB_DEFAULT_CONFIG.apiToken || '',
+      scanToken: GITHUB_DEFAULT_CONFIG.scanToken || '',
       autoSync: true,
       localRetentionDays: 45,
       schoolLogo: DEFAULT_LOGO_SVG,
@@ -1158,6 +1171,23 @@
     let html5QrCodeInstance = null;
     let lastScanTimestamps = {};
     let loadedMonthsCache = new Set();
+
+    // --- DUAL-TOKEN HELPER FUNCTIONS ---
+    function getSigningQrSecret() {
+      return appConfig.scanToken || appConfig.apiToken || 'QR_PUBLIC_KEY';
+    }
+
+    function getActiveCloudToken(actionType = 'getData') {
+      const role = getEffectiveRole();
+      const isScanOnlyAction = (actionType === 'getData' || actionType === 'appendLog');
+      if ((role === 'public_kiosk' || role === 'guru_walikelas') && appConfig.scanToken) {
+        return appConfig.scanToken;
+      }
+      if (isScanOnlyAction && !appConfig.apiToken && appConfig.scanToken) {
+        return appConfig.scanToken;
+      }
+      return appConfig.apiToken || appConfig.scanToken || '';
+    }
 
     // --- PENGECUALIAN AKSES SELURUH KELAS UNTUK GURU PJOK, PAI & PIKET ---
     function isExemptMapelAllClasses(textStr) {
@@ -1346,10 +1376,6 @@
     function isLimitedPresensiRole() {
       const r = getEffectiveRole();
       return r === 'guru_walikelas' || r === 'public_kiosk';
-    }
-
-    function isGuruAccess() {
-      return isLimitedPresensiRole();
     }
 
     function guardGuruAccess(actionDesc = 'mengakses fitur administratif') {
@@ -1757,8 +1783,8 @@
       const token = document.getElementById('masterResetToken').value.trim();
       const newPass = document.getElementById('masterResetNewPass').value;
 
-      if (token !== appConfig.apiToken && token !== 'ENTERPRISE_KEY_2026_SECURE') {
-        return showAlert('Token Salah', 'API Secret Token tidak cocok dengan konfigurasi sistem.');
+      if (!appConfig.apiToken || token !== appConfig.apiToken) {
+        return showAlert('Token Salah', 'Admin Secret Token tidak cocok dengan konfigurasi perangkat ini.');
       }
 
       if (!userCredentials[uname]) {
@@ -1946,9 +1972,9 @@
       showAlert('Password Diperbarui', `Password akun "${userKey}" telah diubah dan disinkronkan ke Cloud.`);
     }
 
-    // --- CRYPTOGRAPHIC QR PAYLOAD ---
+    // --- CRYPTOGRAPHIC QR PAYLOAD (DUAL-TOKEN COMPATIBLE) ---
     function generateSignedQRPayload(id) {
-      const sig = CryptoJS.HmacSHA256(String(id), appConfig.apiToken).toString().slice(0, 12).toUpperCase();
+      const sig = CryptoJS.HmacSHA256(String(id), getSigningQrSecret()).toString().slice(0, 12).toUpperCase();
       return `QRV4|${id}|${sig}`;
     }
 
@@ -1958,8 +1984,13 @@
         const parts = clean.split('|');
         if (parts.length !== 3) return { valid: false, reason: 'Format payload QRV4 rusak.' };
         const [_, id, sig] = parts;
-        const expected = CryptoJS.HmacSHA256(String(id), appConfig.apiToken).toString().slice(0, 12).toUpperCase();
-        if (sig !== expected) return { valid: false, reason: 'Tanda tangan kriptografi QR tidak cocok (Kemungkinan kartu palsu).' };
+        const expectedScan = CryptoJS.HmacSHA256(String(id), getSigningQrSecret()).toString().slice(0, 12).toUpperCase();
+        const expectedAdmin = appConfig.apiToken
+          ? CryptoJS.HmacSHA256(String(id), appConfig.apiToken).toString().slice(0, 12).toUpperCase()
+          : expectedScan;
+        if (sig !== expectedScan && sig !== expectedAdmin) {
+          return { valid: false, reason: 'Tanda tangan kriptografi QR tidak cocok (Kemungkinan kartu palsu).' };
+        }
         return { valid: true, id };
       }
       return { valid: true, id: clean };
@@ -2625,7 +2656,7 @@
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
                 <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.2</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.3</div>
             </div>
           `;
         }
@@ -2648,7 +2679,7 @@
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V9.2</span>
+              <span>V9.3</span>
             </div>
           </div>
         `;
@@ -3384,20 +3415,22 @@
       showAlert('Berhasil & Tersinkron', 'Jadwal jam sesi presensi diperbarui dan disinkronkan ke Cloud.');
     }
 
-    function generateRandomSecret() {
-      const rand = 'SEC_' + CryptoJS.lib.WordArray.random(12).toString().toUpperCase();
-      document.getElementById('apiSecurityToken').value = rand;
+    function generateRandomSecret(targetInputId = 'apiSecurityToken', prefix = 'SEC_') {
+      const rand = prefix + CryptoJS.lib.WordArray.random(12).toString().toUpperCase();
+      const el = document.getElementById(targetInputId);
+      if (el) el.value = rand;
     }
 
     async function saveGoogleConfig() {
       if (getEffectiveRole() === 'guru_walikelas') return showAlert('Akses Ditolak', 'Akun Guru tidak diizinkan mengubah konfigurasi Cloud.');
       appConfig.gsheetUrl = document.getElementById('gsheetUrl').value.trim();
       appConfig.apiToken = document.getElementById('apiSecurityToken').value.trim();
+      appConfig.scanToken = document.getElementById('scanSecurityToken').value.trim();
       appConfig.autoSync = document.getElementById('toggleAutoSync').checked;
       appConfig.localRetentionDays = Number(document.getElementById('localRetentionDays')?.value ?? 45);
       await saveAllData();
       updateCloudIndicator();
-      showAlert('Konfigurasi Disimpan', 'URL Endpoint, Secret Key HMAC-SHA256, dan pengaturan auto-arsip lokal telah disimpan.');
+      showAlert('Konfigurasi Disimpan', 'URL Endpoint, Admin Token, dan Scan/Piket Token telah disimpan aman di perangkat ini.');
     }
 
     function exportDataJSON() {
@@ -3427,13 +3460,15 @@
       reader.readAsText(file);
     }
 
-    // --- 2-WAY CLOUD SYNCHRONIZATION ENGINE (FILTER PULL PER BULAN) ---
+    // --- 2-WAY CLOUD SYNCHRONIZATION ENGINE (DUAL-TOKEN & FILTER BULANAN) ---
     function createSecureEnvelope(payloadObj) {
+      const actionName = payloadObj.action || '';
+      const activeSecret = getActiveCloudToken(actionName);
       const enrichedPayload = { ...payloadObj, actorRole: getEffectiveRole() || 'guest' };
       const payloadStr = JSON.stringify(enrichedPayload);
       const timestamp = Date.now();
       const nonce = CryptoJS.lib.WordArray.random(8).toString();
-      const signature = CryptoJS.HmacSHA256(payloadStr + String(timestamp) + String(nonce), appConfig.apiToken).toString();
+      const signature = CryptoJS.HmacSHA256(payloadStr + String(timestamp) + String(nonce), activeSecret).toString();
       return { payload: payloadStr, timestamp, nonce, signature };
     }
 
@@ -3529,14 +3564,17 @@
     });
     window.addEventListener('offline', () => updateCloudIndicator());
 
-    function copyShareableSetupLink() {
+    function copyShareableScanLink() {
       if (!appConfig.gsheetUrl || !appConfig.gsheetUrl.startsWith('https://')) {
-        return showAlert('URL Belum Diatur', 'Isi dan simpan URL Web App Google Apps Script terlebih dahulu sebelum menyalin link.');
+        return showAlert('URL Belum Diatur', 'Isi dan simpan URL Web App Google Apps Script terlebih dahulu.');
+      }
+      if (!appConfig.scanToken) {
+        return showAlert('Scan Token Kosong', 'Isi kolom "2. Scan / Piket Token" terlebih dahulu (klik Acak lalu Simpan Konfigurasi).');
       }
       const baseUrl = window.location.origin + window.location.pathname;
       const params = new URLSearchParams();
       params.set('url', appConfig.gsheetUrl);
-      if (appConfig.apiToken) params.set('token', appConfig.apiToken);
+      params.set('scanToken', appConfig.scanToken);
       const fullLink = `${baseUrl}?${params.toString()}`;
 
       const ta = document.createElement('textarea');
@@ -3545,31 +3583,53 @@
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Link Siap Pakai Disalin!', 'Bagikan link ini ke HP/PC lain (atau simpan sebagai bookmark). Perangkat baru akan otomatis terhubung ke Google Sheets & menarik data tanpa perlu instal/setting ulang!');
+      showAlert('Link Piket / Scan Disalin!', 'Tautan ini hanya berisi Scan Token (tanpa Admin Token). Aman diberikan ke HP/laptop meja piket atau wali kelas.');
+    }
+
+    function copyShareableSetupLink() {
+      if (!appConfig.gsheetUrl || !appConfig.gsheetUrl.startsWith('https://')) {
+        return showAlert('URL Belum Diatur', 'Isi dan simpan URL Web App Google Apps Script terlebih dahulu.');
+      }
+      const baseUrl = window.location.origin + window.location.pathname;
+      const params = new URLSearchParams();
+      params.set('url', appConfig.gsheetUrl);
+      if (appConfig.apiToken) params.set('adminToken', appConfig.apiToken);
+      if (appConfig.scanToken) params.set('scanToken', appConfig.scanToken);
+      const fullLink = `${baseUrl}?${params.toString()}`;
+
+      const ta = document.createElement('textarea');
+      ta.value = fullLink;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showAlert('Link Admin Disalin!', 'Tautan ini berisi Admin Token & Scan Token. Simpan hanya untuk perangkat pribadi Administrator.');
     }
 
     async function applyUrlBootstrapParams() {
       const params = new URLSearchParams(window.location.search);
       const paramUrl = params.get('url');
-      const paramToken = params.get('token');
+      const paramAdminToken = params.get('adminToken') || params.get('token');
+      const paramScanToken = params.get('scanToken');
       const paramMode = params.get('mode');
       let changed = false;
 
       if (paramUrl && paramUrl.startsWith('https://')) {
         appConfig.gsheetUrl = paramUrl.trim();
         changed = true;
-      } else if (!appConfig.gsheetUrl && GITHUB_DEFAULT_CONFIG.gsheetUrl) {
-        appConfig.gsheetUrl = GITHUB_DEFAULT_CONFIG.gsheetUrl.trim();
+      }
+      if (paramAdminToken) {
+        appConfig.apiToken = paramAdminToken.trim();
         changed = true;
       }
-
-      if (paramToken) {
-        appConfig.apiToken = paramToken.trim();
+      if (paramScanToken) {
+        appConfig.scanToken = paramScanToken.trim();
         changed = true;
       }
 
       if (changed) {
         await saveAllData();
+        // Langsung bersihkan parameter token dari address bar browser agar tidak terlihat
         if (window.history && window.history.replaceState) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -3587,10 +3647,13 @@
       }
       const url = appConfig.gsheetUrl;
       if (!url || !url.startsWith('https://')) return;
+      const activeSecret = getActiveCloudToken('getData');
+      if (!activeSecret) return;
+
       const ym = targetMonthYM || getCurrentSelectedYM();
       try {
         updateCloudIndicator(`Sync (${ym})...`, true);
-        const sig = CryptoJS.HmacSHA256("GET_DATA", appConfig.apiToken).toString();
+        const sig = CryptoJS.HmacSHA256("GET_DATA", activeSecret).toString();
         const res = await fetch(`${url}?action=getData&month=${encodeURIComponent(ym)}&sig=${sig}&_t=${Date.now()}`, { redirect: 'follow', cache: 'no-store' });
         const result = await parseGasJsonResponse(res);
         if (result.status === 'success') {
@@ -3660,10 +3723,14 @@
       if (!url || !url.startsWith('https://')) {
         return showAlert('URL Belum Diatur', 'Masukkan URL Web App Google Apps Script di menu Security & Cloud.');
       }
+      const activeSecret = getActiveCloudToken('getData');
+      if (!activeSecret) {
+        return showAlert('Token Kosong', 'Masukkan Admin Secret Token atau Scan Token terlebih dahulu.');
+      }
       const ym = pullAllHistory ? '' : getCurrentSelectedYM();
       try {
         updateCloudIndicator(pullAllHistory ? "Pulling All..." : `Pulling (${ym})...`, true);
-        const sig = CryptoJS.HmacSHA256("GET_DATA", appConfig.apiToken).toString();
+        const sig = CryptoJS.HmacSHA256("GET_DATA", activeSecret).toString();
         const monthQuery = ym ? `&month=${encodeURIComponent(ym)}` : '';
         const res = await fetch(`${url}?action=getData${monthQuery}&sig=${sig}&_t=${Date.now()}`, { redirect: 'follow', cache: 'no-store' });
         const result = await parseGasJsonResponse(res);
@@ -3738,6 +3805,10 @@
         if (!silent) showAlert('URL Belum Diatur', 'Masukkan URL Web App Google Apps Script terlebih dahulu.');
         return false;
       }
+      if (!appConfig.apiToken) {
+        if (!silent) showAlert('Admin Token Dibutuhkan', 'Isi kolom "1. Admin Secret Token" untuk melakukan Push data ke Cloud.');
+        return false;
+      }
       try {
         updateCloudIndicator("Pushing...", true);
         const envelope = createSecureEnvelope({
@@ -3763,6 +3834,7 @@
           if (!silent) showAlert('Push Sync Berhasil', 'Seluruh data berhasil diunggah ke Google Sheets.');
           return true;
         }
+        if (!silent) showAlert('Ditolak Server', result.message || 'Gagal verifikasi Admin Token.');
         return false;
       } catch (err) {
         updateCloudIndicator("Offline", false);
@@ -3775,6 +3847,9 @@
       const url = appConfig.gsheetUrl;
       if (!url || !url.startsWith('https://')) {
         return showAlert('Konfigurasi Dibutuhkan', 'Atur URL Web App Google Apps Script di tab Security & Cloud.');
+      }
+      if (!appConfig.apiToken) {
+        return showAlert('Admin Token Dibutuhkan', 'Isi kolom "1. Admin Secret Token" untuk melakukan Sync 2-Arah penuh.');
       }
       const ym = getCurrentSelectedYM();
       try {
@@ -3856,7 +3931,7 @@
           }
         } else {
           updateCloudIndicator("Auth Failed", false);
-          showAlert('Sync Gagal', cloud.message || 'Gagal autentikasi dengan server.');
+          showAlert('Sync Gagal', cloud.message || 'Admin Secret Token tidak cocok dengan Google Apps Script.');
         }
       } catch (err) {
         updateCloudIndicator("Error", false);
@@ -3865,11 +3940,15 @@
     }
 
     function copyGasScriptCode() {
+      const admTok = appConfig.apiToken || 'GANTI_DENGAN_TOKEN_ADMIN_RAHASIA_2026';
+      const scnTok = appConfig.scanToken || 'GANTI_DENGAN_TOKEN_SCAN_PIKET_2026';
       const gasBackend = `// ============================================================================
-// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v9.2
+// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v9.3 (DUAL-TOKEN SECURITY)
 // ============================================================================
 
-const SECRET_TOKEN = "${appConfig.apiToken || 'ENTERPRISE_KEY_2026_SECURE'}";
+const ADMIN_SECRET_TOKEN = "${admTok}";
+const SCAN_KIOSK_TOKEN   = "${scnTok}";
+
 const DRIVE_FOLDER_NAME = "PresensiQR_FotoSiswa_v8";
 const MAX_REQUEST_AGE_MS = 5 * 60 * 1000;
 
@@ -3882,7 +3961,7 @@ const SHEET_SETTINGS = "PengaturanSekolah";
 
 function testSetup() {
   const ss = setupSheets();
-  Logger.log("BERHASIL! 6 Sheet & Akun Default siap. Buka Google Sheets di: " + ss.getUrl());
+  Logger.log("BERHASIL! Dual-Token v9.3 siap. Buka Google Sheets di: " + ss.getUrl());
 }
 
 function setupSheets() {
@@ -3914,34 +3993,23 @@ function setupSheets() {
 function getTargetSpreadsheet_() {
   let ss = SpreadsheetApp.getActiveSpreadsheet();
   if (ss) return ss;
-
   const props = PropertiesService.getScriptProperties();
   const savedId = props.getProperty("TARGET_SPREADSHEET_ID");
   if (savedId) {
-    try {
-      return SpreadsheetApp.openById(savedId);
-    } catch (e) {
-      Logger.log("Spreadsheet lama tidak ditemukan, membuat baru...");
-    }
+    try { return SpreadsheetApp.openById(savedId); } catch (e) {}
   }
-
   ss = SpreadsheetApp.create("Database_Presensi_QR_Enterprise_v9");
   props.setProperty("TARGET_SPREADSHEET_ID", ss.getId());
-  Logger.log("Spreadsheet baru berhasil dibuat! Buka di: " + ss.getUrl());
   return ss;
 }
 
 function ensureSheet_(ss, name, headers) {
-  if (!name || !Array.isArray(headers) || headers.length === 0) return null;
   const targetSs = ss || getTargetSpreadsheet_();
   let sheet = targetSs.getSheetByName(name);
   if (!sheet) {
     sheet = targetSs.insertSheet(name);
     sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length)
-      .setFontWeight("bold")
-      .setBackground("#eef2ff")
-      .setFontColor("#312e81");
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#eef2ff").setFontColor("#312e81");
     sheet.setFrozenRows(1);
   }
   return sheet;
@@ -3953,10 +4021,14 @@ function doGet(e) {
   const sig = (e && e.parameter && e.parameter.sig) || "";
   const monthFilter = String((e && e.parameter && e.parameter.month) || "").trim();
 
-  const expectedSig = computeHmacSha256_("GET_DATA", SECRET_TOKEN);
-  if (sig !== expectedSig) {
-    return jsonOut_({ status: "error", message: "Signature GET tidak valid! Periksa SECRET_TOKEN." });
+  const validAdminSig = computeHmacSha256_("GET_DATA", ADMIN_SECRET_TOKEN);
+  const validScanSig  = computeHmacSha256_("GET_DATA", SCAN_KIOSK_TOKEN);
+
+  if (sig !== validAdminSig && sig !== validScanSig) {
+    return jsonOut_({ status: "error", message: "Signature GET tidak valid! Token tidak cocok." });
   }
+
+  const isAdminScope = (sig === validAdminSig);
 
   if (action === "getData") {
     let logs = readSheetObjects_(ss.getSheetByName(SHEET_LOG), ["tanggal", "id"]);
@@ -3965,6 +4037,7 @@ function doGet(e) {
     }
     return jsonOut_({
       status: "success",
+      tokenScope: isAdminScope ? "admin" : "scan",
       siswaData: readSheetObjects_(ss.getSheetByName(SHEET_SISWA), ["nisn", "kelas"]),
       guruData: readSheetObjects_(ss.getSheetByName(SHEET_GURU), ["nip"]),
       logPresensi: logs,
@@ -3996,7 +4069,6 @@ function doPost(e) {
     if (!reqTs || Math.abs(Date.now() - reqTs) > MAX_REQUEST_AGE_MS) {
       return jsonOut_({ status: "error", message: "Request kedaluwarsa (Timestamp tidak valid)." });
     }
-
     if (!reqNonce) {
       return jsonOut_({ status: "error", message: "Nonce wajib disertakan." });
     }
@@ -4007,21 +4079,27 @@ function doPost(e) {
       return jsonOut_({ status: "error", message: "Replay Attack terdeteksi! Nonce sudah digunakan." });
     }
 
-    const expectedSig = computeHmacSha256_(
-      String(envelope.payload) + String(envelope.timestamp) + reqNonce,
-      SECRET_TOKEN
-    );
+    const baseString = String(envelope.payload) + String(envelope.timestamp) + reqNonce;
+    const expectedAdminSig = computeHmacSha256_(baseString, ADMIN_SECRET_TOKEN);
+    const expectedScanSig  = computeHmacSha256_(baseString, SCAN_KIOSK_TOKEN);
 
-    if (envelope.signature !== expectedSig) {
-      return jsonOut_({ status: "error", message: "HMAC Signature POST ditolak!" });
+    let tokenScope = "";
+    if (envelope.signature === expectedAdminSig) {
+      tokenScope = "admin";
+    } else if (envelope.signature === expectedScanSig) {
+      tokenScope = "scan";
+    } else {
+      return jsonOut_({ status: "error", message: "HMAC Signature POST ditolak! Token tidak valid." });
     }
 
     cache.put(nonceKey, "1", 600);
     const req = JSON.parse(envelope.payload);
-    const actorRole = String(req.actorRole || "superadmin");
 
-    if ((actorRole === "guru_walikelas" || actorRole === "public_kiosk") && req.action !== "appendLog") {
-      return jsonOut_({ status: "error", message: "Akses Ditolak: Mode Presensi Umum / Guru hanya diizinkan mencatat presensi." });
+    if (tokenScope === "scan" && req.action !== "appendLog") {
+      return jsonOut_({
+        status: "error",
+        message: "Akses Ditolak: Token Scan/Piket hanya diizinkan mencatat presensi (appendLog)."
+      });
     }
 
     if (req.action === "appendLog" && req.data) {
@@ -4048,7 +4126,7 @@ function doPost(e) {
     }
 
     SpreadsheetApp.flush();
-    return jsonOut_({ status: "success", message: "Data tersimpan aman ke Google Sheets & Drive v9.2" });
+    return jsonOut_({ status: "success", message: "Tersimpan (" + tokenScope.toUpperCase() + " Scope) v9.3" });
   } catch (err) {
     return jsonOut_({ status: "error", message: err.toString() });
   } finally {
@@ -4061,38 +4139,25 @@ function appendUniqueLog_(sheet, d) {
   const idStr = String(d.id || "");
   const waktuStr = String(d.waktu || "");
   const statusStr = String(d.status || "");
-
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) {
     const checkCount = Math.min(lastRow - 1, 150);
     const recent = sheet.getRange(lastRow - checkCount + 1, 2, checkCount, 4).getValues();
     if (recent.some(r => String(r[0]) === waktuStr && String(r[1]) === idStr && String(r[3]) === statusStr)) return;
   }
-
   const nextRow = lastRow + 1;
   sheet.getRange(nextRow, 1).setNumberFormat("@");
   sheet.getRange(nextRow, 3).setNumberFormat("@");
   sheet.getRange(nextRow, 1, 1, 7).setValues([[
-    String(d.tanggal || ""),
-    waktuStr,
-    idStr,
-    String(d.nama || ""),
-    statusStr,
-    String(d.gps || ""),
-    Number(d.timestamp || Date.now())
+    String(d.tanggal || ""), waktuStr, idStr, String(d.nama || ""), statusStr, String(d.gps || ""), Number(d.timestamp || Date.now())
   ]]);
 }
 
 function mergeLogSheet_(sheet, incomingList) {
   if (!sheet || !Array.isArray(incomingList)) return;
   const rows = incomingList.map(l => [
-    String(l.tanggal || ""),
-    String(l.waktu || ""),
-    String(l.id || ""),
-    String(l.nama || ""),
-    String(l.status || ""),
-    String(l.gps || ""),
-    Number(l.timestamp || Date.now())
+    String(l.tanggal || ""), String(l.waktu || ""), String(l.id || ""),
+    String(l.nama || ""), String(l.status || ""), String(l.gps || ""), Number(l.timestamp || Date.now())
   ]);
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
@@ -4107,23 +4172,16 @@ function saveBase64PhotoToDrive_(nisn, dataUrl) {
   if (dataUrl.indexOf("https://") === 0) return dataUrl;
   if (dataUrl.indexOf("data:image/svg") === 0) return "";
   if (dataUrl.indexOf("data:image/") !== 0) return "";
-
   try {
     const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
     const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
-
     const match = dataUrl.match(/^data:(image\\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
     if (!match) return "";
-
     const mimeType = match[1];
     const ext = mimeType.indexOf("png") !== -1 ? "png" : "jpg";
     const fileName = "siswa_" + nisn + "." + ext;
-
     const existingFiles = folder.getFilesByName(fileName);
-    while (existingFiles.hasNext()) {
-      existingFiles.next().setTrashed(true);
-    }
-
+    while (existingFiles.hasNext()) existingFiles.next().setTrashed(true);
     const blob = Utilities.newBlob(Utilities.base64Decode(match[2]), mimeType, fileName);
     const file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
@@ -4138,16 +4196,10 @@ function writeSiswaSheet_(sheet, list) {
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 5).clearContent();
   if (list.length === 0) return;
-  const rows = list.map(s => {
-    const nisnStr = String(s.nisn || "");
-    return [
-      nisnStr,
-      String(s.nama || ""),
-      String(s.kelas || "-"),
-      saveBase64PhotoToDrive_(nisnStr, String(s.foto || "")),
-      Number(s.updatedAt || Date.now())
-    ];
-  });
+  const rows = list.map(s => [
+    String(s.nisn || ""), String(s.nama || ""), String(s.kelas || "-"),
+    saveBase64PhotoToDrive_(String(s.nisn || ""), String(s.foto || "")), Number(s.updatedAt || Date.now())
+  ]);
   sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
   sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
   sheet.getRange(2, 1, rows.length, 5).setValues(rows);
@@ -4158,12 +4210,7 @@ function writeGuruSheet_(sheet, list) {
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 4).clearContent();
   if (list.length === 0) return;
-  const rows = list.map(g => [
-    String(g.nip || ""),
-    String(g.nama || ""),
-    String(g.mapel || "-"),
-    Number(g.updatedAt || Date.now())
-  ]);
+  const rows = list.map(g => [String(g.nip || ""), String(g.nama || ""), String(g.mapel || "-"), Number(g.updatedAt || Date.now())]);
   sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
   sheet.getRange(2, 1, rows.length, 4).setValues(rows);
 }
@@ -4173,12 +4220,7 @@ function writeAgendaSheet_(sheet, list) {
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 4).clearContent();
   if (list.length === 0) return;
-  const rows = list.map(a => [
-    String(a.tanggal || ""),
-    String(a.judul || ""),
-    String(a.kategori || "kegiatan"),
-    Number(a.updatedAt || Date.now())
-  ]);
+  const rows = list.map(a => [String(a.tanggal || ""), String(a.judul || ""), String(a.kategori || "kegiatan"), Number(a.updatedAt || Date.now())]);
   sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
   sheet.getRange(2, 1, rows.length, 4).setValues(rows);
 }
@@ -4189,12 +4231,8 @@ function writeUsersSheet_(sheet, list) {
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 6).clearContent();
   if (list.length === 0) return;
   const rows = list.map(u => [
-    String(u.username || ""),
-    String(u.name || ""),
-    String(u.role || "admin"),
-    String(u.kelasBinaan || ""),
-    String(u.passHash || ""),
-    Number(u.updatedAt || Date.now())
+    String(u.username || ""), String(u.name || ""), String(u.role || "admin"),
+    String(u.kelasBinaan || ""), String(u.passHash || ""), Number(u.updatedAt || Date.now())
   ]);
   sheet.getRange(2, 1, rows.length, 6).setValues(rows);
 }
@@ -4275,77 +4313,61 @@ function jsonOut_(obj) {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Kode Apps Script v9.2 Disalin!', 'Tempelkan ke Google Apps Script, jalankan fungsi "testSetup" sekali, lalu klik Deploy -> Manage deployments -> Edit -> New version.');
+      showAlert('Kode Apps Script v9.3 Disalin!', 'Tempelkan di Google Apps Script (sudah terisi Admin Secret Token & Scan Token Anda), jalankan testSetup(), lalu Deploy Web App (Anyone).');
     }
 
     // --- UI HELPERS & NAVIGATION ---
     function switchTab(tabName) {
-      const role = getEffectiveRole();
-      if (role === 'public_kiosk' && tabName !== 'scanner') {
-        tabName = 'scanner';
-      } else if (role === 'guru_walikelas' && tabName !== 'scanner' && tabName !== 'rekap') {
-        tabName = 'scanner';
-      }
+      if (getEffectiveRole() === 'public_kiosk' && tabName !== 'scanner') return;
+      if (getEffectiveRole() === 'guru_walikelas' && !['scanner', 'rekap'].includes(tabName)) return;
       activeTabState = tabName;
       persistActiveSession();
       document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.className = 'nav-tab px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap';
-        const allowedTabs = role === 'public_kiosk' ? ['tabBtn_scanner'] : (role === 'guru_walikelas' ? ['tabBtn_scanner', 'tabBtn_rekap'] : null);
-        if (allowedTabs && !allowedTabs.includes(btn.id)) {
-          btn.classList.add('hidden');
-        }
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('text-slate-600', 'hover:bg-slate-100');
       });
-      const targetTab = document.getElementById('tab_' + tabName);
-      const targetBtn = document.getElementById('tabBtn_' + tabName);
-      if (targetTab) targetTab.classList.remove('hidden');
-      if (targetBtn) {
-        targetBtn.classList.remove('hidden');
-        targetBtn.className = 'nav-tab px-3.5 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-1.5 whitespace-nowrap shadow-sm';
+      document.getElementById(`tab_${tabName}`)?.classList.remove('hidden');
+      const activeBtn = document.getElementById(`tabBtn_${tabName}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
       }
       if (tabName === 'analitik') initCharts();
       if (tabName === 'kartu') renderKartuPrint();
-      if (tabName === 'rekap') { renderRekapTable(); renderCalendar(); renderAgendaList(); }
     }
 
     function populateKelasFilters() {
-      const isRestrictedGuru = (getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && currentUserKelasBinaan);
-      const scoped = getScopedSiswa();
-      const kelasSet = [...new Set(scoped.map(s => s.kelas).filter(Boolean))].sort();
+      const scopedList = getScopedSiswa();
+      const kelasList = [...new Set(scopedList.map(s => s.kelas || '-'))].sort();
       ['filterKelasSiswa', 'filterKelasKartu', 'rekapKelasFilter'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        if (isRestrictedGuru) {
-          el.innerHTML = `<option value="${currentUserKelasBinaan}">Kelas ${currentUserKelasBinaan}</option>`;
-          el.value = currentUserKelasBinaan;
-          el.disabled = true;
-        } else {
-          el.disabled = false;
-          const prev = el.value;
-          el.innerHTML = '<option value="Semua">Semua Kelas</option>' + kelasSet.map(k => `<option value="${k}">${k}</option>`).join('');
-          if (kelasSet.includes(prev)) el.value = prev;
-        }
+        const curr = el.value;
+        el.innerHTML = `<option value="Semua">Semua Kelas</option>` + kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
+        if (kelasList.includes(curr)) el.value = curr;
       });
     }
 
     function refreshAllUI() {
       document.getElementById('headerSchoolName').innerText = appConfig.schoolName;
-      document.getElementById('headerSchoolLogo').src = uploadedLogoDataUrl || DEFAULT_LOGO_SVG;
-      document.getElementById('previewLogoSekolah').src = uploadedLogoDataUrl || DEFAULT_LOGO_SVG;
+      document.getElementById('headerSchoolLogo').src = uploadedLogoDataUrl;
+      document.getElementById('previewLogoSekolah').src = uploadedLogoDataUrl;
       document.getElementById('profNamaSekolah').value = appConfig.schoolName;
       document.getElementById('profKepalaSekolah').value = appConfig.headmaster;
       document.getElementById('profAlamat').value = appConfig.address;
       document.getElementById('profLat').value = targetSchoolGPS.lat;
       document.getElementById('profLng').value = targetSchoolGPS.lng;
       document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters;
-      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl;
-      document.getElementById('apiSecurityToken').value = appConfig.apiToken;
-      document.getElementById('toggleAutoSync').checked = appConfig.autoSync;
-      const retSel = document.getElementById('localRetentionDays');
-      if (retSel) retSel.value = String(appConfig.localRetentionDays ?? 45);
-      updateStorageUsageUI();
+      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl || '';
+      document.getElementById('apiSecurityToken').value = appConfig.apiToken || '';
+      document.getElementById('scanSecurityToken').value = appConfig.scanToken || '';
+      document.getElementById('toggleAutoSync').checked = appConfig.autoSync !== false;
+      const retEl = document.getElementById('localRetentionDays');
+      if (retEl) retEl.value = String(appConfig.localRetentionDays ?? 45);
       updateSesiDisplayUI();
       updateCloudIndicator();
+      updateStorageUsageUI();
     }
 
     function renderAllViews() {
@@ -4353,13 +4375,13 @@ function jsonOut_(obj) {
       renderLogTable();
       renderSiswaTable();
       renderGuruTable();
+      renderKartuPrint();
       renderRekapTable();
       renderCalendar();
       renderAgendaList();
-      renderAnalytics();
       renderUsersTable();
       renderResetRequestsTable();
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      renderAnalytics();
     }
 
     function showAlert(title, message) {
@@ -4374,8 +4396,16 @@ function jsonOut_(obj) {
         document.getElementById('confirmTitle').innerText = title;
         document.getElementById('confirmMessage').innerText = message;
         modal.classList.remove('hidden');
-        document.getElementById('confirmOkBtn').onclick = () => { modal.classList.add('hidden'); resolve(true); };
-        document.getElementById('confirmCancelBtn').onclick = () => { modal.classList.add('hidden'); resolve(false); };
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const cleanup = (val) => {
+          modal.classList.add('hidden');
+          okBtn.onclick = null;
+          cancelBtn.onclick = null;
+          resolve(val);
+        };
+        okBtn.onclick = () => cleanup(true);
+        cancelBtn.onclick = () => cleanup(false);
       });
     }
 
@@ -4383,41 +4413,43 @@ function jsonOut_(obj) {
       if (!document.getElementById('toggleVoiceNotif')?.checked) return;
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'id-ID';
-        window.speechSynthesis.speak(u);
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'id-ID';
+        window.speechSynthesis.speak(utter);
       }
     }
 
-    // Clock & Auto-Sesi Ticker
-    setInterval(() => {
-      const now = new Date();
-      const clockEl = document.getElementById('liveClock');
-      if (clockEl) clockEl.innerText = now.toTimeString().slice(0, 8);
-      if (document.getElementById('toggleAutoSesi')?.checked) {
-        const autoS = getAutoSesiByClock();
-        if (autoS !== aktifSesi) {
-          aktifSesi = autoS;
-          updateSesiButtonStyles();
-        }
-      }
-    }, 1000);
-
-    // Boot Initialization
+    // --- BOOTSTRAP ---
     window.addEventListener('DOMContentLoaded', async () => {
       registerPwaServiceWorker();
       loadAllData();
       await applyUrlBootstrapParams();
-      getCurrentSelectedYM();
       refreshAllUI();
       syncSesiModeUI();
-      initGPS();
-      restoreActiveSession();
       renderAllViews();
+      initGPS();
       refreshCameraDevices(false);
+
+      restoreActiveSession();
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      setInterval(() => {
+        const nowStr = new Date().toTimeString().slice(0, 8);
+        const clk = document.getElementById('liveClock');
+        if (clk) clk.innerText = nowStr;
+        if (document.getElementById('toggleAutoSesi')?.checked) {
+          const auto = getAutoSesiByClock();
+          if (auto !== aktifSesi) {
+            aktifSesi = auto;
+            updateSesiButtonStyles();
+          }
+        }
+      }, 1000);
+
       if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
-        if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
-        silentPullFromCloud(getCurrentSelectedYM());
+        if (offlineSyncQueue.length > 0) await flushOfflineQueue(false);
+        await silentPullFromCloud(getCurrentSelectedYM());
       }
     });
   </script>

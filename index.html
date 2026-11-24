@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
-  <title>Presensi QR Enterprise v9.1 - PWA Offline Kiosk, Akses Guru PJOK/PAI & Cloud</title>
+  <title>Presensi QR Enterprise v9.2 - PWA Offline Kiosk, Akses PJOK/PAI/Piket & Cloud</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -42,7 +42,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.1 • PWA OFFLINE KIOSK & CLOUD</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.2 • PWA OFFLINE KIOSK & CLOUD</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -50,7 +50,7 @@
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Username</label>
-          <input type="text" id="loginUsername" required placeholder="superadmin / admin / guru" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none">
+          <input type="text" id="loginUsername" required placeholder="superadmin / admin / guru / piket" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Password</label>
@@ -84,7 +84,7 @@
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.1</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.2</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
@@ -281,6 +281,7 @@
                     <th class="p-3">Nama Lengkap</th>
                     <th class="p-3">Status Sesi / Ket</th>
                     <th class="p-3">Validasi / Alasan</th>
+                    <th class="p-3 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="tableLogBody" class="divide-y divide-slate-100"></tbody>
@@ -607,7 +608,7 @@
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Perbarui Cache Offline PWA
               </button>
               <button onclick="copyGasScriptCode()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v8.7
+                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v9.2
               </button>
             </div>
           </div>
@@ -670,7 +671,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h3 class="font-extrabold text-slate-900 text-sm">Manajemen Akun & Hak Akses (Tersinkronisasi Cloud)</h3>
-              <p class="text-xs text-slate-500">Wali kelas hanya melihat kelas binaannya; Guru PJOK & PAI otomatis mendapat akses seluruh kelas</p>
+              <p class="text-xs text-slate-500">Wali kelas hanya melihat kelas binaannya; Guru PJOK, PAI & Piket otomatis mendapat akses seluruh kelas</p>
             </div>
             <button onclick="openModalAddUser()" class="px-3.5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
               <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Tambah Akun
@@ -911,24 +912,24 @@
       <form onsubmit="simpanAkunBaru(event)" class="space-y-3 text-xs">
         <div>
           <label class="font-bold text-slate-600 block mb-1">Username Login</label>
-          <input type="text" id="newUserUsername" required placeholder="contoh: walikelas_10a / guru_pjok / guru_pai" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono">
+          <input type="text" id="newUserUsername" required placeholder="contoh: walikelas_10a / guru_pjok / guru_pai / piket" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono">
         </div>
         <div>
           <label class="font-bold text-slate-600 block mb-1">Nama Tampilan</label>
-          <input type="text" id="newUserName" required placeholder="Contoh: Budi Santoso, S.Pd (Guru PJOK)" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+          <input type="text" id="newUserName" required placeholder="Contoh: Petugas Piket Harian / Budi Santoso (PJOK)" class="w-full px-3 py-2 rounded-xl border border-slate-200">
         </div>
         <div>
           <label class="font-bold text-slate-600 block mb-1">Hak Akses (Role)</label>
           <select id="newUserRole" class="w-full px-3 py-2 rounded-xl border border-slate-200">
             <option value="admin">Admin Operator</option>
-            <option value="guru_walikelas">Guru / Wali Kelas / PJOK / PAI</option>
+            <option value="guru_walikelas">Guru / Wali Kelas / PJOK / PAI / Piket</option>
             <option value="superadmin">Superadmin</option>
           </select>
         </div>
         <div>
-          <label class="font-bold text-slate-600 block mb-1">Kelas Binaan / Mapel Pengecualian</label>
-          <input type="text" id="newUserKelasBinaan" placeholder="Contoh: 10-A (atau ketik PJOK / PAI / Semua Kelas)" class="w-full px-3 py-2 rounded-xl border border-slate-200">
-          <p class="text-[10px] text-slate-500 mt-1">Isi nama kelas (misal <code>10-A</code>) untuk Wali Kelas, atau isi <code>PJOK</code> / <code>PAI</code> / kosongkan untuk akses seluruh kelas.</p>
+          <label class="font-bold text-slate-600 block mb-1">Kelas Binaan / Pengecualian</label>
+          <input type="text" id="newUserKelasBinaan" placeholder="Contoh: 10-A (atau ketik PJOK / PAI / Piket / Semua Kelas)" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+          <p class="text-[10px] text-slate-500 mt-1">Isi nama kelas (misal <code>10-A</code>) untuk Wali Kelas, atau isi <code>PJOK</code> / <code>PAI</code> / <code>Piket</code> / kosongkan untuk akses seluruh kelas.</p>
         </div>
         <div>
           <label class="font-bold text-slate-600 block mb-1">Password Awal</label>
@@ -1018,7 +1019,7 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v9.1 - PWA OFFLINE KIOSK, AKSES PJOK/PAI & CLOUD
+    // PRESENSI QR ENTERPRISE v9.2 - PWA OFFLINE KIOSK, PJOK/PAI/PIKET & CLOUD
     // =========================================================================
 
     const GITHUB_DEFAULT_CONFIG = {
@@ -1158,8 +1159,7 @@
     let lastScanTimestamps = {};
     let loadedMonthsCache = new Set();
 
-   
-// --- PENGECUALIAN AKSES SELURUH KELAS UNTUK GURU PJOK, PAI & PIKET ---
+    // --- PENGECUALIAN AKSES SELURUH KELAS UNTUK GURU PJOK, PAI & PIKET ---
     function isExemptMapelAllClasses(textStr) {
       const s = String(textStr || '').trim();
       if (!s) return false;
@@ -1364,7 +1364,7 @@
     // --- MENU CATAT IZIN / SAKIT / ALPHA (KEPERLUAN MENDADAK) ---
     function openModalKetidakhadiran(preselectNisn = '') {
       if (getEffectiveRole() === 'public_kiosk') {
-        return showAlert('Login Diperlukan', 'Silakan login sebagai Admin atau Wali Kelas untuk mencatat siswa Izin / Sakit / Alpha.');
+        return showAlert('Login Diperlukan', 'Silakan login sebagai Admin, Wali Kelas, atau Guru Piket untuk mencatat siswa Izin / Sakit / Alpha.');
       }
       const now = new Date();
       const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -1868,7 +1868,7 @@
         );
         let binaanBadge = '';
         if (isAllGuru) {
-         binaanBadge = `<span class="ml-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Semua Kelas (PJOK/PAI/Piket)</span>`;
+          binaanBadge = `<span class="ml-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Semua Kelas (PJOK/PAI/Piket)</span>`;
         } else if (u.kelasBinaan) {
           binaanBadge = `<span class="ml-1 px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">Kelas ${u.kelasBinaan}</span>`;
         }
@@ -2625,7 +2625,7 @@
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
                 <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.1</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.2</div>
             </div>
           `;
         }
@@ -2648,7 +2648,7 @@
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V9.1</span>
+              <span>V9.2</span>
             </div>
           </div>
         `;
@@ -2665,7 +2665,7 @@
       }
     }
 
-    // --- ISOLASI DATA WALI KELAS (DENGAN PENGECUALIAN GURU PJOK & PAI) ---
+    // --- ISOLASI DATA WALI KELAS (DENGAN PENGECUALIAN GURU PJOK, PAI & PIKET) ---
     function getEffectiveRole() {
       if (currentUserRole === 'public_kiosk') return 'public_kiosk';
       if (currentUserRole === 'guru_walikelas') return 'guru_walikelas';
@@ -2687,7 +2687,29 @@
       return logPresensi;
     }
 
-    // --- LOG TABLE & MATRIKS REKAP BULANAN (H / T / I / S / A) ---
+    // --- LOG TABLE, HAPUS LOG & MATRIKS REKAP BULANAN (H / T / I / S / A) ---
+    async function hapusLogPresensi(indexInScoped) {
+      if (guardGuruAccess('menghapus log presensi')) return;
+      const q = (document.getElementById('searchLogInput')?.value || '').toLowerCase();
+      const scoped = getScopedLogs().filter(l =>
+        l.nama.toLowerCase().includes(q) || l.id.toLowerCase().includes(q)
+      );
+      const target = scoped[indexInScoped];
+      if (!target) return;
+
+      const ok = await showConfirm('Hapus Log Presensi', `Yakin ingin menghapus catatan presensi "${target.nama}" (${target.status}) pada ${target.waktu}?`);
+      if (!ok) return;
+
+      logPresensi = logPresensi.filter(l => !(l.id === target.id && l.waktu === target.waktu && l.status === target.status));
+      await saveAllData();
+      await triggerAutoSync('syncLog', logPresensi);
+
+      renderLogTable();
+      renderRekapTable();
+      renderAnalytics();
+      recordAudit('DELETE_LOG', `Menghapus log presensi ${target.nama} (${target.waktu})`);
+    }
+
     function renderLogTable() {
       const tbody = document.getElementById('tableLogBody');
       if (!tbody) return;
@@ -2696,8 +2718,9 @@
         l.nama.toLowerCase().includes(q) || l.id.toLowerCase().includes(q)
       );
       document.getElementById('logCountSummary').innerText = `${scoped.length} catatan terekam`;
+      const canDelete = !isLimitedPresensiRole();
 
-      tbody.innerHTML = scoped.slice(0, 100).map(l => {
+      tbody.innerHTML = scoped.slice(0, 100).map((l, idx) => {
         let statusBadgeClass = 'bg-emerald-100 text-emerald-700';
         if (l.status.startsWith('Izin')) statusBadgeClass = 'bg-sky-100 text-sky-700';
         else if (l.status.startsWith('Sakit')) statusBadgeClass = 'bg-purple-100 text-purple-700';
@@ -2712,6 +2735,9 @@
             <td class="p-3 font-semibold text-slate-800">${l.nama}</td>
             <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusBadgeClass}">${l.status}</span></td>
             <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOut ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'}">${l.gps}</span></td>
+            <td class="p-3 text-center">
+              ${canDelete ? `<button onclick="hapusLogPresensi(${idx})" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg font-bold text-[11px]">Hapus</button>` : '<span class="text-slate-300">-</span>'}
+            </td>
           </tr>
         `;
       }).join('');
@@ -3840,7 +3866,7 @@
 
     function copyGasScriptCode() {
       const gasBackend = `// ============================================================================
-// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v8.7
+// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v9.2
 // ============================================================================
 
 const SECRET_TOKEN = "${appConfig.apiToken || 'ENTERPRISE_KEY_2026_SECURE'}";
@@ -3899,7 +3925,7 @@ function getTargetSpreadsheet_() {
     }
   }
 
-  ss = SpreadsheetApp.create("Database_Presensi_QR_Enterprise_v8");
+  ss = SpreadsheetApp.create("Database_Presensi_QR_Enterprise_v9");
   props.setProperty("TARGET_SPREADSHEET_ID", ss.getId());
   Logger.log("Spreadsheet baru berhasil dibuat! Buka di: " + ss.getUrl());
   return ss;
@@ -4022,7 +4048,7 @@ function doPost(e) {
     }
 
     SpreadsheetApp.flush();
-    return jsonOut_({ status: "success", message: "Data tersimpan aman ke Google Sheets & Drive v8.7" });
+    return jsonOut_({ status: "success", message: "Data tersimpan aman ke Google Sheets & Drive v9.2" });
   } catch (err) {
     return jsonOut_({ status: "error", message: err.toString() });
   } finally {
@@ -4059,33 +4085,15 @@ function appendUniqueLog_(sheet, d) {
 
 function mergeLogSheet_(sheet, incomingList) {
   if (!sheet || !Array.isArray(incomingList)) return;
-  const existing = readSheetObjects_(sheet, ["tanggal", "id"]);
-  const map = {};
-  existing.forEach(l => {
-    const key = String(l.id) + "_" + String(l.waktu) + "_" + String(l.status);
-    map[key] = [
-      String(l.tanggal || ""),
-      String(l.waktu || ""),
-      String(l.id || ""),
-      String(l.nama || ""),
-      String(l.status || ""),
-      String(l.gps || ""),
-      Number(l.timestamp || Date.now())
-    ];
-  });
-  incomingList.forEach(l => {
-    const key = String(l.id) + "_" + String(l.waktu) + "_" + String(l.status);
-    map[key] = [
-      String(l.tanggal || ""),
-      String(l.waktu || ""),
-      String(l.id || ""),
-      String(l.nama || ""),
-      String(l.status || ""),
-      String(l.gps || ""),
-      Number(l.timestamp || Date.now())
-    ];
-  });
-  const rows = Object.keys(map).map(k => map[k]);
+  const rows = incomingList.map(l => [
+    String(l.tanggal || ""),
+    String(l.waktu || ""),
+    String(l.id || ""),
+    String(l.nama || ""),
+    String(l.status || ""),
+    String(l.gps || ""),
+    Number(l.timestamp || Date.now())
+  ]);
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
   if (rows.length === 0) return;
@@ -4223,55 +4231,54 @@ function readSheetObjects_(sheet, stringCols) {
   if (!sheet) return [];
   const values = sheet.getDataRange().getValues();
   if (values.length <= 1) return [];
-  const headers = values[0];
-  const strSet = {};
-  (stringCols || []).forEach(c => { strSet[c] = true; });
-  const list = [];
+  const headers = values[0].map(h => String(h).trim());
+  const out = [];
   for (let r = 1; r < values.length; r++) {
-    if (values[r].join("").trim() === "") continue;
     const obj = {};
+    let hasValue = false;
     for (let c = 0; c < headers.length; c++) {
-      const h = headers[c];
+      const key = headers[c];
+      if (!key) continue;
       let val = values[r][c];
+      if (val !== "" && val !== null && val !== undefined) hasValue = true;
       if (val instanceof Date) {
-        if (h === "tanggal") {
-          val = Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd");
-        } else {
-          val = Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
-        }
-      } else if (strSet[h] && val !== "" && val !== null && val !== undefined) {
-        val = String(val);
+        val = (key === "tanggal")
+          ? Utilities.formatDate(val, "Asia/Jakarta", "yyyy-MM-dd")
+          : Utilities.formatDate(val, "Asia/Jakarta", "yyyy-MM-dd HH:mm:ss");
+      } else if (stringCols && stringCols.indexOf(key) !== -1) {
+        val = String(val || "").trim();
       }
-      obj[h] = val;
+      obj[key] = val;
     }
-    list.push(obj);
+    if (hasValue) out.push(obj);
   }
-  return list;
+  return out;
 }
 
 function computeHmacSha256_(message, secret) {
-  const rawSig = Utilities.computeHmacSha256Signature(message, secret, Utilities.Charset.UTF_8);
-  return rawSig.map(b => ("0" + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join("");
+  const raw = Utilities.computeHmacSha256Signature(message, secret, Utilities.Charset.UTF_8);
+  return raw.map(b => ('0' + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join('');
 }
 
 function computeSha256_(message) {
   const raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, message, Utilities.Charset.UTF_8);
-  return raw.map(b => ("0" + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join("");
+  return raw.map(b => ('0' + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join('');
 }
 
 function jsonOut_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }`;
+
       const ta = document.createElement('textarea');
       ta.value = gasBackend;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Berhasil Disalin!', 'Kode Google Apps Script v8.7 berhasil disalin.');
+      showAlert('Kode Apps Script v9.2 Disalin!', 'Tempelkan ke Google Apps Script, jalankan fungsi "testSetup" sekali, lalu klik Deploy -> Manage deployments -> Edit -> New version.');
     }
 
-    // --- UI HELPERS ---
+    // --- UI HELPERS & NAVIGATION ---
     function switchTab(tabName) {
       const role = getEffectiveRole();
       if (role === 'public_kiosk' && tabName !== 'scanner') {
@@ -4282,40 +4289,49 @@ function jsonOut_(obj) {
       activeTabState = tabName;
       persistActiveSession();
       document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`tab_${tabName}`)?.classList.remove('hidden');
-
       document.querySelectorAll('.nav-tab').forEach(btn => {
         btn.className = 'nav-tab px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap';
+        const allowedTabs = role === 'public_kiosk' ? ['tabBtn_scanner'] : (role === 'guru_walikelas' ? ['tabBtn_scanner', 'tabBtn_rekap'] : null);
+        if (allowedTabs && !allowedTabs.includes(btn.id)) {
+          btn.classList.add('hidden');
+        }
       });
-      const activeBtn = document.getElementById(`tabBtn_${tabName}`);
-      if (activeBtn) {
-        activeBtn.className = 'nav-tab px-3.5 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-1.5 whitespace-nowrap';
+      const targetTab = document.getElementById('tab_' + tabName);
+      const targetBtn = document.getElementById('tabBtn_' + tabName);
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.remove('hidden');
+        targetBtn.className = 'nav-tab px-3.5 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-1.5 whitespace-nowrap shadow-sm';
       }
       if (tabName === 'analitik') initCharts();
       if (tabName === 'kartu') renderKartuPrint();
+      if (tabName === 'rekap') { renderRekapTable(); renderCalendar(); renderAgendaList(); }
     }
 
     function populateKelasFilters() {
-      const isRestrictedGuru = getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && currentUserKelasBinaan;
-      const kelasList = isRestrictedGuru
-        ? [currentUserKelasBinaan]
-        : [...new Set(siswaData.map(s => s.kelas || '-'))].sort();
-
+      const isRestrictedGuru = (getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && currentUserKelasBinaan);
+      const scoped = getScopedSiswa();
+      const kelasSet = [...new Set(scoped.map(s => s.kelas).filter(Boolean))].sort();
       ['filterKelasSiswa', 'filterKelasKartu', 'rekapKelasFilter'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        const curr = el.value;
-        el.innerHTML = isRestrictedGuru
-          ? `<option value="${currentUserKelasBinaan}">Kelas ${currentUserKelasBinaan}</option>`
-          : '<option value="Semua">Semua Kelas</option>' + kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
-        if (!isRestrictedGuru && kelasList.includes(curr)) el.value = curr;
+        if (isRestrictedGuru) {
+          el.innerHTML = `<option value="${currentUserKelasBinaan}">Kelas ${currentUserKelasBinaan}</option>`;
+          el.value = currentUserKelasBinaan;
+          el.disabled = true;
+        } else {
+          el.disabled = false;
+          const prev = el.value;
+          el.innerHTML = '<option value="Semua">Semua Kelas</option>' + kelasSet.map(k => `<option value="${k}">${k}</option>`).join('');
+          if (kelasSet.includes(prev)) el.value = prev;
+        }
       });
     }
 
     function refreshAllUI() {
       document.getElementById('headerSchoolName').innerText = appConfig.schoolName;
-      document.getElementById('headerSchoolLogo').src = uploadedLogoDataUrl;
-      document.getElementById('previewLogoSekolah').src = uploadedLogoDataUrl;
+      document.getElementById('headerSchoolLogo').src = uploadedLogoDataUrl || DEFAULT_LOGO_SVG;
+      document.getElementById('previewLogoSekolah').src = uploadedLogoDataUrl || DEFAULT_LOGO_SVG;
       document.getElementById('profNamaSekolah').value = appConfig.schoolName;
       document.getElementById('profKepalaSekolah').value = appConfig.headmaster;
       document.getElementById('profAlamat').value = appConfig.address;
@@ -4325,8 +4341,8 @@ function jsonOut_(obj) {
       document.getElementById('gsheetUrl').value = appConfig.gsheetUrl;
       document.getElementById('apiSecurityToken').value = appConfig.apiToken;
       document.getElementById('toggleAutoSync').checked = appConfig.autoSync;
-      const retEl = document.getElementById('localRetentionDays');
-      if (retEl) retEl.value = String(appConfig.localRetentionDays ?? 45);
+      const retSel = document.getElementById('localRetentionDays');
+      if (retSel) retSel.value = String(appConfig.localRetentionDays ?? 45);
       updateStorageUsageUI();
       updateSesiDisplayUI();
       updateCloudIndicator();
@@ -4337,13 +4353,13 @@ function jsonOut_(obj) {
       renderLogTable();
       renderSiswaTable();
       renderGuruTable();
-      renderKartuPrint();
       renderRekapTable();
       renderCalendar();
       renderAgendaList();
       renderAnalytics();
       renderUsersTable();
       renderResetRequestsTable();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function showAlert(title, message) {
@@ -4354,19 +4370,12 @@ function jsonOut_(obj) {
 
     function showConfirm(title, message) {
       return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
         document.getElementById('confirmTitle').innerText = title;
         document.getElementById('confirmMessage').innerText = message;
-        const modal = document.getElementById('confirmModal');
         modal.classList.remove('hidden');
-        const okBtn = document.getElementById('confirmOkBtn');
-        const cancelBtn = document.getElementById('confirmCancelBtn');
-        const cleanup = () => {
-          modal.classList.add('hidden');
-          okBtn.onclick = null;
-          cancelBtn.onclick = null;
-        };
-        okBtn.onclick = () => { cleanup(); resolve(true); };
-        cancelBtn.onclick = () => { cleanup(); resolve(false); };
+        document.getElementById('confirmOkBtn').onclick = () => { modal.classList.add('hidden'); resolve(true); };
+        document.getElementById('confirmCancelBtn').onclick = () => { modal.classList.add('hidden'); resolve(false); };
       });
     }
 
@@ -4374,34 +4383,40 @@ function jsonOut_(obj) {
       if (!document.getElementById('toggleVoiceNotif')?.checked) return;
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utt = new SpeechSynthesisUtterance(text);
-        utt.lang = 'id-ID';
-        window.speechSynthesis.speak(utt);
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id-ID';
+        window.speechSynthesis.speak(u);
       }
     }
 
-    // --- BOOTSTRAP ---
+    // Clock & Auto-Sesi Ticker
+    setInterval(() => {
+      const now = new Date();
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) clockEl.innerText = now.toTimeString().slice(0, 8);
+      if (document.getElementById('toggleAutoSesi')?.checked) {
+        const autoS = getAutoSesiByClock();
+        if (autoS !== aktifSesi) {
+          aktifSesi = autoS;
+          updateSesiButtonStyles();
+        }
+      }
+    }, 1000);
+
+    // Boot Initialization
     window.addEventListener('DOMContentLoaded', async () => {
       registerPwaServiceWorker();
       loadAllData();
       await applyUrlBootstrapParams();
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      getCurrentSelectedYM();
       refreshAllUI();
       syncSesiModeUI();
       initGPS();
-      refreshCameraDevices(false);
-
-      const wasRestored = restoreActiveSession();
+      restoreActiveSession();
       renderAllViews();
-
-      setInterval(() => {
-        const el = document.getElementById('liveClock');
-        if (el) el.innerText = new Date().toTimeString().slice(0, 8);
-        if (document.getElementById('toggleAutoSesi')?.checked) syncSesiModeUI();
-      }, 1000);
-
-      if (GITHUB_DEFAULT_CONFIG.autoPullOnLoad && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
-        if (wasRestored && offlineSyncQueue.length > 0) flushOfflineQueue(false);
+      refreshCameraDevices(false);
+      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+        if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
         silentPullFromCloud(getCurrentSelectedYM());
       }
     });

@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
-  <title>Presensi QR Enterprise v9.3 - Dual-Token Security, Kiosk Mode & Cloud</title>
+  <title>Presensi QR Enterprise v9.4 - Dual-Token, Queue Sync & Susulan Manual</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -42,7 +42,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.3 • DUAL-TOKEN SECURITY & CLOUD</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.4 • DUAL-TOKEN & QUEUE SYNC</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -78,20 +78,26 @@
   <div id="mainApp" class="min-h-screen flex flex-col">
     <!-- TOP HEADER -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <img id="headerSchoolLogo" src="" alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-indigo-50 border border-indigo-100 p-1 flex-shrink-0">
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.3</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.4</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
-          <div id="pwaStatusBadge" class="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-[11px] font-bold text-indigo-700" title="Status PWA Offline Cache">
+          <!-- TOMBOL KIRIM ANTREAN OFFLINE (TAMPIL SAAT ADA ANTREAN / MANUAL SYNC) -->
+          <button id="btnHeaderSyncQueue" onclick="manualFlushQueueAndPull()" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition" title="Kirim antrean presensi tertunda & sinkronkan dengan Cloud">
+            <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i>
+            <span id="btnHeaderSyncQueueText">Sync Cloud</span>
+          </button>
+
+          <div id="pwaStatusBadge" class="hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-[11px] font-bold text-indigo-700" title="Status PWA Offline Cache">
             <i data-lucide="hard-drive-download" class="w-3 h-3"></i>
             <span id="pwaStatusText">PWA Cache...</span>
           </div>
@@ -103,7 +109,7 @@
 
           <div class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
             <i data-lucide="user-check" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span id="activeUserLabel" class="text-xs font-bold text-slate-700">Guest</span>
+            <span id="activeUserLabel" class="text-xs font-bold text-slate-700 hidden md:inline">Guest</span>
             <span id="activeRoleBadge" class="hidden px-2 py-0.5 rounded-lg bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase">GURU / WALI KELAS</span>
             <select id="roleSelector" onchange="changeRole(this.value)" class="text-xs bg-white border border-slate-200 rounded-lg px-2 py-0.5 font-semibold text-indigo-700">
               <option value="superadmin">Superadmin</option>
@@ -197,7 +203,7 @@
               <span>Peringatan: Lokasi berada di luar radius sekolah atau GPS tidak tervalidasi!</span>
             </div>
 
-            <!-- Pemilih Lensa Kamera (Belakang / Depan / Webcam USB) -->
+            <!-- Pemilih Lensa Kamera -->
             <div class="flex items-center gap-2">
               <div class="flex-1 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
                 <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-600 flex-shrink-0"></i>
@@ -229,10 +235,40 @@
               </button>
             </div>
 
-            <!-- Manual Input / Barcode Gun -->
-            <form onsubmit="handleManualScan(event)" class="pt-2 border-t border-slate-100 flex gap-2">
-              <input type="text" id="manualScanInput" placeholder="Scan Barcode Gun / Ketik NISN atau NIP..." class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono focus:border-indigo-500 focus:outline-none">
-              <button type="submit" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs">Catat</button>
+            <!-- Manual Input / Barcode Gun + MODE SUSULAN MANUAL -->
+            <form onsubmit="handleManualScan(event)" class="pt-3 border-t border-slate-100 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-500 uppercase">Input Manual / Barcode Gun</span>
+                <label id="wrapToggleSusulan" class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 cursor-pointer">
+                  <input type="checkbox" id="toggleModeSusulan" onchange="toggleSusulanPanel()" class="rounded text-amber-600">
+                  Mode Susulan (Tanggal Lampau)
+                </label>
+              </div>
+
+              <!-- Panel Susulan Manual (Muncul saat Mode Susulan dicentang) -->
+              <div id="panelSusulanManual" class="hidden p-3 rounded-2xl bg-amber-50 border border-amber-200 space-y-2 text-xs">
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-bold text-amber-900 uppercase mb-1">Tanggal Susulan</label>
+                    <input type="date" id="inputTanggalSusulan" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 bg-white font-mono text-xs">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-amber-900 uppercase mb-1">Status & Sesi</label>
+                    <select id="selectStatusSusulan" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 bg-white font-bold text-xs">
+                      <option value="Hadir (Jam Masuk)">Hadir (Jam Masuk)</option>
+                      <option value="Terlambat (Jam Masuk)">Terlambat (Jam Masuk)</option>
+                      <option value="Hadir (Jam Siang)">Hadir (Jam Siang)</option>
+                      <option value="Hadir (Jam Pulang)">Hadir (Jam Pulang)</option>
+                    </select>
+                  </div>
+                </div>
+                <input type="text" id="inputKetSusulan" placeholder="Catatan susulan (opsional, misal: Kartu tertinggal)" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 bg-white text-xs">
+              </div>
+
+              <div class="flex gap-2">
+                <input type="text" id="manualScanInput" placeholder="Scan Barcode Gun / Ketik NISN atau NIP..." class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono focus:border-indigo-500 focus:outline-none">
+                <button type="submit" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs">Catat</button>
+              </div>
             </form>
 
             <!-- Tombol Cepat Ketidakhadiran Mendadak (Izin / Sakit / Alpha) -->
@@ -608,7 +644,7 @@
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Perbarui Cache Offline PWA
               </button>
               <button onclick="copyGasScriptCode()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v9.3
+                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v9.4
               </button>
             </div>
           </div>
@@ -1032,7 +1068,7 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v9.3 - DUAL-TOKEN SECURITY, KIOSK & ZERO-LEAK
+    // PRESENSI QR ENTERPRISE v9.4 - QUEUE SYNC BUTTON & SUSULAN MANUAL
     // =========================================================================
 
     // BIARKAN KOSONG AGAR TIDAK ADA TOKEN RAHASIA BOCOR DI REPOSITORI GITHUB PUBLIC
@@ -1060,8 +1096,8 @@
       if (!badge || !txt) return;
       txt.innerText = label;
       badge.className = isReady
-        ? 'hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-700'
-        : 'hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-700';
+        ? 'hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-700'
+        : 'hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-700';
     }
 
     async function registerPwaServiceWorker() {
@@ -1561,6 +1597,7 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...payload, logPresensi, auditLogs }));
       }
       updateStorageUsageUI();
+      updateCloudIndicator();
     }
 
     function applyLoadedState(parsed) {
@@ -1701,6 +1738,7 @@
       renderAllViews();
 
       if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+        if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
         silentPullFromCloud(getCurrentSelectedYM());
       }
     }
@@ -1752,11 +1790,19 @@
       const btnLogAbsen = document.getElementById('btnLogKetidakhadiran');
       const searchLog = document.getElementById('searchLogInput');
       const btnCsvLog = document.getElementById('btnExportLogCsv');
+      const wrapSusulan = document.getElementById('wrapToggleSusulan');
+      const panelSusulan = document.getElementById('panelSusulanManual');
+      const toggleSusulan = document.getElementById('toggleModeSusulan');
 
       if (boxAbsen) boxAbsen.classList.toggle('hidden', isPublic);
       if (btnLogAbsen) btnLogAbsen.classList.toggle('hidden', isPublic);
       if (searchLog) searchLog.classList.toggle('hidden', isPublic);
       if (btnCsvLog) btnCsvLog.classList.toggle('hidden', isPublic);
+      if (wrapSusulan) wrapSusulan.classList.toggle('hidden', isPublic);
+      if (isPublic) {
+        if (toggleSusulan) toggleSusulan.checked = false;
+        if (panelSusulan) panelSusulan.classList.add('hidden');
+      }
 
       if (isGuru || isPublic) {
         switchTab('scanner');
@@ -2070,7 +2116,7 @@
       }
     }
 
-    // --- AUTO SESI & PRESENSI ---
+    // --- AUTO SESI, SUSULAN MANUAL & PRESENSI ---
     function getAutoSesiByClock() {
       const hhmm = new Date().toTimeString().slice(0, 5);
       if (hhmm >= sesiSettings.pulangStart) return 'Jam Pulang';
@@ -2106,8 +2152,22 @@
       });
     }
 
-    async function processPresensi(rawCode, isManual = false) {
-      if (document.getElementById('toggleAutoSesi')?.checked) {
+    function toggleSusulanPanel() {
+      const isSusulan = document.getElementById('toggleModeSusulan')?.checked;
+      const panel = document.getElementById('panelSusulanManual');
+      if (!panel) return;
+      panel.classList.toggle('hidden', !isSusulan);
+      if (isSusulan) {
+        const dateInp = document.getElementById('inputTanggalSusulan');
+        if (dateInp && !dateInp.value) {
+          const now = new Date();
+          dateInp.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        }
+      }
+    }
+
+    async function processPresensi(rawCode, isManual = false, susulanOpts = null) {
+      if (!susulanOpts && document.getElementById('toggleAutoSesi')?.checked) {
         aktifSesi = getAutoSesiByClock();
         updateSesiButtonStyles();
       }
@@ -2120,8 +2180,8 @@
 
       const code = extracted.id;
       const now = Date.now();
-      if (lastScanTimestamps[code] && now - lastScanTimestamps[code] < 10000) return;
-      lastScanTimestamps[code] = now;
+      if (!susulanOpts && lastScanTimestamps[code] && now - lastScanTimestamps[code] < 10000) return;
+      if (!susulanOpts) lastScanTimestamps[code] = now;
 
       const siswa = siswaData.find(s => s.nisn === code);
       const guru = guruData.find(g => g.nip === code);
@@ -2133,34 +2193,46 @@
       }
 
       const strictGps = document.getElementById('toggleStrictGps')?.checked;
-      if (!isManual && strictGps && !userCurrentGPS.locked) {
+      if (!isManual && !susulanOpts && strictGps && !userCurrentGPS.locked) {
         return showAlert('GPS Wajib Aktif', 'Mode Strict GPS aktif. Izinkan akses lokasi perangkat sebelum memindai QR.');
       }
 
       const nowObj = new Date();
-      const isoDate = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
-      const timeStr = `${isoDate} ${nowObj.toTimeString().slice(0, 8)}`;
+      let isoDate = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
+      let timeStr = `${isoDate} ${nowObj.toTimeString().slice(0, 8)}`;
+      let statusLabel = '';
+      let gpsLabel = '';
+      let recordTs = now;
 
-      const maxRad = appConfig.maxRadiusMeters || 150;
-      let gpsLabel = isManual ? (getEffectiveRole() === 'public_kiosk' ? 'Input Kiosk Umum' : 'Input Manual Admin') : '';
-      if (!isManual) {
-        if (!userCurrentGPS.locked || userCurrentGPS.distance === null) {
-          gpsLabel = 'GPS Tidak Aktif';
-        } else if (userCurrentGPS.distance > maxRad) {
-          gpsLabel = `Luar Radius (${userCurrentGPS.distance}m)`;
-        } else {
-          gpsLabel = `Tervalidasi (${userCurrentGPS.distance}m)`;
+      if (susulanOpts && susulanOpts.tanggal) {
+        isoDate = susulanOpts.tanggal;
+        timeStr = `${isoDate} ${nowObj.toTimeString().slice(0, 8)}`;
+        statusLabel = susulanOpts.status;
+        gpsLabel = susulanOpts.ket ? `Susulan: ${susulanOpts.ket}` : `Susulan Manual (${currentUserName || 'Petugas'})`;
+        const parsedTs = Date.parse(`${isoDate}T${nowObj.toTimeString().slice(0, 8)}`);
+        if (!isNaN(parsedTs)) recordTs = parsedTs;
+      } else {
+        const maxRad = appConfig.maxRadiusMeters || 150;
+        gpsLabel = isManual ? (getEffectiveRole() === 'public_kiosk' ? 'Input Kiosk Umum' : 'Input Manual Admin') : '';
+        if (!isManual) {
+          if (!userCurrentGPS.locked || userCurrentGPS.distance === null) {
+            gpsLabel = 'GPS Tidak Aktif';
+          } else if (userCurrentGPS.distance > maxRad) {
+            gpsLabel = `Luar Radius (${userCurrentGPS.distance}m)`;
+          } else {
+            gpsLabel = `Tervalidasi (${userCurrentGPS.distance}m)`;
+          }
         }
-      }
 
-      const nowHHMM = nowObj.toTimeString().slice(0, 5);
-      let statusLabel = `Hadir (${aktifSesi})`;
-      if (aktifSesi === 'Jam Masuk' && nowHHMM > sesiSettings.masukEnd) {
-        statusLabel = `Terlambat (${aktifSesi})`;
-      } else if (aktifSesi === 'Jam Siang' && nowHHMM > sesiSettings.siangEnd) {
-        statusLabel = `Terlambat (${aktifSesi})`;
-      } else if (aktifSesi === 'Jam Pulang' && nowHHMM < sesiSettings.pulangStart) {
-        statusLabel = `Pulang Cepat (${aktifSesi})`;
+        const nowHHMM = nowObj.toTimeString().slice(0, 5);
+        statusLabel = `Hadir (${aktifSesi})`;
+        if (aktifSesi === 'Jam Masuk' && nowHHMM > sesiSettings.masukEnd) {
+          statusLabel = `Terlambat (${aktifSesi})`;
+        } else if (aktifSesi === 'Jam Siang' && nowHHMM > sesiSettings.siangEnd) {
+          statusLabel = `Terlambat (${aktifSesi})`;
+        } else if (aktifSesi === 'Jam Pulang' && nowHHMM < sesiSettings.pulangStart) {
+          statusLabel = `Pulang Cepat (${aktifSesi})`;
+        }
       }
 
       const logEntry = {
@@ -2170,17 +2242,18 @@
         nama: person.nama,
         status: statusLabel,
         gps: gpsLabel,
-        timestamp: now
+        timestamp: recordTs
       };
 
       logPresensi.unshift(logEntry);
+      logPresensi.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
       await saveAllData();
       await triggerAutoSync('appendLog', logEntry);
 
       renderLogTable();
       renderRekapTable();
       renderAnalytics();
-      showAlert('Presensi Tercatat', `${person.nama} berhasil dicatat (${statusLabel}).`);
+      showAlert(susulanOpts ? 'Presensi Susulan Tercatat' : 'Presensi Tercatat', `${person.nama} berhasil dicatat (${statusLabel}) pada tanggal ${isoDate}.`);
       speakFemaleVoice(`Presensi berhasil. ${person.nama}.`);
     }
 
@@ -2188,7 +2261,17 @@
       e.preventDefault();
       const inp = document.getElementById('manualScanInput');
       if (!inp.value.trim()) return;
-      processPresensi(inp.value.trim(), true);
+
+      const isSusulan = document.getElementById('toggleModeSusulan')?.checked && getEffectiveRole() !== 'public_kiosk';
+      if (isSusulan) {
+        const tgl = document.getElementById('inputTanggalSusulan')?.value;
+        const st = document.getElementById('selectStatusSusulan')?.value || 'Hadir (Jam Masuk)';
+        const ket = document.getElementById('inputKetSusulan')?.value.trim() || '';
+        if (!tgl) return showAlert('Tanggal Susulan Kosong', 'Pilih tanggal presensi susulan terlebih dahulu.');
+        processPresensi(inp.value.trim(), true, { tanggal: tgl, status: st, ket });
+      } else {
+        processPresensi(inp.value.trim(), true, null);
+      }
       inp.value = '';
     }
 
@@ -2674,7 +2757,7 @@
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
                 <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.3</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.4</div>
             </div>
           `;
         }
@@ -2697,7 +2780,7 @@
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V9.3</span>
+              <span>V9.4</span>
             </div>
           </div>
         `;
@@ -3499,7 +3582,7 @@
       reader.readAsText(file);
     }
 
-    // --- 2-WAY CLOUD SYNCHRONIZATION ENGINE (DUAL-TOKEN & FILTER BULANAN) ---
+    // --- 2-WAY CLOUD SYNCHRONIZATION ENGINE (DUAL-TOKEN, QUEUE SYNC & FILTER BULANAN) ---
     function createSecureEnvelope(payloadObj) {
       const actionName = payloadObj.action || '';
       const activeSecret = getActiveCloudToken(actionName);
@@ -3520,7 +3603,26 @@
       }
     }
 
+    function updateHeaderQueueButton() {
+      const btn = document.getElementById('btnHeaderSyncQueue');
+      const txt = document.getElementById('btnHeaderSyncQueueText');
+      if (!btn || !txt) return;
+
+      const hasUrl = Boolean(appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://'));
+      btn.classList.toggle('hidden', !hasUrl);
+
+      const qLen = offlineSyncQueue.length;
+      if (qLen > 0) {
+        btn.className = 'px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition animate-pulse';
+        txt.innerText = `Kirim Antrean (${qLen})`;
+      } else {
+        btn.className = 'px-2.5 sm:px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold flex items-center gap-1.5 transition';
+        txt.innerText = 'Sync Cloud';
+      }
+    }
+
     function updateCloudIndicator(label = null, online = null) {
+      updateHeaderQueueButton();
       const dot = document.getElementById('cloudStatusDot');
       const txt = document.getElementById('cloudStatusText');
       if (!dot || !txt) return;
@@ -3534,8 +3636,32 @@
         txt.innerText = 'Local Mode';
         return;
       }
-      txt.innerText = label || 'Cloud Ready';
-      dot.className = `w-2 h-2 rounded-full ${online === false ? 'bg-rose-500' : 'bg-emerald-500'}`;
+      txt.innerText = label || (offlineSyncQueue.length > 0 ? `Antrean (${offlineSyncQueue.length})` : 'Cloud Ready');
+      dot.className = `w-2 h-2 rounded-full ${online === false ? 'bg-rose-500' : (offlineSyncQueue.length > 0 ? 'bg-amber-500' : 'bg-emerald-500')}`;
+    }
+
+    async function manualFlushQueueAndPull() {
+      if (!appConfig.gsheetUrl || !appConfig.gsheetUrl.startsWith('https://')) {
+        return showAlert('Cloud Belum Terhubung', 'URL Web App Google Apps Script belum dikonfigurasi.');
+      }
+      if (!navigator.onLine) {
+        return showAlert('Perangkat Offline', `Saat ini tidak ada koneksi internet. ${offlineSyncQueue.length} catatan presensi tetap tersimpan aman di antrean lokal browser.`);
+      }
+
+      const initialPending = offlineSyncQueue.length;
+      if (initialPending > 0) {
+        await flushOfflineQueue(false);
+      }
+      await silentPullFromCloud(getCurrentSelectedYM());
+
+      const remaining = offlineSyncQueue.length;
+      if (initialPending > 0 && remaining === 0) {
+        showAlert('Antrean Terkirim!', `Seluruh ${initialPending} catatan presensi tertunda berhasil dikirim ke Google Sheets dan data terbaru telah disinkronkan.`);
+      } else if (remaining > 0) {
+        showAlert('Sebagian Tertunda', `${initialPending - remaining} terkirim, ${remaining} masih dalam antrean. Periksa koneksi internet atau Token Anda.`);
+      } else {
+        showAlert('Sinkronisasi Selesai', 'Tidak ada antrean tertunda. Data lokal dan Google Sheets sudah sinkron.');
+      }
     }
 
     async function triggerAutoSync(actionType, dataPayload) {
@@ -3691,7 +3817,6 @@
 
       if (changed) {
         await saveAllData();
-        // Langsung bersihkan parameter token dari address bar browser agar tidak terlihat
         if (window.history && window.history.replaceState) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -4005,7 +4130,7 @@
       const admTok = appConfig.apiToken || 'GANTI_DENGAN_TOKEN_ADMIN_RAHASIA_2026';
       const scnTok = appConfig.scanToken || 'GANTI_DENGAN_TOKEN_SCAN_PIKET_2026';
       const gasBackend = `// ============================================================================
-// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v9.3 (DUAL-TOKEN SECURITY)
+// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v9.4 (DUAL-TOKEN SECURITY)
 // ============================================================================
 
 const ADMIN_SECRET_TOKEN = "${admTok}";
@@ -4023,7 +4148,7 @@ const SHEET_SETTINGS = "PengaturanSekolah";
 
 function testSetup() {
   const ss = setupSheets();
-  Logger.log("BERHASIL! Dual-Token v9.3 siap. Buka Google Sheets di: " + ss.getUrl());
+  Logger.log("BERHASIL! Dual-Token v9.4 siap. Buka Google Sheets di: " + ss.getUrl());
 }
 
 function setupSheets() {
@@ -4045,340 +4170,262 @@ function setupSheets() {
     userSheet.getRange(2, 1, defaultUsers.length, 6).setValues(defaultUsers);
   }
 
-  const defaultSheet = ss.getSheetByName("Sheet1");
+  const defaultSheet = ss.getSheetByName("Sheet1") || ss.getSheetByName("Lembar1");
   if (defaultSheet && ss.getSheets().length > 1) {
-    ss.deleteSheet(defaultSheet);
+    try { ss.deleteSheet(defaultSheet); } catch (e) {}
   }
   return ss;
 }
 
 function getTargetSpreadsheet_() {
-  let ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (ss) return ss;
+  try {
+    const active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) return active;
+  } catch (e) {}
   const props = PropertiesService.getScriptProperties();
-  const savedId = props.getProperty("TARGET_SPREADSHEET_ID");
+  let savedId = props.getProperty("TARGET_SPREADSHEET_ID");
   if (savedId) {
     try { return SpreadsheetApp.openById(savedId); } catch (e) {}
   }
-  ss = SpreadsheetApp.create("Database_Presensi_QR_Enterprise_v9");
-  props.setProperty("TARGET_SPREADSHEET_ID", ss.getId());
-  return ss;
+  const files = DriveApp.getFilesByName("Database_Presensi_QR_Enterprise_v8");
+  if (files.hasNext()) {
+    const existing = SpreadsheetApp.open(files.next());
+    props.setProperty("TARGET_SPREADSHEET_ID", existing.getId());
+    return existing;
+  }
+  const created = SpreadsheetApp.create("Database_Presensi_QR_Enterprise_v8");
+  props.setProperty("TARGET_SPREADSHEET_ID", created.getId());
+  return created;
 }
 
 function ensureSheet_(ss, name, headers) {
-  const targetSs = ss || getTargetSpreadsheet_();
-  let sheet = targetSs.getSheetByName(name);
-  if (!sheet) {
-    sheet = targetSs.insertSheet(name);
-    sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#eef2ff").setFontColor("#312e81");
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) sheet = ss.insertSheet(name);
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground("#e2e8f0");
     sheet.setFrozenRows(1);
+  } else if (name === SHEET_USERS && sheet.getLastColumn() < 6) {
+    sheet.insertColumnAfter(3);
+    sheet.getRange(1, 4).setValue("kelasBinaan").setFontWeight("bold").setBackground("#e2e8f0");
   }
   return sheet;
 }
 
-function doGet(e) {
-  const ss = setupSheets();
-  const action = (e && e.parameter && e.parameter.action) || "";
-  const sig = (e && e.parameter && e.parameter.sig) || "";
-  const monthFilter = String((e && e.parameter && e.parameter.month) || "").trim();
-
-  const validAdminSig = computeHmacSha256_("GET_DATA", ADMIN_SECRET_TOKEN);
-  const validScanSig  = computeHmacSha256_("GET_DATA", SCAN_KIOSK_TOKEN);
-
-  if (sig !== validAdminSig && sig !== validScanSig) {
-    return jsonOut_({ status: "error", message: "Signature GET tidak valid! Token tidak cocok." });
-  }
-
-  const isAdminScope = (sig === validAdminSig);
-
-  if (action === "getData") {
-    let logs = readSheetObjects_(ss.getSheetByName(SHEET_LOG), ["tanggal", "id"]);
-    if (/^\\d{4}-\\d{2}$/.test(monthFilter)) {
-      logs = logs.filter(l => String(l.tanggal || l.waktu || "").indexOf(monthFilter) === 0);
-    }
-    return jsonOut_({
-      status: "success",
-      tokenScope: isAdminScope ? "admin" : "scan",
-      siswaData: readSheetObjects_(ss.getSheetByName(SHEET_SISWA), ["nisn", "kelas"]),
-      guruData: readSheetObjects_(ss.getSheetByName(SHEET_GURU), ["nip"]),
-      logPresensi: logs,
-      agendaData: readSheetObjects_(ss.getSheetByName(SHEET_AGENDA), ["tanggal"]),
-      usersData: readSheetObjects_(ss.getSheetByName(SHEET_USERS), ["username", "kelasBinaan"]),
-      settingsData: readSettingsObject_(ss.getSheetByName(SHEET_SETTINGS))
-    });
-  }
-
-  return jsonOut_({ status: "error", message: "Action GET tidak dikenal." });
+function computeHmacSha256_(message, secret) {
+  const rawSig = Utilities.computeHmacSha256Signature(String(message), String(secret), Utilities.Charset.UTF_8);
+  return rawSig.map(b => ("0" + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join("");
 }
 
-function doPost(e) {
-  const ss = setupSheets();
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(15000)) {
-    return jsonOut_({ status: "error", message: "Server sibuk (Lock Timeout). Coba lagi." });
-  }
+function computeSha256_(message) {
+  const rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(message), Utilities.Charset.UTF_8);
+  return rawHash.map(b => ("0" + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join("");
+}
 
+function getAuthorizedTier_(message, sig) {
+  if (!sig) return null;
+  const cleanSig = String(sig).toLowerCase();
+  if (ADMIN_SECRET_TOKEN && computeHmacSha256_(message, ADMIN_SECRET_TOKEN).toLowerCase() === cleanSig) {
+    return "admin";
+  }
+  if (SCAN_KIOSK_TOKEN && computeHmacSha256_(message, SCAN_KIOSK_TOKEN).toLowerCase() === cleanSig) {
+    return "scan";
+  }
+  return null;
+}
+
+function saveBase64PhotoToDrive_(base64Str, filePrefix) {
+  if (!base64Str || typeof base64Str !== "string" || !base64Str.startsWith("data:image/")) return base64Str;
   try {
-    if (!e || !e.postData || !e.postData.contents) {
-      return jsonOut_({ status: "error", message: "Payload kosong." });
-    }
-
-    const envelope = JSON.parse(e.postData.contents);
-    const reqTs = Number(envelope.timestamp || 0);
-    const reqNonce = String(envelope.nonce || "");
-
-    if (!reqTs || Math.abs(Date.now() - reqTs) > MAX_REQUEST_AGE_MS) {
-      return jsonOut_({ status: "error", message: "Request kedaluwarsa (Timestamp tidak valid)." });
-    }
-    if (!reqNonce) {
-      return jsonOut_({ status: "error", message: "Nonce wajib disertakan." });
-    }
-
-    const cache = CacheService.getScriptCache();
-    const nonceKey = "NONCE_" + reqNonce;
-    if (cache.get(nonceKey)) {
-      return jsonOut_({ status: "error", message: "Replay Attack terdeteksi! Nonce sudah digunakan." });
-    }
-
-    const baseString = String(envelope.payload) + String(envelope.timestamp) + reqNonce;
-    const expectedAdminSig = computeHmacSha256_(baseString, ADMIN_SECRET_TOKEN);
-    const expectedScanSig  = computeHmacSha256_(baseString, SCAN_KIOSK_TOKEN);
-
-    let tokenScope = "";
-    if (envelope.signature === expectedAdminSig) {
-      tokenScope = "admin";
-    } else if (envelope.signature === expectedScanSig) {
-      tokenScope = "scan";
-    } else {
-      return jsonOut_({ status: "error", message: "HMAC Signature POST ditolak! Token tidak valid." });
-    }
-
-    cache.put(nonceKey, "1", 600);
-    const req = JSON.parse(envelope.payload);
-
-    if (tokenScope === "scan" && req.action !== "appendLog") {
-      return jsonOut_({
-        status: "error",
-        message: "Akses Ditolak: Token Scan/Piket hanya diizinkan mencatat presensi (appendLog)."
-      });
-    }
-
-    if (req.action === "appendLog" && req.data) {
-      appendUniqueLog_(ss.getSheetByName(SHEET_LOG), req.data);
-    } else if (req.action === "syncLog" && Array.isArray(req.data)) {
-      mergeLogSheet_(ss.getSheetByName(SHEET_LOG), req.data);
-    } else if (req.action === "syncSiswa" && Array.isArray(req.data)) {
-      writeSiswaSheet_(ss.getSheetByName(SHEET_SISWA), req.data);
-    } else if (req.action === "syncGuru" && Array.isArray(req.data)) {
-      writeGuruSheet_(ss.getSheetByName(SHEET_GURU), req.data);
-    } else if (req.action === "syncAgenda" && Array.isArray(req.data)) {
-      writeAgendaSheet_(ss.getSheetByName(SHEET_AGENDA), req.data);
-    } else if (req.action === "syncUsers" && Array.isArray(req.data)) {
-      writeUsersSheet_(ss.getSheetByName(SHEET_USERS), req.data);
-    } else if (req.action === "syncSettings" && req.data && typeof req.data === "object") {
-      writeSettingsSheet_(ss.getSheetByName(SHEET_SETTINGS), req.data);
-    } else if (req.action === "syncAll") {
-      if (Array.isArray(req.siswaData))   writeSiswaSheet_(ss.getSheetByName(SHEET_SISWA), req.siswaData);
-      if (Array.isArray(req.guruData))    writeGuruSheet_(ss.getSheetByName(SHEET_GURU), req.guruData);
-      if (Array.isArray(req.logPresensi)) mergeLogSheet_(ss.getSheetByName(SHEET_LOG), req.logPresensi);
-      if (Array.isArray(req.agendaData))  writeAgendaSheet_(ss.getSheetByName(SHEET_AGENDA), req.agendaData);
-      if (Array.isArray(req.usersData))   writeUsersSheet_(ss.getSheetByName(SHEET_USERS), req.usersData);
-      if (req.settingsData && typeof req.settingsData === "object") writeSettingsSheet_(ss.getSheetByName(SHEET_SETTINGS), req.settingsData);
-    }
-
-    SpreadsheetApp.flush();
-    return jsonOut_({ status: "success", message: "Tersimpan (" + tokenScope.toUpperCase() + " Scope) v9.3" });
-  } catch (err) {
-    return jsonOut_({ status: "error", message: String(err) });
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function getOrCreateDriveFolder_() {
-  const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
-  if (folders.hasNext()) return folders.next();
-  const folder = DriveApp.createFolder(DRIVE_FOLDER_NAME);
-  folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return folder;
-}
-
-function uploadBase64ToDrive_(rawDataUrl, fileNamePrefix) {
-  if (!rawDataUrl || typeof rawDataUrl !== "string") return "";
-  if (rawDataUrl.indexOf("https://") === 0) return rawDataUrl;
-  if (rawDataUrl.indexOf("data:image/") !== 0) return "";
-  try {
-    const parts = rawDataUrl.split(",");
-    const mimeMatch = parts[0].match(/data:(image\\/[a-zA-Z0-9+.-]+);base64/);
-    const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    const matches = base64Str.match(/^data:(image\\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+    if (!matches) return base64Str;
+    const mimeType = matches[1];
+    const bytes = Utilities.base64Decode(matches[2]);
     const ext = mimeType.split("/")[1] || "jpg";
-    const bytes = Utilities.base64Decode(parts[1]);
-    const blob = Utilities.newBlob(bytes, mimeType, fileNamePrefix + "_" + Date.now() + "." + ext);
-    const folder = getOrCreateDriveFolder_();
+    const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
+    const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
+    const blob = Utilities.newBlob(bytes, mimeType, filePrefix + "_" + Date.now() + "." + ext);
     const file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return "https://lh3.googleusercontent.com/d/" + file.getId();
-  } catch (e) {
-    return "";
+  } catch (err) {
+    return base64Str;
   }
 }
 
-function writeSettingsSheet_(sheet, obj) {
-  const existing = readSettingsObject_(sheet);
-  const merged = Object.assign({}, existing, obj);
-  if (merged.schoolLogo && String(merged.schoolLogo).indexOf("data:image/") === 0) {
-    const driveUrl = uploadBase64ToDrive_(merged.schoolLogo, "LOGO_SEKOLAH");
-    if (driveUrl) merged.schoolLogo = driveUrl;
+function doGet(e) {
+  const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : "";
+  const sig = (e && e.parameter && e.parameter.sig) ? e.parameter.sig : "";
+  const monthFilter = (e && e.parameter && e.parameter.month) ? String(e.parameter.month).trim() : "";
+
+  if (action === "getData") {
+    const tier = getAuthorizedTier_("GET_DATA", sig);
+    if (!tier) return jsonOut_({ status: "error", message: "Unauthorized GET Signature" });
+    const ss = setupSheets();
+    const allLogs = sheetToObjects_(ss.getSheetByName(SHEET_LOG));
+    const filteredLogs = monthFilter
+      ? allLogs.filter(l => String(l.tanggal || "").startsWith(monthFilter) || String(l.waktu || "").startsWith(monthFilter))
+      : allLogs;
+    return jsonOut_({
+      status: "success",
+      authTier: tier,
+      siswaData: sheetToObjects_(ss.getSheetByName(SHEET_SISWA)),
+      guruData: sheetToObjects_(ss.getSheetByName(SHEET_GURU)),
+      logPresensi: filteredLogs,
+      agendaData: sheetToObjects_(ss.getSheetByName(SHEET_AGENDA)),
+      usersData: sheetToObjects_(ss.getSheetByName(SHEET_USERS)),
+      settingsData: readSettingsObject_(ss.getSheetByName(SHEET_SETTINGS))
+    });
   }
-  const keys = Object.keys(merged);
-  const rows = keys.map(k => [k, String(merged[k] === undefined || merged[k] === null ? "" : merged[k])]);
-  clearBody_(sheet);
-  if (rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, 2).setNumberFormat("@").setValues(rows);
+  return jsonOut_({ status: "online", message: "Presensi QR Dual-Token Backend v9.4 Aktif" });
+}
+
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const envelope = JSON.parse(e.postData.contents);
+    const payloadStr = envelope.payload;
+    const timestamp = Number(envelope.timestamp);
+    const nonce = String(envelope.nonce || "");
+    const signature = String(envelope.signature || "");
+
+    if (!payloadStr || !timestamp || !nonce || !signature) return jsonOut_({ status: "error", message: "Invalid Envelope" });
+    if (Math.abs(Date.now() - timestamp) > MAX_REQUEST_AGE_MS) return jsonOut_({ status: "error", message: "Expired Timestamp" });
+
+    const tier = getAuthorizedTier_(payloadStr + String(timestamp) + nonce, signature);
+    if (!tier) return jsonOut_({ status: "error", message: "Invalid HMAC Signature" });
+
+    const cache = CacheService.getScriptCache();
+    if (cache.get("NONCE_" + nonce)) return jsonOut_({ status: "error", message: "Replay Detected" });
+    cache.put("NONCE_" + nonce, "1", 600);
+
+    const body = JSON.parse(payloadStr);
+    const action = body.action;
+
+    if (tier === "scan" && action !== "appendLog") {
+      return jsonOut_({ status: "error", message: "Scan Token hanya diizinkan mencatat presensi (appendLog)." });
+    }
+
+    const ss = setupSheets();
+
+    if (action === "appendLog" && body.data) {
+      const l = body.data;
+      ss.getSheetByName(SHEET_LOG).appendRow([l.tanggal || "", l.waktu || "", l.id || "", l.nama || "", l.status || "", l.gps || "", l.timestamp || Date.now()]);
+      return jsonOut_({ status: "success" });
+    }
+    if (action === "syncLog" && Array.isArray(body.data)) {
+      replaceSheetRows_(ss.getSheetByName(SHEET_LOG), ["tanggal", "waktu", "id", "nama", "status", "gps", "timestamp"], body.data);
+      return jsonOut_({ status: "success" });
+    }
+    if (action === "syncSiswa" && Array.isArray(body.data)) {
+      const processed = body.data.map(s => ({ ...s, foto: saveBase64PhotoToDrive_(s.foto, "SISWA_" + s.nisn) }));
+      replaceSheetRows_(ss.getSheetByName(SHEET_SISWA), ["nisn", "nama", "kelas", "foto", "updatedAt"], processed);
+      return jsonOut_({ status: "success" });
+    }
+    if (action === "syncGuru" && Array.isArray(body.data)) {
+      replaceSheetRows_(ss.getSheetByName(SHEET_GURU), ["nip", "nama", "mapel", "updatedAt"], body.data);
+      return jsonOut_({ status: "success" });
+    }
+    if (action === "syncAgenda" && Array.isArray(body.data)) {
+      replaceSheetRows_(ss.getSheetByName(SHEET_AGENDA), ["tanggal", "judul", "kategori", "updatedAt"], body.data);
+      return jsonOut_({ status: "success" });
+    }
+    if (action === "syncUsers" && Array.isArray(body.data)) {
+      const safeUsers = protectSuperadminRow_(ss.getSheetByName(SHEET_USERS), body.data);
+      replaceSheetRows_(ss.getSheetByName(SHEET_USERS), ["username", "name", "role", "kelasBinaan", "passHash", "updatedAt"], safeUsers);
+      return jsonOut_({ status: "success" });
+    }
+    if (action === "syncSettings" && body.data) {
+      writeSettingsObject_(ss.getSheetByName(SHEET_SETTINGS), body.data);
+      return jsonOut_({ status: "success" });
+    }
+    if (action === "syncAll") {
+      if (Array.isArray(body.siswaData)) {
+        const processed = body.siswaData.map(s => ({ ...s, foto: saveBase64PhotoToDrive_(s.foto, "SISWA_" + s.nisn) }));
+        replaceSheetRows_(ss.getSheetByName(SHEET_SISWA), ["nisn", "nama", "kelas", "foto", "updatedAt"], processed);
+      }
+      if (Array.isArray(body.guruData)) replaceSheetRows_(ss.getSheetByName(SHEET_GURU), ["nip", "nama", "mapel", "updatedAt"], body.guruData);
+      if (Array.isArray(body.logPresensi)) mergeSheetLogs_(ss.getSheetByName(SHEET_LOG), body.logPresensi);
+      if (Array.isArray(body.agendaData)) replaceSheetRows_(ss.getSheetByName(SHEET_AGENDA), ["tanggal", "judul", "kategori", "updatedAt"], body.agendaData);
+      if (Array.isArray(body.usersData)) {
+        const safeUsers = protectSuperadminRow_(ss.getSheetByName(SHEET_USERS), body.usersData);
+        replaceSheetRows_(ss.getSheetByName(SHEET_USERS), ["username", "name", "role", "kelasBinaan", "passHash", "updatedAt"], safeUsers);
+      }
+      if (body.settingsData) {
+        writeSettingsObject_(ss.getSheetByName(SHEET_SETTINGS), body.settingsData);
+      }
+      return jsonOut_({ status: "success" });
+    }
+    return jsonOut_({ status: "error", message: "Unknown Action" });
+  } catch (err) {
+    return jsonOut_({ status: "error", message: err.toString() });
+  } finally {
+    lock.releaseLock();
   }
 }
 
 function readSettingsObject_(sheet) {
   const obj = {};
   if (!sheet || sheet.getLastRow() <= 1) return obj;
-  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).getDisplayValues();
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).getValues();
   rows.forEach(r => {
     const k = String(r[0] || "").trim();
-    if (k) obj[k] = String(r[1] || "");
+    if (k) obj[k] = r[1];
   });
   return obj;
 }
 
-function writeSiswaSheet_(sheet, list) {
-  const rows = list.map(s => {
-    const nisn = String(s.nisn || "");
-    const fotoUrl = uploadBase64ToDrive_(s.foto, "SISWA_" + nisn);
-    return [nisn, String(s.nama || ""), String(s.kelas || "-"), fotoUrl, Number(s.updatedAt) || Date.now()];
+function writeSettingsObject_(sheet, newSettingsObj) {
+  if (!sheet || !newSettingsObj) return;
+  const merged = readSettingsObject_(sheet);
+  Object.keys(newSettingsObj).forEach(k => {
+    merged[k] = newSettingsObj[k];
   });
-  clearBody_(sheet);
-  if (rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 1, rows.length, 5).setValues(rows);
-  }
+  const rows = Object.keys(merged).map(k => [k, merged[k]]);
+  if (sheet.getLastRow() > 1) sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).clearContent();
+  if (rows.length > 0) sheet.getRange(2, 1, rows.length, 2).setValues(rows);
 }
 
-function writeGuruSheet_(sheet, list) {
-  const rows = list.map(g => [String(g.nip || ""), String(g.nama || ""), String(g.mapel || "-"), Number(g.updatedAt) || Date.now()]);
-  clearBody_(sheet);
-  if (rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 1, rows.length, 4).setValues(rows);
+function protectSuperadminRow_(userSheet, incomingUsers) {
+  const list = Array.isArray(incomingUsers) ? [...incomingUsers] : [];
+  if (!list.some(u => String(u.username) === "superadmin")) {
+    const existing = sheetToObjects_(userSheet).find(u => String(u.username) === "superadmin");
+    if (existing) list.unshift(existing);
   }
+  return list;
 }
 
-function writeAgendaSheet_(sheet, list) {
-  const rows = list.map(a => [String(a.tanggal || ""), String(a.judul || ""), String(a.kategori || "kegiatan"), Number(a.updatedAt) || Date.now()]);
-  clearBody_(sheet);
-  if (rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 1, rows.length, 4).setValues(rows);
-  }
+function mergeSheetLogs_(sheet, incomingLogs) {
+  const headers = ["tanggal", "waktu", "id", "nama", "status", "gps", "timestamp"];
+  const existing = sheetToObjects_(sheet);
+  const map = new Map();
+  existing.forEach(l => {
+    if (l.id) map.set(String(l.id) + "_" + String(l.waktu) + "_" + String(l.status), l);
+  });
+  incomingLogs.forEach(l => {
+    if (l.id) map.set(String(l.id) + "_" + String(l.waktu) + "_" + String(l.status), l);
+  });
+  const merged = Array.from(map.values()).sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+  replaceSheetRows_(sheet, headers, merged);
 }
 
-function writeUsersSheet_(sheet, list) {
-  const rows = list.map(u => [
-    String(u.username || ""),
-    String(u.name || ""),
-    String(u.role || "admin"),
-    String(u.kelasBinaan || ""),
-    String(u.passHash || ""),
-    Number(u.updatedAt) || Date.now()
-  ]);
-  clearBody_(sheet);
-  if (rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 4, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 1, rows.length, 6).setValues(rows);
-  }
+function replaceSheetRows_(sheet, headers, objects) {
+  if (sheet.getLastRow() > 1) sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).clearContent();
+  if (!objects || objects.length === 0) return;
+  const rows = objects.map(obj => headers.map(h => obj[h] !== undefined ? obj[h] : ""));
+  sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
 }
 
-function appendUniqueLog_(sheet, entry) {
+function sheetToObjects_(sheet) {
   const lastRow = sheet.getLastRow();
-  const key = String(entry.id) + "_" + String(entry.waktu) + "_" + String(entry.status);
-  if (lastRow > 1) {
-    const startRow = Math.max(2, lastRow - 200);
-    const recent = sheet.getRange(startRow, 1, lastRow - startRow + 1, 7).getDisplayValues();
-    for (let i = 0; i < recent.length; i++) {
-      if (recent[i][2] + "_" + recent[i][1] + "_" + recent[i][4] === key) return;
-    }
-  }
-  const tgl = String(entry.tanggal || String(entry.waktu).slice(0, 10));
-  const nextRow = lastRow + 1;
-  sheet.getRange(nextRow, 1, 1, 7).setValues([[
-    tgl, String(entry.waktu || ""), String(entry.id || ""), String(entry.nama || ""),
-    String(entry.status || ""), String(entry.gps || ""), Number(entry.timestamp) || Date.now()
-  ]]);
-  sheet.getRange(nextRow, 1).setNumberFormat("@");
-  sheet.getRange(nextRow, 3).setNumberFormat("@");
-}
-
-function mergeLogSheet_(sheet, incomingList) {
-  const existing = readSheetObjects_(sheet, ["tanggal", "id"]);
-  const map = {};
-  existing.forEach(item => { map[item.id + "_" + item.waktu + "_" + item.status] = item; });
-  incomingList.forEach(item => {
-    const tgl = String(item.tanggal || String(item.waktu).slice(0, 10));
-    map[item.id + "_" + item.waktu + "_" + item.status] = {
-      tanggal: tgl, waktu: String(item.waktu || ""), id: String(item.id || ""),
-      nama: String(item.nama || ""), status: String(item.status || ""),
-      gps: String(item.gps || ""), timestamp: Number(item.timestamp) || Date.now()
-    };
-  });
-  const merged = Object.values(map).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-  const rows = merged.map(l => [l.tanggal, l.waktu, l.id, l.nama, l.status, l.gps, l.timestamp]);
-  clearBody_(sheet);
-  if (rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
-    sheet.getRange(2, 1, rows.length, 7).setValues(rows);
-  }
-}
-
-function readSheetObjects_(sheet, textCols) {
-  if (!sheet || sheet.getLastRow() <= 1) return [];
-  const data = sheet.getDataRange().getValues();
-  const displayData = sheet.getDataRange().getDisplayValues();
+  if (lastRow <= 1) return [];
+  const data = sheet.getRange(1, 1, lastRow, sheet.getLastColumn()).getValues();
   const headers = data[0];
-  const result = [];
-  for (let r = 1; r < data.length; r++) {
+  return data.slice(1).map(row => {
     const obj = {};
-    for (let c = 0; c < headers.length; c++) {
-      const h = String(headers[c]);
-      if (textCols && textCols.indexOf(h) !== -1) {
-        obj[h] = String(displayData[r][c] || "");
-      } else {
-        obj[h] = data[r][c];
-      }
-    }
-    result.push(obj);
-  }
-  return result;
-}
-
-function clearBody_(sheet) {
-  if (sheet && sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).clearContent();
-  }
-}
-
-function computeHmacSha256_(message, secret) {
-  const sigBytes = Utilities.computeHmacSha256Signature(
-    Utilities.newBlob(message).getBytes(),
-    Utilities.newBlob(secret).getBytes()
-  );
-  return sigBytes.map(b => ("0" + (b & 0xFF).toString(16)).slice(-2)).join("");
-}
-
-function computeSha256_(message) {
-  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, message, Utilities.Charset.UTF_8);
-  return digest.map(b => ("0" + (b & 0xFF).toString(16)).slice(-2)).join("");
+    headers.forEach((h, i) => obj[h] = row[i]);
+    return obj;
+  });
 }
 
 function jsonOut_(obj) {
@@ -4391,60 +4438,59 @@ function jsonOut_(obj) {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Kode Apps Script v9.3 Disalin!', 'Tempel ke Google Apps Script Anda (otomatis terisi Admin Token & Scan/Piket Token), lalu Deploy ulang sebagai Web App (Execute as: Me, Who has access: Anyone).');
+      showAlert('Kode Apps Script v9.4 Disalin!', 'Tempelkan ke Google Apps Script, jalankan fungsi testSetup, lalu Deploy sebagai Web App (Anyone).');
     }
 
     // --- UI HELPERS ---
     function switchTab(tabId) {
       if (getEffectiveRole() === 'public_kiosk' && tabId !== 'scanner') {
-        tabId = 'scanner';
+        return;
       }
-      if (getEffectiveRole() === 'guru_walikelas' && !['scanner', 'rekap'].includes(tabId)) {
-        tabId = 'scanner';
+      if (getEffectiveRole() === 'guru_walikelas' && tabId !== 'scanner' && tabId !== 'rekap') {
+        return;
       }
       activeTabState = tabId;
-      document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
-      const targetSec = document.getElementById(`tab_${tabId}`);
-      if (targetSec) targetSec.classList.remove('hidden');
-
-      document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.className = 'nav-tab px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap';
+      document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`tab_${tabId}`)?.classList.remove('hidden');
+      document.querySelectorAll('.nav-tab').forEach(b => {
+        b.classList.remove('bg-indigo-600', 'text-white');
+        b.classList.add('text-slate-600');
       });
       const activeBtn = document.getElementById(`tabBtn_${tabId}`);
       if (activeBtn) {
-        activeBtn.className = 'nav-tab px-3.5 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-1.5 whitespace-nowrap shadow-sm';
+        activeBtn.classList.remove('text-slate-600');
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
       }
       persistActiveSession();
+      if (tabId === 'analitik') renderAnalytics();
+      if (tabId === 'rekap') { renderRekapTable(); renderCalendar(); renderAgendaList(); }
       if (tabId === 'kartu') renderKartuPrint();
-      if (tabId === 'analitik') setTimeout(initCharts, 100);
     }
 
     function populateKelasFilters() {
-      const scoped = getScopedSiswa();
-      const kelasList = [...new Set(scoped.map(s => s.kelas || '-'))].sort();
+      const isGuruRestricted = (getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && currentUserKelasBinaan);
+      const kelasList = isGuruRestricted ? [currentUserKelasBinaan] : [...new Set(siswaData.map(s => s.kelas || '-'))];
+      const opts = isGuruRestricted
+        ? `<option value="${currentUserKelasBinaan}">Kelas ${currentUserKelasBinaan}</option>`
+        : `<option value="Semua">Semua Kelas</option>` + kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
+
       ['filterKelasSiswa', 'filterKelasKartu', 'rekapKelasFilter'].forEach(id => {
         const el = document.getElementById(id);
-        if (!el) return;
-        const prev = el.value;
-        el.innerHTML = (kelasList.length > 1 ? '<option value="Semua">Semua Kelas</option>' : '') +
-          kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
-        if (kelasList.includes(prev) || (prev === 'Semua' && kelasList.length > 1)) {
-          el.value = prev;
-        }
+        if (el) el.innerHTML = opts;
       });
     }
 
     function refreshAllUI() {
       document.getElementById('headerSchoolName').innerText = appConfig.schoolName;
-      document.getElementById('headerSchoolLogo').src = uploadedLogoDataUrl;
-      document.getElementById('previewLogoSekolah').src = uploadedLogoDataUrl;
+      document.getElementById('headerSchoolLogo').src = appConfig.schoolLogo || DEFAULT_LOGO_SVG;
+      document.getElementById('previewLogoSekolah').src = appConfig.schoolLogo || DEFAULT_LOGO_SVG;
       document.getElementById('profNamaSekolah').value = appConfig.schoolName;
       document.getElementById('profKepalaSekolah').value = appConfig.headmaster;
       document.getElementById('profAlamat').value = appConfig.address;
       document.getElementById('profLat').value = targetSchoolGPS.lat;
       document.getElementById('profLng').value = targetSchoolGPS.lng;
       document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters;
-      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl;
+      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl || '';
       document.getElementById('apiSecurityToken').value = appConfig.apiToken || '';
       document.getElementById('scanSecurityToken').value = appConfig.scanToken || '';
       document.getElementById('toggleAutoSync').checked = appConfig.autoSync !== false;
@@ -4460,22 +4506,13 @@ function jsonOut_(obj) {
       renderLogTable();
       renderSiswaTable();
       renderGuruTable();
+      renderKartuPrint();
       renderRekapTable();
       renderCalendar();
       renderAgendaList();
       renderUsersTable();
       renderResetRequestsTable();
       renderAnalytics();
-    }
-
-    function speakFemaleVoice(text) {
-      if (!document.getElementById('toggleVoiceNotif')?.checked) return;
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'id-ID';
-        window.speechSynthesis.speak(u);
-      }
     }
 
     function showAlert(title, msg) {
@@ -4490,46 +4527,58 @@ function jsonOut_(obj) {
         document.getElementById('confirmTitle').innerText = title;
         document.getElementById('confirmMessage').innerText = message;
         modal.classList.remove('hidden');
-
-        const cleanup = (val) => {
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const cleanup = (result) => {
           modal.classList.add('hidden');
-          document.getElementById('confirmOkBtn').onclick = null;
-          document.getElementById('confirmCancelBtn').onclick = null;
-          resolve(val);
+          okBtn.onclick = null;
+          cancelBtn.onclick = null;
+          resolve(result);
         };
-        document.getElementById('confirmOkBtn').onclick = () => cleanup(true);
-        document.getElementById('confirmCancelBtn').onclick = () => cleanup(false);
+        okBtn.onclick = () => cleanup(true);
+        cancelBtn.onclick = () => cleanup(false);
       });
     }
 
-    // --- BOOTSTRAP ---
+    function speakFemaleVoice(text) {
+      if (!document.getElementById('toggleVoiceNotif')?.checked) return;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id-ID';
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    setInterval(() => {
+      const clock = document.getElementById('liveClock');
+      if (clock) clock.innerText = new Date().toTimeString().slice(0, 8);
+      if (document.getElementById('toggleAutoSesi')?.checked) {
+        const autoSesi = getAutoSesiByClock();
+        if (autoSesi !== aktifSesi) {
+          aktifSesi = autoSesi;
+          updateSesiButtonStyles();
+        }
+      }
+    }, 1000);
+
+    // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
       registerPwaServiceWorker();
       loadAllData();
+      await applyUrlBootstrapParams();
       refreshAllUI();
       syncSesiModeUI();
       renderAllViews();
       initGPS();
       refreshCameraDevices(false);
-
-      restoreActiveSession();
-      await applyUrlBootstrapParams();
-
-      setInterval(() => {
-        const el = document.getElementById('liveClock');
-        if (el) el.innerText = new Date().toTimeString().slice(0, 8);
-        if (document.getElementById('toggleAutoSesi')?.checked) {
-          const autoS = getAutoSesiByClock();
-          if (autoS !== aktifSesi) {
-            aktifSesi = autoS;
-            updateSesiButtonStyles();
-          }
-        }
-      }, 1000);
-
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
-      if (appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://') && getActiveCloudToken('getData') && GITHUB_DEFAULT_CONFIG.autoPullOnLoad) {
+      if (currentUserRole !== 'public_kiosk') {
+        restoreActiveSession();
+      }
+      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+        if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
         silentPullFromCloud(getCurrentSelectedYM());
       }
     });

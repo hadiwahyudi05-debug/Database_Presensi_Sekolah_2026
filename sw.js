@@ -1,4 +1,4 @@
-const CACHE_NAME = 'presensi-qr-enterprise-v9-2';
+const CACHE_NAME = 'presensi-qr-enterprise-v9-3';
 
 const CORE_ASSETS = [
   './',

@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
-  <title>Presensi QR Enterprise v9.3 - Dual-Token Security, PWA Offline & Cloud</title>
+  <title>Presensi QR Enterprise v9.3 - Dual-Token Security, Kiosk Mode & Cloud</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -266,7 +266,7 @@
                   <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Izin / Sakit / Alpha
                 </button>
                 <input type="text" id="searchLogInput" oninput="renderLogTable()" placeholder="Cari nama / ID..." class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
-                <button onclick="exportLogCSV()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1">
+                <button id="btnExportLogCsv" onclick="exportLogCSV()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1">
                   <i data-lucide="download" class="w-3.5 h-3.5"></i> CSV
                 </button>
               </div>
@@ -657,7 +657,10 @@
             </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="saveGoogleConfig()" class="px-3.5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">Simpan Konfigurasi</button>
-              <button onclick="copyShareableScanLink()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Link aman khusus perangkat piket/kiosk (tanpa token admin)">
+              <button onclick="copyShareableKioskLink()" class="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Langsung membuka Mode Presensi Umum tanpa halaman login">
+                <i data-lucide="monitor-smartphone" class="w-3.5 h-3.5"></i> Salin Link Kiosk Umum
+              </button>
+              <button onclick="copyShareableScanLink()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Link aman khusus perangkat wali kelas / piket (tanpa token admin)">
                 <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> Salin Link Piket / Scan
               </button>
               <button onclick="copyShareableSetupLink()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center gap-1" title="Link khusus perangkat Admin (menyertakan token admin & scan)">
@@ -1029,7 +1032,7 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v9.3 - DUAL-TOKEN SECURITY & ZERO-LEAK GITHUB
+    // PRESENSI QR ENTERPRISE v9.3 - DUAL-TOKEN SECURITY, KIOSK & ZERO-LEAK
     // =========================================================================
 
     // BIARKAN KOSONG AGAR TIDAK ADA TOKEN RAHASIA BOCOR DI REPOSITORI GITHUB PUBLIC
@@ -1517,6 +1520,7 @@
           roleSel.classList.add('hidden');
           if (roleBadge) {
             roleBadge.innerText = getGuruBadgeText();
+            roleBadge.className = 'px-2 py-0.5 rounded-lg bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase';
             roleBadge.classList.remove('hidden');
           }
         } else {
@@ -1639,6 +1643,7 @@
           roleSel.classList.add('hidden');
           if (roleBadge) {
             roleBadge.innerText = getGuruBadgeText();
+            roleBadge.className = 'px-2 py-0.5 rounded-lg bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase';
             roleBadge.classList.remove('hidden');
           }
         } else {
@@ -1670,19 +1675,20 @@
 
     function enterPublicPresensiMode(isRestore = false) {
       currentUserRole = 'public_kiosk';
-      currentUserName = 'Semua Pengguna (Presensi Umum)';
+      currentUserName = 'Mode Presensi Umum (Kiosk)';
       currentUserUsername = 'public_kiosk';
       currentUserKelasBinaan = '';
 
       document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('activeUserLabel').innerText = 'Mode Presensi Umum';
+      document.getElementById('activeUserLabel').innerText = 'Presensi Umum';
 
       const roleSel = document.getElementById('roleSelector');
       const roleBadge = document.getElementById('activeRoleBadge');
       const authLabel = document.getElementById('btnHeaderAuthLabel');
       if (roleSel) roleSel.classList.add('hidden');
       if (roleBadge) {
-        roleBadge.innerText = 'SEMUA PENGGUNA • ABSEN QR';
+        roleBadge.innerText = 'KIOSK UMUM • SCAN QR';
+        roleBadge.className = 'px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase';
         roleBadge.classList.remove('hidden');
       }
       if (authLabel) authLabel.innerText = 'Login Admin';
@@ -1690,9 +1696,13 @@
       changeRole('public_kiosk', isRestore);
       persistActiveSession();
       if (!isRestore) {
-        recordAudit('PUBLIC_KIOSK', 'Membuka Mode Presensi Umum untuk semua pengguna');
+        recordAudit('PUBLIC_KIOSK', 'Membuka Mode Presensi Umum (Kiosk)');
       }
       renderAllViews();
+
+      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+        silentPullFromCloud(getCurrentSelectedYM());
+      }
     }
 
     function logoutApp() {
@@ -1718,6 +1728,9 @@
       const allowedTabs = isPublic ? ['tabBtn_scanner'] : (isGuru ? ['tabBtn_scanner', 'tabBtn_rekap'] : null);
       const allowedSections = isPublic ? ['tab_scanner'] : (isGuru ? ['tab_scanner', 'tab_rekap'] : null);
 
+      const navContainer = document.querySelector('header nav');
+      if (navContainer) navContainer.classList.toggle('hidden', isPublic);
+
       document.querySelectorAll('.nav-tab').forEach(btn => {
         if (allowedTabs) {
           btn.classList.toggle('hidden', !allowedTabs.includes(btn.id));
@@ -1737,8 +1750,13 @@
 
       const boxAbsen = document.getElementById('boxInputKetidakhadiran');
       const btnLogAbsen = document.getElementById('btnLogKetidakhadiran');
+      const searchLog = document.getElementById('searchLogInput');
+      const btnCsvLog = document.getElementById('btnExportLogCsv');
+
       if (boxAbsen) boxAbsen.classList.toggle('hidden', isPublic);
       if (btnLogAbsen) btnLogAbsen.classList.toggle('hidden', isPublic);
+      if (searchLog) searchLog.classList.toggle('hidden', isPublic);
+      if (btnCsvLog) btnCsvLog.classList.toggle('hidden', isPublic);
 
       if (isGuru || isPublic) {
         switchTab('scanner');
@@ -2124,7 +2142,7 @@
       const timeStr = `${isoDate} ${nowObj.toTimeString().slice(0, 8)}`;
 
       const maxRad = appConfig.maxRadiusMeters || 150;
-      let gpsLabel = 'Input Manual Admin';
+      let gpsLabel = isManual ? (getEffectiveRole() === 'public_kiosk' ? 'Input Kiosk Umum' : 'Input Manual Admin') : '';
       if (!isManual) {
         if (!userCurrentGPS.locked || userCurrentGPS.distance === null) {
           gpsLabel = 'GPS Tidak Aktif';
@@ -2718,7 +2736,13 @@
       return logPresensi;
     }
 
-    // --- LOG TABLE, HAPUS LOG & MATRIKS REKAP BULANAN (H / T / I / S / A) ---
+    // --- LOG TABLE, HAPUS LOG & PRIVASI KIOSK UMUM ---
+    function maskIdForPublic(rawId) {
+      const s = String(rawId || '');
+      if (s.length <= 4) return '****';
+      return s.slice(0, 4) + '****' + s.slice(-2);
+    }
+
     async function hapusLogPresensi(indexInScoped) {
       if (guardGuruAccess('menghapus log presensi')) return;
       const q = (document.getElementById('searchLogInput')?.value || '').toLowerCase();
@@ -2744,14 +2768,27 @@
     function renderLogTable() {
       const tbody = document.getElementById('tableLogBody');
       if (!tbody) return;
+      const isPublic = (getEffectiveRole() === 'public_kiosk');
       const q = (document.getElementById('searchLogInput')?.value || '').toLowerCase();
-      const scoped = getScopedLogs().filter(l =>
+
+      const now = new Date();
+      const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+      let scoped = getScopedLogs().filter(l =>
         l.nama.toLowerCase().includes(q) || l.id.toLowerCase().includes(q)
       );
-      document.getElementById('logCountSummary').innerText = `${scoped.length} catatan terekam`;
-      const canDelete = !isLimitedPresensiRole();
 
-      tbody.innerHTML = scoped.slice(0, 100).map((l, idx) => {
+      if (isPublic) {
+        scoped = scoped.filter(l => getLogIsoDate(l) === todayIso);
+        document.getElementById('logCountSummary').innerText = `${scoped.length} presensi hari ini (Menampilkan 15 terbaru)`;
+      } else {
+        document.getElementById('logCountSummary').innerText = `${scoped.length} catatan terekam`;
+      }
+
+      const canDelete = !isLimitedPresensiRole();
+      const displayLimit = isPublic ? 15 : 100;
+
+      tbody.innerHTML = scoped.slice(0, displayLimit).map((l, idx) => {
         let statusBadgeClass = 'bg-emerald-100 text-emerald-700';
         if (l.status.startsWith('Izin')) statusBadgeClass = 'bg-sky-100 text-sky-700';
         else if (l.status.startsWith('Sakit')) statusBadgeClass = 'bg-purple-100 text-purple-700';
@@ -2759,10 +2796,12 @@
         else if (l.status.includes('Terlambat') || l.status.includes('Cepat')) statusBadgeClass = 'bg-amber-100 text-amber-700';
 
         const isOut = l.gps.includes('Luar') || l.gps.includes('Tidak Aktif');
+        const shownId = isPublic ? maskIdForPublic(l.id) : l.id;
+
         return `
           <tr class="hover:bg-slate-50">
             <td class="p-3 font-mono text-slate-600">${l.waktu}</td>
-            <td class="p-3 font-mono font-bold text-indigo-600">${l.id}</td>
+            <td class="p-3 font-mono font-bold text-indigo-600">${shownId}</td>
             <td class="p-3 font-semibold text-slate-800">${l.nama}</td>
             <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusBadgeClass}">${l.status}</span></td>
             <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOut ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'}">${l.gps}</span></td>
@@ -3564,6 +3603,29 @@
     });
     window.addEventListener('offline', () => updateCloudIndicator());
 
+    function copyShareableKioskLink() {
+      if (!appConfig.gsheetUrl || !appConfig.gsheetUrl.startsWith('https://')) {
+        return showAlert('URL Belum Diatur', 'Isi dan simpan URL Web App Google Apps Script terlebih dahulu.');
+      }
+      if (!appConfig.scanToken) {
+        return showAlert('Scan Token Kosong', 'Isi kolom "2. Scan / Piket Token" terlebih dahulu (klik Acak lalu Simpan Konfigurasi).');
+      }
+      const baseUrl = window.location.origin + window.location.pathname;
+      const params = new URLSearchParams();
+      params.set('url', appConfig.gsheetUrl);
+      params.set('scanToken', appConfig.scanToken);
+      params.set('mode', 'presensi');
+      const fullLink = `${baseUrl}?${params.toString()}`;
+
+      const ta = document.createElement('textarea');
+      ta.value = fullLink;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showAlert('Link Kiosk Umum Disalin!', 'Tautan ini langsung membuka Mode Presensi Umum (tanpa halaman login) dan hanya membawa Scan Token.');
+    }
+
     function copyShareableScanLink() {
       if (!appConfig.gsheetUrl || !appConfig.gsheetUrl.startsWith('https://')) {
         return showAlert('URL Belum Diatur', 'Isi dan simpan URL Web App Google Apps Script terlebih dahulu.');
@@ -3583,7 +3645,7 @@
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Link Piket / Scan Disalin!', 'Tautan ini hanya berisi Scan Token (tanpa Admin Token). Aman diberikan ke HP/laptop meja piket atau wali kelas.');
+      showAlert('Link Piket / Scan Disalin!', 'Tautan ini hanya berisi Scan Token (tanpa Admin Token). Aman diberikan ke HP/laptop wali kelas atau guru piket.');
     }
 
     function copyShareableSetupLink() {
@@ -4128,179 +4190,195 @@ function doPost(e) {
     SpreadsheetApp.flush();
     return jsonOut_({ status: "success", message: "Tersimpan (" + tokenScope.toUpperCase() + " Scope) v9.3" });
   } catch (err) {
-    return jsonOut_({ status: "error", message: err.toString() });
+    return jsonOut_({ status: "error", message: String(err) });
   } finally {
     lock.releaseLock();
   }
 }
 
-function appendUniqueLog_(sheet, d) {
-  if (!sheet || !d) return;
-  const idStr = String(d.id || "");
-  const waktuStr = String(d.waktu || "");
-  const statusStr = String(d.status || "");
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) {
-    const checkCount = Math.min(lastRow - 1, 150);
-    const recent = sheet.getRange(lastRow - checkCount + 1, 2, checkCount, 4).getValues();
-    if (recent.some(r => String(r[0]) === waktuStr && String(r[1]) === idStr && String(r[3]) === statusStr)) return;
-  }
-  const nextRow = lastRow + 1;
-  sheet.getRange(nextRow, 1).setNumberFormat("@");
-  sheet.getRange(nextRow, 3).setNumberFormat("@");
-  sheet.getRange(nextRow, 1, 1, 7).setValues([[
-    String(d.tanggal || ""), waktuStr, idStr, String(d.nama || ""), statusStr, String(d.gps || ""), Number(d.timestamp || Date.now())
-  ]]);
+function getOrCreateDriveFolder_() {
+  const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
+  if (folders.hasNext()) return folders.next();
+  const folder = DriveApp.createFolder(DRIVE_FOLDER_NAME);
+  folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return folder;
 }
 
-function mergeLogSheet_(sheet, incomingList) {
-  if (!sheet || !Array.isArray(incomingList)) return;
-  const rows = incomingList.map(l => [
-    String(l.tanggal || ""), String(l.waktu || ""), String(l.id || ""),
-    String(l.nama || ""), String(l.status || ""), String(l.gps || ""), Number(l.timestamp || Date.now())
-  ]);
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
-  if (rows.length === 0) return;
-  sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 1, rows.length, 7).setValues(rows);
-}
-
-function saveBase64PhotoToDrive_(nisn, dataUrl) {
-  if (!dataUrl || typeof dataUrl !== "string") return "";
-  if (dataUrl.indexOf("https://") === 0) return dataUrl;
-  if (dataUrl.indexOf("data:image/svg") === 0) return "";
-  if (dataUrl.indexOf("data:image/") !== 0) return "";
+function uploadBase64ToDrive_(rawDataUrl, fileNamePrefix) {
+  if (!rawDataUrl || typeof rawDataUrl !== "string") return "";
+  if (rawDataUrl.indexOf("https://") === 0) return rawDataUrl;
+  if (rawDataUrl.indexOf("data:image/") !== 0) return "";
   try {
-    const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
-    const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
-    const match = dataUrl.match(/^data:(image\\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
-    if (!match) return "";
-    const mimeType = match[1];
-    const ext = mimeType.indexOf("png") !== -1 ? "png" : "jpg";
-    const fileName = "siswa_" + nisn + "." + ext;
-    const existingFiles = folder.getFilesByName(fileName);
-    while (existingFiles.hasNext()) existingFiles.next().setTrashed(true);
-    const blob = Utilities.newBlob(Utilities.base64Decode(match[2]), mimeType, fileName);
+    const parts = rawDataUrl.split(",");
+    const mimeMatch = parts[0].match(/data:(image\\/[a-zA-Z0-9+.-]+);base64/);
+    const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    const ext = mimeType.split("/")[1] || "jpg";
+    const bytes = Utilities.base64Decode(parts[1]);
+    const blob = Utilities.newBlob(bytes, mimeType, fileNamePrefix + "_" + Date.now() + "." + ext);
+    const folder = getOrCreateDriveFolder_();
     const file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return "https://drive.google.com/thumbnail?id=" + file.getId() + "&sz=w400";
-  } catch (err) {
-    return dataUrl.substring(0, 49000);
+    return "https://lh3.googleusercontent.com/d/" + file.getId();
+  } catch (e) {
+    return "";
   }
-}
-
-function writeSiswaSheet_(sheet, list) {
-  if (!sheet || !Array.isArray(list)) return;
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 5).clearContent();
-  if (list.length === 0) return;
-  const rows = list.map(s => [
-    String(s.nisn || ""), String(s.nama || ""), String(s.kelas || "-"),
-    saveBase64PhotoToDrive_(String(s.nisn || ""), String(s.foto || "")), Number(s.updatedAt || Date.now())
-  ]);
-  sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 1, rows.length, 5).setValues(rows);
-}
-
-function writeGuruSheet_(sheet, list) {
-  if (!sheet || !Array.isArray(list)) return;
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 4).clearContent();
-  if (list.length === 0) return;
-  const rows = list.map(g => [String(g.nip || ""), String(g.nama || ""), String(g.mapel || "-"), Number(g.updatedAt || Date.now())]);
-  sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 1, rows.length, 4).setValues(rows);
-}
-
-function writeAgendaSheet_(sheet, list) {
-  if (!sheet || !Array.isArray(list)) return;
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 4).clearContent();
-  if (list.length === 0) return;
-  const rows = list.map(a => [String(a.tanggal || ""), String(a.judul || ""), String(a.kategori || "kegiatan"), Number(a.updatedAt || Date.now())]);
-  sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
-  sheet.getRange(2, 1, rows.length, 4).setValues(rows);
-}
-
-function writeUsersSheet_(sheet, list) {
-  if (!sheet || !Array.isArray(list)) return;
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 6).clearContent();
-  if (list.length === 0) return;
-  const rows = list.map(u => [
-    String(u.username || ""), String(u.name || ""), String(u.role || "admin"),
-    String(u.kelasBinaan || ""), String(u.passHash || ""), Number(u.updatedAt || Date.now())
-  ]);
-  sheet.getRange(2, 1, rows.length, 6).setValues(rows);
 }
 
 function writeSettingsSheet_(sheet, obj) {
-  if (!sheet || !obj || typeof obj !== "object") return;
   const existing = readSettingsObject_(sheet);
   const merged = Object.assign({}, existing, obj);
-  if (merged.schoolLogo && String(merged.schoolLogo).indexOf("data:image/") === 0 && String(merged.schoolLogo).indexOf("data:image/svg") !== 0) {
-    merged.schoolLogo = saveBase64PhotoToDrive_("school_logo", String(merged.schoolLogo));
+  if (merged.schoolLogo && String(merged.schoolLogo).indexOf("data:image/") === 0) {
+    const driveUrl = uploadBase64ToDrive_(merged.schoolLogo, "LOGO_SEKOLAH");
+    if (driveUrl) merged.schoolLogo = driveUrl;
   }
   const keys = Object.keys(merged);
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 2).clearContent();
-  if (keys.length === 0) return;
-  const rows = keys.map(k => [String(k), String(merged[k] === undefined ? "" : merged[k])]);
-  sheet.getRange(2, 1, rows.length, 2).setNumberFormat("@");
-  sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+  const rows = keys.map(k => [k, String(merged[k] === undefined || merged[k] === null ? "" : merged[k])]);
+  clearBody_(sheet);
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 2).setNumberFormat("@").setValues(rows);
+  }
 }
 
 function readSettingsObject_(sheet) {
-  if (!sheet) return {};
-  const values = sheet.getDataRange().getValues();
-  if (values.length <= 1) return {};
   const obj = {};
-  for (let r = 1; r < values.length; r++) {
-    const k = String(values[r][0] || "").trim();
-    if (k) obj[k] = String(values[r][1] === undefined ? "" : values[r][1]);
-  }
+  if (!sheet || sheet.getLastRow() <= 1) return obj;
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).getDisplayValues();
+  rows.forEach(r => {
+    const k = String(r[0] || "").trim();
+    if (k) obj[k] = String(r[1] || "");
+  });
   return obj;
 }
 
-function readSheetObjects_(sheet, stringCols) {
-  if (!sheet) return [];
-  const values = sheet.getDataRange().getValues();
-  if (values.length <= 1) return [];
-  const headers = values[0].map(h => String(h).trim());
-  const out = [];
-  for (let r = 1; r < values.length; r++) {
-    const obj = {};
-    let hasValue = false;
-    for (let c = 0; c < headers.length; c++) {
-      const key = headers[c];
-      if (!key) continue;
-      let val = values[r][c];
-      if (val !== "" && val !== null && val !== undefined) hasValue = true;
-      if (val instanceof Date) {
-        val = (key === "tanggal")
-          ? Utilities.formatDate(val, "Asia/Jakarta", "yyyy-MM-dd")
-          : Utilities.formatDate(val, "Asia/Jakarta", "yyyy-MM-dd HH:mm:ss");
-      } else if (stringCols && stringCols.indexOf(key) !== -1) {
-        val = String(val || "").trim();
-      }
-      obj[key] = val;
-    }
-    if (hasValue) out.push(obj);
+function writeSiswaSheet_(sheet, list) {
+  const rows = list.map(s => {
+    const nisn = String(s.nisn || "");
+    const fotoUrl = uploadBase64ToDrive_(s.foto, "SISWA_" + nisn);
+    return [nisn, String(s.nama || ""), String(s.kelas || "-"), fotoUrl, Number(s.updatedAt) || Date.now()];
+  });
+  clearBody_(sheet);
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 1, rows.length, 5).setValues(rows);
   }
-  return out;
+}
+
+function writeGuruSheet_(sheet, list) {
+  const rows = list.map(g => [String(g.nip || ""), String(g.nama || ""), String(g.mapel || "-"), Number(g.updatedAt) || Date.now()]);
+  clearBody_(sheet);
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 1, rows.length, 4).setValues(rows);
+  }
+}
+
+function writeAgendaSheet_(sheet, list) {
+  const rows = list.map(a => [String(a.tanggal || ""), String(a.judul || ""), String(a.kategori || "kegiatan"), Number(a.updatedAt) || Date.now()]);
+  clearBody_(sheet);
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 1, rows.length, 4).setValues(rows);
+  }
+}
+
+function writeUsersSheet_(sheet, list) {
+  const rows = list.map(u => [
+    String(u.username || ""),
+    String(u.name || ""),
+    String(u.role || "admin"),
+    String(u.kelasBinaan || ""),
+    String(u.passHash || ""),
+    Number(u.updatedAt) || Date.now()
+  ]);
+  clearBody_(sheet);
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 4, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 1, rows.length, 6).setValues(rows);
+  }
+}
+
+function appendUniqueLog_(sheet, entry) {
+  const lastRow = sheet.getLastRow();
+  const key = String(entry.id) + "_" + String(entry.waktu) + "_" + String(entry.status);
+  if (lastRow > 1) {
+    const startRow = Math.max(2, lastRow - 200);
+    const recent = sheet.getRange(startRow, 1, lastRow - startRow + 1, 7).getDisplayValues();
+    for (let i = 0; i < recent.length; i++) {
+      if (recent[i][2] + "_" + recent[i][1] + "_" + recent[i][4] === key) return;
+    }
+  }
+  const tgl = String(entry.tanggal || String(entry.waktu).slice(0, 10));
+  const nextRow = lastRow + 1;
+  sheet.getRange(nextRow, 1, 1, 7).setValues([[
+    tgl, String(entry.waktu || ""), String(entry.id || ""), String(entry.nama || ""),
+    String(entry.status || ""), String(entry.gps || ""), Number(entry.timestamp) || Date.now()
+  ]]);
+  sheet.getRange(nextRow, 1).setNumberFormat("@");
+  sheet.getRange(nextRow, 3).setNumberFormat("@");
+}
+
+function mergeLogSheet_(sheet, incomingList) {
+  const existing = readSheetObjects_(sheet, ["tanggal", "id"]);
+  const map = {};
+  existing.forEach(item => { map[item.id + "_" + item.waktu + "_" + item.status] = item; });
+  incomingList.forEach(item => {
+    const tgl = String(item.tanggal || String(item.waktu).slice(0, 10));
+    map[item.id + "_" + item.waktu + "_" + item.status] = {
+      tanggal: tgl, waktu: String(item.waktu || ""), id: String(item.id || ""),
+      nama: String(item.nama || ""), status: String(item.status || ""),
+      gps: String(item.gps || ""), timestamp: Number(item.timestamp) || Date.now()
+    };
+  });
+  const merged = Object.values(map).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  const rows = merged.map(l => [l.tanggal, l.waktu, l.id, l.nama, l.status, l.gps, l.timestamp]);
+  clearBody_(sheet);
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 3, rows.length, 1).setNumberFormat("@");
+    sheet.getRange(2, 1, rows.length, 7).setValues(rows);
+  }
+}
+
+function readSheetObjects_(sheet, textCols) {
+  if (!sheet || sheet.getLastRow() <= 1) return [];
+  const data = sheet.getDataRange().getValues();
+  const displayData = sheet.getDataRange().getDisplayValues();
+  const headers = data[0];
+  const result = [];
+  for (let r = 1; r < data.length; r++) {
+    const obj = {};
+    for (let c = 0; c < headers.length; c++) {
+      const h = String(headers[c]);
+      if (textCols && textCols.indexOf(h) !== -1) {
+        obj[h] = String(displayData[r][c] || "");
+      } else {
+        obj[h] = data[r][c];
+      }
+    }
+    result.push(obj);
+  }
+  return result;
+}
+
+function clearBody_(sheet) {
+  if (sheet && sheet.getLastRow() > 1) {
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).clearContent();
+  }
 }
 
 function computeHmacSha256_(message, secret) {
-  const raw = Utilities.computeHmacSha256Signature(message, secret, Utilities.Charset.UTF_8);
-  return raw.map(b => ('0' + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join('');
+  const sigBytes = Utilities.computeHmacSha256Signature(
+    Utilities.newBlob(message).getBytes(),
+    Utilities.newBlob(secret).getBytes()
+  );
+  return sigBytes.map(b => ("0" + (b & 0xFF).toString(16)).slice(-2)).join("");
 }
 
 function computeSha256_(message) {
-  const raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, message, Utilities.Charset.UTF_8);
-  return raw.map(b => ('0' + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join('');
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, message, Utilities.Charset.UTF_8);
+  return digest.map(b => ("0" + (b & 0xFF).toString(16)).slice(-2)).join("");
 }
 
 function jsonOut_(obj) {
@@ -4313,39 +4391,46 @@ function jsonOut_(obj) {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Kode Apps Script v9.3 Disalin!', 'Tempelkan di Google Apps Script (sudah terisi Admin Secret Token & Scan Token Anda), jalankan testSetup(), lalu Deploy Web App (Anyone).');
+      showAlert('Kode Apps Script v9.3 Disalin!', 'Tempel ke Google Apps Script Anda (otomatis terisi Admin Token & Scan/Piket Token), lalu Deploy ulang sebagai Web App (Execute as: Me, Who has access: Anyone).');
     }
 
-    // --- UI HELPERS & NAVIGATION ---
-    function switchTab(tabName) {
-      if (getEffectiveRole() === 'public_kiosk' && tabName !== 'scanner') return;
-      if (getEffectiveRole() === 'guru_walikelas' && !['scanner', 'rekap'].includes(tabName)) return;
-      activeTabState = tabName;
-      persistActiveSession();
-      document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.classList.remove('bg-indigo-600', 'text-white');
-        btn.classList.add('text-slate-600', 'hover:bg-slate-100');
-      });
-      document.getElementById(`tab_${tabName}`)?.classList.remove('hidden');
-      const activeBtn = document.getElementById(`tabBtn_${tabName}`);
-      if (activeBtn) {
-        activeBtn.classList.add('bg-indigo-600', 'text-white');
-        activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+    // --- UI HELPERS ---
+    function switchTab(tabId) {
+      if (getEffectiveRole() === 'public_kiosk' && tabId !== 'scanner') {
+        tabId = 'scanner';
       }
-      if (tabName === 'analitik') initCharts();
-      if (tabName === 'kartu') renderKartuPrint();
+      if (getEffectiveRole() === 'guru_walikelas' && !['scanner', 'rekap'].includes(tabId)) {
+        tabId = 'scanner';
+      }
+      activeTabState = tabId;
+      document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
+      const targetSec = document.getElementById(`tab_${tabId}`);
+      if (targetSec) targetSec.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.className = 'nav-tab px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 whitespace-nowrap';
+      });
+      const activeBtn = document.getElementById(`tabBtn_${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = 'nav-tab px-3.5 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-1.5 whitespace-nowrap shadow-sm';
+      }
+      persistActiveSession();
+      if (tabId === 'kartu') renderKartuPrint();
+      if (tabId === 'analitik') setTimeout(initCharts, 100);
     }
 
     function populateKelasFilters() {
-      const scopedList = getScopedSiswa();
-      const kelasList = [...new Set(scopedList.map(s => s.kelas || '-'))].sort();
+      const scoped = getScopedSiswa();
+      const kelasList = [...new Set(scoped.map(s => s.kelas || '-'))].sort();
       ['filterKelasSiswa', 'filterKelasKartu', 'rekapKelasFilter'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        const curr = el.value;
-        el.innerHTML = `<option value="Semua">Semua Kelas</option>` + kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
-        if (kelasList.includes(curr)) el.value = curr;
+        const prev = el.value;
+        el.innerHTML = (kelasList.length > 1 ? '<option value="Semua">Semua Kelas</option>' : '') +
+          kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
+        if (kelasList.includes(prev) || (prev === 'Semua' && kelasList.length > 1)) {
+          el.value = prev;
+        }
       });
     }
 
@@ -4359,7 +4444,7 @@ function jsonOut_(obj) {
       document.getElementById('profLat').value = targetSchoolGPS.lat;
       document.getElementById('profLng').value = targetSchoolGPS.lng;
       document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters;
-      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl || '';
+      document.getElementById('gsheetUrl').value = appConfig.gsheetUrl;
       document.getElementById('apiSecurityToken').value = appConfig.apiToken || '';
       document.getElementById('scanSecurityToken').value = appConfig.scanToken || '';
       document.getElementById('toggleAutoSync').checked = appConfig.autoSync !== false;
@@ -4375,7 +4460,6 @@ function jsonOut_(obj) {
       renderLogTable();
       renderSiswaTable();
       renderGuruTable();
-      renderKartuPrint();
       renderRekapTable();
       renderCalendar();
       renderAgendaList();
@@ -4384,9 +4468,19 @@ function jsonOut_(obj) {
       renderAnalytics();
     }
 
-    function showAlert(title, message) {
+    function speakFemaleVoice(text) {
+      if (!document.getElementById('toggleVoiceNotif')?.checked) return;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id-ID';
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    function showAlert(title, msg) {
       document.getElementById('alertTitle').innerText = title;
-      document.getElementById('alertMessage').innerText = message;
+      document.getElementById('alertMessage').innerText = msg;
       document.getElementById('alertModal').classList.remove('hidden');
     }
 
@@ -4396,34 +4490,22 @@ function jsonOut_(obj) {
         document.getElementById('confirmTitle').innerText = title;
         document.getElementById('confirmMessage').innerText = message;
         modal.classList.remove('hidden');
-        const okBtn = document.getElementById('confirmOkBtn');
-        const cancelBtn = document.getElementById('confirmCancelBtn');
+
         const cleanup = (val) => {
           modal.classList.add('hidden');
-          okBtn.onclick = null;
-          cancelBtn.onclick = null;
+          document.getElementById('confirmOkBtn').onclick = null;
+          document.getElementById('confirmCancelBtn').onclick = null;
           resolve(val);
         };
-        okBtn.onclick = () => cleanup(true);
-        cancelBtn.onclick = () => cleanup(false);
+        document.getElementById('confirmOkBtn').onclick = () => cleanup(true);
+        document.getElementById('confirmCancelBtn').onclick = () => cleanup(false);
       });
-    }
-
-    function speakFemaleVoice(text) {
-      if (!document.getElementById('toggleVoiceNotif')?.checked) return;
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'id-ID';
-        window.speechSynthesis.speak(utter);
-      }
     }
 
     // --- BOOTSTRAP ---
     window.addEventListener('DOMContentLoaded', async () => {
       registerPwaServiceWorker();
       loadAllData();
-      await applyUrlBootstrapParams();
       refreshAllUI();
       syncSesiModeUI();
       renderAllViews();
@@ -4431,25 +4513,24 @@ function jsonOut_(obj) {
       refreshCameraDevices(false);
 
       restoreActiveSession();
-
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      await applyUrlBootstrapParams();
 
       setInterval(() => {
-        const nowStr = new Date().toTimeString().slice(0, 8);
-        const clk = document.getElementById('liveClock');
-        if (clk) clk.innerText = nowStr;
+        const el = document.getElementById('liveClock');
+        if (el) el.innerText = new Date().toTimeString().slice(0, 8);
         if (document.getElementById('toggleAutoSesi')?.checked) {
-          const auto = getAutoSesiByClock();
-          if (auto !== aktifSesi) {
-            aktifSesi = auto;
+          const autoS = getAutoSesiByClock();
+          if (autoS !== aktifSesi) {
+            aktifSesi = autoS;
             updateSesiButtonStyles();
           }
         }
       }, 1000);
 
-      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
-        if (offlineSyncQueue.length > 0) await flushOfflineQueue(false);
-        await silentPullFromCloud(getCurrentSelectedYM());
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      if (appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://') && getActiveCloudToken('getData') && GITHUB_DEFAULT_CONFIG.autoPullOnLoad) {
+        silentPullFromCloud(getCurrentSelectedYM());
       }
     });
   </script>

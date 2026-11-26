@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
-  <title>Presensi QR Enterprise v9.4 - Dual-Token, Queue Sync & Photo Verification</title>
+  <title>Presensi QR Enterprise v9.5 - Dual-Token, Photo ID Cards & Queue Sync</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -42,7 +42,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.4 • PHOTO VERIFICATION & QUEUE SYNC</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.5 • PHOTO ID CARDS & QUEUE SYNC</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -84,14 +84,13 @@
           <div class="truncate">
             <div class="flex items-center gap-2">
               <h1 id="headerSchoolName" class="font-extrabold text-slate-900 text-sm sm:text-base truncate">SMA NEGERI 1 NUSANTARA</h1>
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.4</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full">v9.5</span>
             </div>
             <p id="headerSchoolSub" class="text-[11px] text-slate-500 truncate">Sistem Presensi QR Kriptografi & Cloud 2-Arah</p>
           </div>
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
-          <!-- TOMBOL KIRIM ANTREAN OFFLINE -->
           <button id="btnHeaderSyncQueue" onclick="manualFlushQueueAndPull()" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition" title="Kirim antrean presensi tertunda & sinkronkan dengan Cloud">
             <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i>
             <span id="btnHeaderSyncQueueText">Sync Cloud</span>
@@ -256,7 +255,7 @@
                 </label>
               </div>
 
-              <!-- Panel Susulan Manual (Muncul saat Mode Susulan dicentang) -->
+              <!-- Panel Susulan Manual -->
               <div id="panelSusulanManual" class="hidden p-3 rounded-2xl bg-amber-50 border border-amber-200 space-y-2 text-xs">
                 <div class="grid grid-cols-2 gap-2">
                   <div>
@@ -394,7 +393,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h2 class="font-extrabold text-slate-900 text-base">Database Guru & Staf</h2>
-              <p class="text-xs text-slate-500">Kelola data pendidik dan wali kelas</p>
+              <p class="text-xs text-slate-500">Kelola data pendidik, foto profil kartu, dan wali kelas</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <button onclick="openModalGuru()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
@@ -412,6 +411,7 @@
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-50 border-y border-slate-200 text-slate-500 uppercase text-[10px]">
+                  <th class="p-3">Foto</th>
                   <th class="p-3">NIP</th>
                   <th class="p-3">Nama Lengkap</th>
                   <th class="p-3">Jabatan / Mapel</th>
@@ -428,6 +428,10 @@
       <section id="tab_kartu" class="tab-section hidden space-y-4">
         <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm no-print flex flex-wrap items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-2">
+            <select id="filterKategoriKartu" onchange="onKategoriKartuChange()" class="px-3 py-2 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-800 text-xs font-extrabold">
+              <option value="siswa">Kartu Siswa</option>
+              <option value="guru">Kartu Guru & Staf</option>
+            </select>
             <select id="filterKelasKartu" onchange="renderKartuPrint()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold">
               <option value="Semua">Semua Kelas</option>
             </select>
@@ -436,7 +440,7 @@
               <option value="portrait">Portrait</option>
             </select>
             <select id="kartuSisi" onchange="renderKartuPrint()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold">
-              <option value="depan">Sisi Depan (QR)</option>
+              <option value="depan">Sisi Depan (Foto & QR)</option>
               <option value="belakang">Sisi Belakang (Tata Tertib)</option>
             </select>
             <select id="kartuBgPreset" onchange="renderKartuPrint()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold">
@@ -655,7 +659,7 @@
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Perbarui Cache Offline PWA
               </button>
               <button onclick="copyGasScriptCode()" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v9.4
+                <i data-lucide="code" class="w-3.5 h-3.5"></i> Salin Kode Apps Script v9.5
               </button>
             </div>
           </div>
@@ -933,6 +937,10 @@
           <label class="font-bold text-slate-600 block mb-1">Jabatan / Mata Pelajaran</label>
           <input type="text" id="inputGuruMapel" required class="w-full px-3 py-2 rounded-xl border border-slate-200">
         </div>
+        <div>
+          <label class="font-bold text-slate-600 block mb-1">Foto Guru / Staf (Otomatis Terkompresi)</label>
+          <input type="file" accept="image/*" onchange="previewUploadFotoGuru(event)" class="w-full text-xs">
+        </div>
         <div class="flex gap-2 pt-2">
           <button type="button" onclick="document.getElementById('modalGuru').classList.add('hidden')" class="flex-1 py-2.5 bg-slate-100 rounded-xl font-bold">Batal</button>
           <button type="submit" class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-bold">Simpan</button>
@@ -1084,7 +1092,7 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v9.4 - PHOTO VERIFICATION, QUEUE SYNC & SUSULAN
+    // PRESENSI QR ENTERPRISE v9.5 - PHOTO ID CARDS (SISWA & GURU) + QUEUE SYNC
     // =========================================================================
 
     const GITHUB_DEFAULT_CONFIG = {
@@ -1188,7 +1196,7 @@
     ];
 
     let guruData = [
-      { nip: '198501012010011001', nama: 'Drs. Hendra Wijaya', mapel: 'Matematika', updatedAt: 1700000000000 }
+      { nip: '198501012010011001', nama: 'Drs. Hendra Wijaya', mapel: 'Matematika', foto: DEFAULT_SISWA_AVATAR, updatedAt: 1700000000000 }
     ];
 
     let logPresensi = [];
@@ -1220,6 +1228,7 @@
     let aktifSesi = 'Jam Masuk';
     let uploadedLogoDataUrl = DEFAULT_LOGO_SVG;
     let uploadedFotoDataUrl = '';
+    let uploadedFotoGuruDataUrl = '';
     let pendingFotoMassalList = [];
     let currentCalendarDate = new Date();
     let html5QrCodeInstance = null;
@@ -1622,7 +1631,7 @@
       if (parsed.targetSchoolGPS) targetSchoolGPS = { ...targetSchoolGPS, ...parsed.targetSchoolGPS };
       if (parsed.sesiSettings) sesiSettings = { ...sesiSettings, ...parsed.sesiSettings };
       if (Array.isArray(parsed.siswaData)) siswaData = parsed.siswaData.map(normalizeSiswaRecord);
-      if (Array.isArray(parsed.guruData)) guruData = parsed.guruData;
+      if (Array.isArray(parsed.guruData)) guruData = parsed.guruData.map(normalizeGuruRecord);
       if (Array.isArray(parsed.logPresensi)) logPresensi = parsed.logPresensi;
       if (Array.isArray(parsed.agendaData)) agendaData = parsed.agendaData;
       if (parsed.deletedRecords) deletedRecords = { siswa: {}, guru: {}, agenda: {}, users: {}, ...parsed.deletedRecords };
@@ -2615,9 +2624,27 @@
       showAlert('Foto Diterapkan', `${pendingFotoMassalList.length} foto berhasil diperbarui.`);
     }
 
-    // --- CRUD GURU ---
+    // --- CRUD GURU (DENGAN FOTO) ---
+    function normalizeGuruRecord(g) {
+      const rawFoto = String(g.foto || '');
+      const validFoto = (rawFoto.startsWith('data:') || rawFoto.startsWith('https://')) ? rawFoto : DEFAULT_SISWA_AVATAR;
+      return {
+        nip: String(g.nip || ''),
+        nama: String(g.nama || ''),
+        mapel: String(g.mapel || '-'),
+        foto: validFoto,
+        updatedAt: Number(g.updatedAt) || Date.now()
+      };
+    }
+
+    async function previewUploadFotoGuru(event) {
+      const file = event.target.files[0];
+      if (file) uploadedFotoGuruDataUrl = await compressImageFile(file);
+    }
+
     function openModalGuru(nip = null) {
       if (guardGuruAccess('mengelola data guru')) return;
+      uploadedFotoGuruDataUrl = '';
       if (nip) {
         const g = guruData.find(item => item.nip === nip);
         if (!g) return;
@@ -2625,6 +2652,7 @@
         document.getElementById('inputGuruNip').value = g.nip;
         document.getElementById('inputGuruNama').value = g.nama;
         document.getElementById('inputGuruMapel').value = g.mapel;
+        uploadedFotoGuruDataUrl = g.foto || '';
       } else {
         document.getElementById('editGuruOldNip').value = '';
         document.getElementById('inputGuruNip').value = '';
@@ -2643,7 +2671,13 @@
       const mapel = document.getElementById('inputGuruMapel').value.trim() || '-';
 
       delete deletedRecords.guru[nip];
-      const rec = { nip, nama, mapel, updatedAt: Date.now() };
+      const rec = {
+        nip,
+        nama,
+        mapel,
+        foto: uploadedFotoGuruDataUrl || DEFAULT_SISWA_AVATAR,
+        updatedAt: Date.now()
+      };
       if (guruData.some(g => g.nip === nip && g.nip !== oldNip)) {
         return showAlert('Duplikat', 'NIP sudah digunakan oleh guru lain.');
       }
@@ -2658,6 +2692,7 @@
       await triggerAutoSync('syncGuru', guruData);
       document.getElementById('modalGuru').classList.add('hidden');
       renderGuruTable();
+      renderKartuPrint();
     }
 
     async function hapusGuru(nip) {
@@ -2669,6 +2704,7 @@
       await saveAllData();
       await triggerAutoSync('syncGuru', guruData);
       renderGuruTable();
+      renderKartuPrint();
     }
 
     function renderGuruTable() {
@@ -2676,6 +2712,7 @@
       if (!tbody) return;
       tbody.innerHTML = guruData.map(g => `
         <tr class="hover:bg-slate-50">
+          <td class="p-3"><img src="${g.foto || DEFAULT_SISWA_AVATAR}" class="w-9 h-10 object-cover rounded-lg border border-slate-200"></td>
           <td class="p-3 font-mono font-bold text-indigo-600">${g.nip}</td>
           <td class="p-3 font-semibold text-slate-800">${g.nama}</td>
           <td class="p-3 text-slate-600">${g.mapel}</td>
@@ -2749,7 +2786,7 @@
             const mapel = parts[2] ? parts[2].trim() : '-';
             if (nip && !guruData.find(g => g.nip === nip)) {
               delete deletedRecords.guru[nip];
-              guruData.push({ nip, nama, mapel, updatedAt: Date.now() });
+              guruData.push({ nip, nama, mapel, foto: DEFAULT_SISWA_AVATAR, updatedAt: Date.now() });
               count++;
             }
           }
@@ -2757,6 +2794,7 @@
         await saveAllData();
         await triggerAutoSync('syncGuru', guruData);
         renderGuruTable();
+        renderKartuPrint();
         showAlert('Import Berhasil', `${count} data guru baru ditambahkan.`);
       };
       reader.readAsText(file);
@@ -2771,16 +2809,46 @@
       downloadCSVFile(csv, `Log_Presensi_${new Date().toISOString().slice(0, 10)}.csv`);
     }
 
-    // --- KARTU PRINT A4 ---
+    // --- KARTU PRINT A4 (FOTO SISWA & GURU + QR) ---
+    function onKategoriKartuChange() {
+      const kat = document.getElementById('filterKategoriKartu')?.value || 'siswa';
+      const kelasSel = document.getElementById('filterKelasKartu');
+      if (kelasSel) {
+        kelasSel.classList.toggle('hidden', kat === 'guru');
+      }
+      renderKartuPrint();
+    }
+
     function renderKartuPrint() {
       const container = document.getElementById('printKartuGrid');
       if (!container) return;
+      const kategori = document.getElementById('filterKategoriKartu')?.value || 'siswa';
       const filterKelas = document.getElementById('filterKelasKartu')?.value || 'Semua';
       const orientasi = document.getElementById('kartuOrientasi')?.value || 'landscape';
       const sisi = document.getElementById('kartuSisi')?.value || 'depan';
       const bgPreset = document.getElementById('kartuBgPreset')?.value || 'indigo';
 
-      const filtered = siswaData.filter(s => filterKelas === 'Semua' || s.kelas === filterKelas);
+      const items = kategori === 'guru'
+        ? guruData.map(g => ({
+            id: g.nip,
+            idLabel: 'NIP',
+            nama: g.nama,
+            subLabel: 'Jabatan',
+            subValue: g.mapel || 'Guru / Staf',
+            foto: g.foto || DEFAULT_SISWA_AVATAR,
+            cardTitle: 'KARTU PRESENSI GURU & STAF'
+          }))
+        : siswaData
+            .filter(s => filterKelas === 'Semua' || s.kelas === filterKelas)
+            .map(s => ({
+              id: s.nisn,
+              idLabel: 'NISN',
+              nama: s.nama,
+              subLabel: 'Kelas',
+              subValue: s.kelas || '-',
+              foto: s.foto || DEFAULT_SISWA_AVATAR,
+              cardTitle: 'KARTU PRESENSI SISWA'
+            }));
 
       let bgStyle = "bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 text-white";
       if (bgPreset === 'slate') bgStyle = "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white";
@@ -2789,10 +2857,15 @@
       const isPortrait = orientasi === 'portrait';
       const isBelakang = sisi === 'belakang';
 
-      container.innerHTML = filtered.map(s => {
+      if (items.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-slate-400">Tidak ada data ${kategori === 'guru' ? 'guru' : 'siswa'} untuk dicetak.</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
         if (isBelakang) {
           return `
-            <div class="${bgStyle} rounded-2xl p-5 shadow-lg border border-slate-700 flex flex-col justify-between ${isPortrait ? 'h-80 w-52 mx-auto' : 'h-56'}">
+            <div class="${bgStyle} rounded-2xl p-5 shadow-lg border border-slate-700 flex flex-col justify-between ${isPortrait ? 'h-84 w-56 mx-auto' : 'h-56'}">
               <div class="border-b border-white/20 pb-2 text-center">
                 <h5 class="font-bold text-xs uppercase text-amber-300">TATA TERTIB PRESENSI</h5>
                 <p class="text-[9px] text-slate-300">${appConfig.schoolName}</p>
@@ -2800,43 +2873,75 @@
               <ul class="text-[9px] text-slate-200 space-y-1 list-disc pl-3 my-2">
                 <li>Kartu wajib dibawa setiap hari aktif sekolah.</li>
                 <li>Dilengkapi tanda tangan kriptografi HMAC-SHA256.</li>
-                <li>Dilarang meminjamkan kartu kepada siswa lain.</li>
+                <li>Dilarang meminjamkan kartu kepada orang lain.</li>
               </ul>
-              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.4</div>
+              <div class="border-t border-white/20 pt-2 text-center text-[8px] text-slate-400 font-mono">ENTERPRISE SECURE V9.5</div>
             </div>
           `;
         }
+
+        if (isPortrait) {
+          return `
+            <div class="${bgStyle} rounded-2xl p-4 shadow-lg border border-slate-700 flex flex-col justify-between h-84 w-56 mx-auto">
+              <div class="flex items-center justify-between border-b border-white/20 pb-2 gap-2">
+                <img src="${uploadedLogoDataUrl}" class="w-7 h-7 object-contain rounded bg-white/10 p-0.5 flex-shrink-0">
+                <div class="text-right flex-1 truncate">
+                  <h4 class="font-bold text-[10px] uppercase text-indigo-200 truncate">${item.cardTitle}</h4>
+                  <p class="text-[8px] text-slate-300 truncate">${appConfig.schoolName}</p>
+                </div>
+              </div>
+              <div class="flex flex-col items-center text-center my-auto space-y-2 py-1">
+                <div class="flex items-center justify-center gap-2.5">
+                  <img src="${item.foto}" alt="Foto" class="w-16 h-20 object-cover rounded-xl border-2 border-white/80 shadow-md bg-slate-800">
+                  <div class="w-20 h-20 bg-white rounded-xl p-1 flex items-center justify-center shadow-md" id="cardQr_${item.id}"></div>
+                </div>
+                <div class="w-full px-1 space-y-0.5">
+                  <p class="font-extrabold text-xs text-white truncate">${item.nama}</p>
+                  <p class="text-indigo-300 font-mono text-[10px]">${item.idLabel}: ${item.id}</p>
+                  <p class="text-slate-300 text-[9px] pt-0.5">${item.subLabel}: <span class="font-bold bg-white/20 px-2 py-0.5 rounded">${item.subValue}</span></p>
+                </div>
+              </div>
+              <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
+                <span>HMAC-SIGNED QR</span>
+                <span>V9.5</span>
+              </div>
+            </div>
+          `;
+        }
+
         return `
-          <div class="${bgStyle} rounded-2xl p-4 shadow-lg border border-slate-700 flex flex-col justify-between ${isPortrait ? 'h-80 w-56 mx-auto' : 'h-56'}">
+          <div class="${bgStyle} rounded-2xl p-4 shadow-lg border border-slate-700 flex flex-col justify-between h-56">
             <div class="flex items-center justify-between border-b border-white/20 pb-2 gap-2">
-              <img src="${uploadedLogoDataUrl}" class="w-8 h-8 object-contain rounded bg-white/10 p-0.5">
+              <img src="${uploadedLogoDataUrl}" class="w-8 h-8 object-contain rounded bg-white/10 p-0.5 flex-shrink-0">
               <div class="text-right flex-1 truncate">
-                <h4 class="font-bold text-xs uppercase text-indigo-200 truncate">KARTU PRESENSI DIGITAL</h4>
+                <h4 class="font-bold text-xs uppercase text-indigo-200 truncate">${item.cardTitle}</h4>
                 <p class="text-[9px] text-slate-300 truncate">${appConfig.schoolName}</p>
               </div>
             </div>
-            <div class="${isPortrait ? 'flex-col items-center text-center my-auto space-y-2' : 'flex items-center gap-3 my-auto'}">
-              <div class="w-20 h-20 bg-white rounded-xl p-1 flex items-center justify-center flex-shrink-0 mx-auto" id="cardQr_${s.nisn}"></div>
-              <div class="text-xs space-y-1 truncate">
-                <p class="font-bold text-sm text-white truncate">${s.nama}</p>
-                <p class="text-indigo-300 font-mono text-[11px]">NISN: ${s.nisn}</p>
-                <p class="text-slate-300 text-[10px]">Kelas: <span class="font-bold bg-white/20 px-2 py-0.5 rounded">${s.kelas || '-'}</span></p>
+            <div class="flex items-center gap-2.5 my-auto">
+              <img src="${item.foto}" alt="Foto" class="w-14 object-cover rounded-xl border-2 border-white/80 shadow-md bg-slate-800 flex-shrink-0" style="height: 4.5rem;">
+              <div class="flex-1 min-w-0 space-y-1">
+                <p class="font-extrabold text-xs text-white leading-tight line-clamp-2">${item.nama}</p>
+                <p class="text-indigo-300 font-mono text-[10px] truncate">${item.idLabel}: ${item.id}</p>
+                <p class="text-slate-300 text-[10px] truncate">${item.subLabel}: <span class="font-bold bg-white/20 px-1.5 py-0.5 rounded">${item.subValue}</span></p>
               </div>
+              <div class="bg-white rounded-xl p-1 flex items-center justify-center flex-shrink-0 shadow-md" style="width: 4.5rem; height: 4.5rem;" id="cardQr_${item.id}"></div>
             </div>
             <div class="flex justify-between items-center text-[8px] text-slate-400 border-t border-white/20 pt-1 font-mono">
               <span>HMAC-SIGNED QR</span>
-              <span>V9.4</span>
+              <span>V9.5</span>
             </div>
           </div>
         `;
       }).join('');
 
       if (!isBelakang && typeof QRCode !== 'undefined') {
-        filtered.forEach(s => {
-          const box = document.getElementById(`cardQr_${s.nisn}`);
+        const qrDim = isPortrait ? 72 : 64;
+        items.forEach(item => {
+          const box = document.getElementById(`cardQr_${item.id}`);
           if (box) {
             box.innerHTML = '';
-            new QRCode(box, { text: generateSignedQRPayload(s.nisn), width: 72, height: 72 });
+            new QRCode(box, { text: generateSignedQRPayload(item.id), width: qrDim, height: qrDim });
           }
         });
       }
@@ -3094,7 +3199,6 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-      // Kop Header Dokumen
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
       doc.setTextColor(15, 23, 42);
@@ -3899,7 +4003,7 @@
           if (Array.isArray(result.guruData)) {
             guruData = result.guruData
               .filter(g => g.nip)
-              .map(g => ({ nip: String(g.nip), nama: String(g.nama || ''), mapel: String(g.mapel || '-'), updatedAt: Number(g.updatedAt) || Date.now() }))
+              .map(normalizeGuruRecord)
               .filter(g => (deletedRecords.guru[g.nip] || 0) < (Number(g.updatedAt) || 0));
           }
           if (Array.isArray(result.logPresensi)) {
@@ -3970,11 +4074,7 @@
         if (result.status === 'success') {
           if (ym) loadedMonthsCache.add(ym);
           if (Array.isArray(result.siswaData)) siswaData = result.siswaData.filter(s => s.nisn).map(normalizeSiswaRecord);
-          if (Array.isArray(result.guruData)) {
-            guruData = result.guruData.filter(g => g.nip).map(g => ({
-              nip: String(g.nip), nama: String(g.nama || ''), mapel: String(g.mapel || '-'), updatedAt: Number(g.updatedAt) || Date.now()
-            }));
-          }
+          if (Array.isArray(result.guruData)) guruData = result.guruData.filter(g => g.nip).map(normalizeGuruRecord);
           if (Array.isArray(result.logPresensi)) {
             const incoming = result.logPresensi.filter(l => l.id).map(l => ({
               tanggal: String(l.tanggal || ''), waktu: String(l.waktu || ''), id: String(l.id),
@@ -4070,149 +4170,77 @@
         return false;
       } catch (err) {
         updateCloudIndicator("Offline", false);
-        if (!silent) showAlert('Gagal Terhubung', 'Periksa koneksi internet atau URL Web App.');
+        if (!silent) showAlert('Push Gagal', 'Periksa koneksi internet atau URL Web App.');
         return false;
       }
     }
 
     async function syncTwoWayNow() {
-      const url = appConfig.gsheetUrl;
-      if (!url || !url.startsWith('https://')) {
-        return showAlert('Konfigurasi Dibutuhkan', 'Atur URL Web App Google Apps Script di tab Security & Cloud.');
+      if (getEffectiveRole() === 'guru_walikelas') {
+        await flushOfflineQueue(false);
+        return pullDataFromCloud(false);
       }
-      if (!appConfig.apiToken) {
-        return showAlert('Admin Token Dibutuhkan', 'Isi kolom "1. Admin Secret Token" untuk melakukan Sync 2-Arah penuh.');
-      }
-      const ym = getCurrentSelectedYM();
-      try {
-        updateCloudIndicator("2-Way Sync...", true);
-        const sig = CryptoJS.HmacSHA256("GET_DATA", appConfig.apiToken).toString();
-        const resGet = await fetch(`${url}?action=getData&month=${encodeURIComponent(ym)}&sig=${sig}`, { redirect: 'follow' });
-        const cloud = await parseGasJsonResponse(resGet);
-
-        if (cloud.status === 'success') {
-          loadedMonthsCache.add(ym);
-          const mergedSiswaMap = new Map();
-          (cloud.siswaData || []).forEach(s => { if (s.nisn) mergedSiswaMap.set(String(s.nisn), normalizeSiswaRecord(s)); });
-          siswaData.forEach(localS => {
-            const normLocal = normalizeSiswaRecord(localS);
-            const cloudS = mergedSiswaMap.get(normLocal.nisn);
-            if (!cloudS || normLocal.updatedAt >= cloudS.updatedAt) mergedSiswaMap.set(normLocal.nisn, normLocal);
-          });
-          siswaData = Array.from(mergedSiswaMap.values()).filter(s => (deletedRecords.siswa[s.nisn] || 0) < (Number(s.updatedAt) || 0));
-
-          const mergedGuruMap = new Map();
-          (cloud.guruData || []).forEach(g => {
-            if (g.nip) mergedGuruMap.set(String(g.nip), { nip: String(g.nip), nama: String(g.nama || ''), mapel: String(g.mapel || '-'), updatedAt: Number(g.updatedAt) || 0 });
-          });
-          guruData.forEach(localG => {
-            const cloudG = mergedGuruMap.get(String(localG.nip));
-            if (!cloudG || (Number(localG.updatedAt) || 0) >= (Number(cloudG.updatedAt) || 0)) mergedGuruMap.set(String(localG.nip), localG);
-          });
-          guruData = Array.from(mergedGuruMap.values()).filter(g => (deletedRecords.guru[g.nip] || 0) < (Number(g.updatedAt) || 0));
-
-          const logMap = new Map();
-          (cloud.logPresensi || []).forEach(l => {
-            if (l.id) logMap.set(`${l.id}_${l.waktu}_${l.status}`, {
-              tanggal: String(l.tanggal || ''), waktu: String(l.waktu || ''), id: String(l.id),
-              nama: String(l.nama || ''), status: String(l.status || ''), gps: String(l.gps || ''),
-              timestamp: Number(l.timestamp) || Date.now()
-            });
-          });
-          logPresensi.forEach(l => logMap.set(`${l.id}_${l.waktu}_${l.status}`, l));
-          logPresensi = Array.from(logMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-          const agendaMap = new Map();
-          (cloud.agendaData || []).forEach(a => {
-            if (a.tanggal) agendaMap.set(String(a.tanggal), { tanggal: String(a.tanggal), judul: String(a.judul || ''), kategori: String(a.kategori || 'kegiatan'), updatedAt: Number(a.updatedAt) || 0 });
-          });
-          agendaData.forEach(a => {
-            const cloudA = agendaMap.get(String(a.tanggal));
-            if (!cloudA || (Number(a.updatedAt) || 0) >= (Number(cloudA.updatedAt) || 0)) agendaMap.set(String(a.tanggal), a);
-          });
-          agendaData = Array.from(agendaMap.values()).filter(a => (deletedRecords.agenda[a.tanggal] || 0) < (Number(a.updatedAt) || 0));
-
-          (cloud.usersData || []).forEach(cu => {
-            const uname = String(cu.username || '');
-            if (!uname || !cu.passHash) return;
-            const delTime = deletedRecords.users[uname] || 0;
-            const cloudUpd = Number(cu.updatedAt) || 0;
-            if (delTime >= cloudUpd) return;
-            const localU = userCredentials[uname];
-            if (!localU || cloudUpd > (Number(localU.updatedAt) || 0)) {
-              userCredentials[uname] = {
-                name: String(cu.name || uname),
-                role: String(cu.role || 'admin'),
-                kelasBinaan: String(cu.kelasBinaan || ''),
-                passHash: String(cu.passHash),
-                updatedAt: cloudUpd
-              };
-            }
-          });
-
-          if (cloud.settingsData) {
-            applyCloudSettingsObject(cloud.settingsData, false);
-          }
-          const pushed = await pushDataToCloud(true);
-          await saveAllData();
-          refreshAllUI();
-          syncSesiModeUI();
-          renderAllViews();
-          if (pushed) {
-            showAlert('Sync 2 Arah Berhasil!', `Database Cloud & Lokal tersinkronisasi (${siswaData.length} Siswa, ${guruData.length} Guru, ${logPresensi.length} Log periode ${ym}, ${agendaData.length} Agenda).`);
-          }
-        } else {
-          updateCloudIndicator("Auth Failed", false);
-          showAlert('Sync Gagal', cloud.message || 'Admin Secret Token tidak cocok dengan Google Apps Script.');
-        }
-      } catch (err) {
-        updateCloudIndicator("Error", false);
-        showAlert('Sync Gagal', 'Tidak dapat menjangkau server Cloud. Pastikan Web App di-deploy dengan akses "Anyone".');
-      }
+      await flushOfflineQueue(false);
+      const pushed = await pushDataToCloud(true);
+      if (pushed) await pullDataFromCloud(false);
     }
 
     function copyGasScriptCode() {
       const gasCode = `// =========================================================================
-// GOOGLE APPS SCRIPT - BACKEND PRESENSI QR ENTERPRISE v9.4 (DUAL-TOKEN + SETTINGS)
+// GOOGLE APPS SCRIPT - BACKEND PRESENSI QR ENTERPRISE v9.5 (PHOTO ID + DUAL-TOKEN)
 // =========================================================================
-// INSTRUKSI KEAMANAN:
-// 1. Klik ikon Roda Gigi (Setelan Proyek / Project Settings) di bilah kiri editor.
-// 2. Gulir ke bawah ke bagian "Properti Skrip" (Script Properties) -> Tambahkan:
-//    - Properti 1: ADMIN_SECRET_TOKEN = [Isi sama dengan Admin Secret Token di Web]
-//    - Properti 2: SCAN_KIOSK_TOKEN   = [Isi sama dengan Scan / Piket Token di Web]
-// 3. Klik Terapkan (Deploy) -> Deployment Baru -> Web App -> Siapa saja (Anyone).
-// =========================================================================
+var SPREADSHEET_ID = '';
 
-function getTokens() {
+function jalankanManual() {
+  var ss = getTargetSpreadsheet_();
+  if (!ss) {
+    throw new Error('Spreadsheet tidak ditemukan! Buka script ini lewat menu Ekstensi > Apps Script di file Google Sheets Anda, atau isi SPREADSHEET_ID.');
+  }
+  setupSheets_(ss);
+  SpreadsheetApp.flush();
+  Logger.log('BERHASIL: Seluruh tab sheet berhasil dibuat pada "' + ss.getName() + '".');
+}
+
+function getTargetSpreadsheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss && SPREADSHEET_ID) {
+    ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  }
+  return ss;
+}
+
+function getTokens_() {
   var props = PropertiesService.getScriptProperties();
   var adminToken = props.getProperty('ADMIN_SECRET_TOKEN') || props.getProperty('API_SECRET_TOKEN') || '';
   var scanToken = props.getProperty('SCAN_KIOSK_TOKEN') || adminToken;
   return { adminToken: adminToken, scanToken: scanToken };
 }
 
-function bytesToHex(bytes) {
+function bytesToHex_(bytes) {
+  if (!bytes || !Array.isArray(bytes)) return '';
   return bytes.map(function(b) {
     var v = (b < 0 ? b + 256 : b).toString(16);
     return v.length === 1 ? '0' + v : v;
   }).join('');
 }
 
-function verifyHmacWithRole(message, signature) {
-  var tokens = getTokens();
+function verifyHmacWithRole_(message, signature) {
+  var tokens = getTokens_();
   if (!tokens.adminToken && !tokens.scanToken) return 'admin';
   if (!signature) return null;
   if (tokens.adminToken) {
-    var sigAdmin = bytesToHex(Utilities.computeHmacSha256Signature(message, tokens.adminToken));
+    var sigAdmin = bytesToHex_(Utilities.computeHmacSha256Signature(message, tokens.adminToken));
     if (sigAdmin === signature) return 'admin';
   }
   if (tokens.scanToken) {
-    var sigScan = bytesToHex(Utilities.computeHmacSha256Signature(message, tokens.scanToken));
+    var sigScan = bytesToHex_(Utilities.computeHmacSha256Signature(message, tokens.scanToken));
     if (sigScan === signature) return 'scan';
   }
   return null;
 }
 
-function ensureSheet(ss, name, headers) {
+function ensureSheet_(ss, name, headers) {
+  if (!ss || !name) return null;
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
@@ -4227,16 +4255,18 @@ function ensureSheet(ss, name, headers) {
   return sheet;
 }
 
-function setupSheets(ss) {
-  ensureSheet(ss, 'DataSiswa', ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At']);
-  ensureSheet(ss, 'DataGuru', ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Updated_At']);
-  ensureSheet(ss, 'LogPresensi', ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp']);
-  ensureSheet(ss, 'AgendaSekolah', ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At']);
-  ensureSheet(ss, 'DataUsers', ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At']);
-  ensureSheet(ss, 'PengaturanSekolah', ['Key', 'Value']);
+function setupSheets_(ss) {
+  if (!ss) return;
+  ensureSheet_(ss, 'DataSiswa', ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At']);
+  ensureSheet_(ss, 'DataGuru', ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Foto_Base64', 'Updated_At']);
+  ensureSheet_(ss, 'LogPresensi', ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp']);
+  ensureSheet_(ss, 'AgendaSekolah', ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At']);
+  ensureSheet_(ss, 'DataUsers', ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At']);
+  ensureSheet_(ss, 'PengaturanSekolah', ['Key', 'Value']);
 }
 
-function readSettingsFromSheet(ss) {
+function readSettingsFromSheet_(ss) {
+  if (!ss) return null;
   var sh = ss.getSheetByName('PengaturanSekolah');
   if (!sh || sh.getLastRow() < 2) return null;
   var rows = sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues();
@@ -4247,10 +4277,10 @@ function readSettingsFromSheet(ss) {
   return obj;
 }
 
-function writeSettingsToSheet(ss, settingsObj) {
-  if (!settingsObj || typeof settingsObj !== 'object') return;
-  var sh = ensureSheet(ss, 'PengaturanSekolah', ['Key', 'Value']);
-  var existing = readSettingsFromSheet(ss) || {};
+function writeSettingsToSheet_(ss, settingsObj) {
+  if (!ss || !settingsObj || typeof settingsObj !== 'object') return;
+  var sh = ensureSheet_(ss, 'PengaturanSekolah', ['Key', 'Value']);
+  var existing = readSettingsFromSheet_(ss) || {};
   Object.keys(settingsObj).forEach(function(k) {
     existing[k] = settingsObj[k];
   });
@@ -4263,7 +4293,7 @@ function writeSettingsToSheet(ss, settingsObj) {
   }
 }
 
-function formatCellDateStr(val) {
+function formatCellDateStr_(val) {
   if (val instanceof Date) {
     return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
   }
@@ -4271,11 +4301,20 @@ function formatCellDateStr(val) {
   return /^\\d{4}-\\d{2}-\\d{2}/.test(s) ? s.slice(0, 10) : s;
 }
 
-function formatCellDateTimeStr(val) {
+function formatCellDateTimeStr_(val) {
   if (val instanceof Date) {
     return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
   }
   return String(val || '');
+}
+
+function overwriteSheet_(sheet, headers, rows) {
+  if (!sheet || !headers) return;
+  sheet.clearContents();
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  if (rows && rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+  }
 }
 
 function doGet(e) {
@@ -4284,7 +4323,7 @@ function doGet(e) {
   var filterMonth = (e && e.parameter && e.parameter.month) ? String(e.parameter.month).trim() : '';
 
   if (action === 'getData') {
-    var authRole = verifyHmacWithRole('GET_DATA', sig);
+    var authRole = verifyHmacWithRole_('GET_DATA', sig);
     if (!authRole) {
       return ContentService.createTextOutput(JSON.stringify({
         status: 'error',
@@ -4292,8 +4331,14 @@ function doGet(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    setupSheets(ss);
+    var ss = getTargetSpreadsheet_();
+    if (!ss) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Spreadsheet tidak ditemukan pada server Apps Script.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    setupSheets_(ss);
 
     var shSiswa = ss.getSheetByName('DataSiswa');
     var siswaRows = shSiswa.getLastRow() > 1 ? shSiswa.getRange(2, 1, shSiswa.getLastRow() - 1, 5).getValues() : [];
@@ -4302,9 +4347,13 @@ function doGet(e) {
     });
 
     var shGuru = ss.getSheetByName('DataGuru');
-    var guruRows = shGuru.getLastRow() > 1 ? shGuru.getRange(2, 1, shGuru.getLastRow() - 1, 4).getValues() : [];
+    var guruCols = Math.max(4, shGuru.getLastColumn());
+    var guruRows = shGuru.getLastRow() > 1 ? shGuru.getRange(2, 1, shGuru.getLastRow() - 1, guruCols).getValues() : [];
     var guruData = guruRows.map(function(r) {
-      return { nip: String(r[0]), nama: String(r[1]), mapel: String(r[2]), updatedAt: Number(r[3]) || 0 };
+      if (guruCols >= 5) {
+        return { nip: String(r[0]), nama: String(r[1]), mapel: String(r[2]), foto: String(r[3]), updatedAt: Number(r[4]) || 0 };
+      }
+      return { nip: String(r[0]), nama: String(r[1]), mapel: String(r[2]), foto: '', updatedAt: Number(r[3]) || 0 };
     });
 
     var shLog = ss.getSheetByName('LogPresensi');
@@ -4312,11 +4361,11 @@ function doGet(e) {
     var logPresensi = [];
     for (var i = 0; i < logRows.length; i++) {
       var r = logRows[i];
-      var tglStr = formatCellDateStr(r[0]);
+      var tglStr = formatCellDateStr_(r[0]);
       if (filterMonth && tglStr.indexOf(filterMonth) !== 0) continue;
       logPresensi.push({
         tanggal: tglStr,
-        waktu: formatCellDateTimeStr(r[1]),
+        waktu: formatCellDateTimeStr_(r[1]),
         id: String(r[2]),
         nama: String(r[3]),
         status: String(r[4]),
@@ -4328,7 +4377,7 @@ function doGet(e) {
     var shAgenda = ss.getSheetByName('AgendaSekolah');
     var agendaRows = shAgenda.getLastRow() > 1 ? shAgenda.getRange(2, 1, shAgenda.getLastRow() - 1, 4).getValues() : [];
     var agendaData = agendaRows.map(function(r) {
-      return { tanggal: formatCellDateStr(r[0]), judul: String(r[1]), kategori: String(r[2]), updatedAt: Number(r[3]) || 0 };
+      return { tanggal: formatCellDateStr_(r[0]), judul: String(r[1]), kategori: String(r[2]), updatedAt: Number(r[3]) || 0 };
     });
 
     var usersData = [];
@@ -4347,7 +4396,7 @@ function doGet(e) {
       });
     }
 
-    var settingsData = readSettingsFromSheet(ss);
+    var settingsData = readSettingsFromSheet_(ss);
 
     return ContentService.createTextOutput(JSON.stringify({
       status: 'success',
@@ -4363,12 +4412,16 @@ function doGet(e) {
 
   return ContentService.createTextOutput(JSON.stringify({
     status: 'online',
-    version: 'v9.4 Dual-Token & Settings Sync'
+    version: 'v9.5 Photo ID & Dual-Token Sync'
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
   try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Payload kosong.' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     var rawBody = e.postData.contents;
     var envelope = JSON.parse(rawBody);
     var payloadStr = envelope.payload;
@@ -4380,7 +4433,7 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Request kadaluarsa (Replay protection).' })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var authRole = verifyHmacWithRole(payloadStr + String(timestamp) + String(nonce), signature);
+    var authRole = verifyHmacWithRole_(payloadStr + String(timestamp) + String(nonce), signature);
     if (!authRole) {
       return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Signature HMAC tidak valid.' })).setMimeType(ContentService.MimeType.JSON);
     }
@@ -4395,8 +4448,11 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    setupSheets(ss);
+    var ss = getTargetSpreadsheet_();
+    if (!ss) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Spreadsheet tidak ditemukan.' })).setMimeType(ContentService.MimeType.JSON);
+    }
+    setupSheets_(ss);
 
     if (action === 'appendLog' && req.data) {
       var l = req.data;
@@ -4404,65 +4460,57 @@ function doPost(e) {
       shLog.appendRow([l.tanggal || '', l.waktu || '', "'" + l.id, l.nama || '', l.status || '', l.gps || '', l.timestamp || Date.now()]);
     }
     else if (action === 'syncSettings' && req.data) {
-      writeSettingsToSheet(ss, req.data);
+      writeSettingsToSheet_(ss, req.data);
     }
     else if (action === 'syncSiswa' && Array.isArray(req.data)) {
-      overwriteSheet(ss.getSheetByName('DataSiswa'), ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At'],
+      overwriteSheet_(ss.getSheetByName('DataSiswa'), ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At'],
         req.data.map(function(s) { return ["'" + s.nisn, s.nama, s.kelas, s.foto || '', s.updatedAt || Date.now()]; }));
     }
     else if (action === 'syncGuru' && Array.isArray(req.data)) {
-      overwriteSheet(ss.getSheetByName('DataGuru'), ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Updated_At'],
-        req.data.map(function(g) { return ["'" + g.nip, g.nama, g.mapel, g.updatedAt || Date.now()]; }));
+      overwriteSheet_(ss.getSheetByName('DataGuru'), ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Foto_Base64', 'Updated_At'],
+        req.data.map(function(g) { return ["'" + g.nip, g.nama, g.mapel, g.foto || '', g.updatedAt || Date.now()]; }));
     }
     else if (action === 'syncLog' && Array.isArray(req.data)) {
-      overwriteSheet(ss.getSheetByName('LogPresensi'), ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp'],
+      overwriteSheet_(ss.getSheetByName('LogPresensi'), ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp'],
         req.data.map(function(l) { return [l.tanggal || '', l.waktu || '', "'" + l.id, l.nama || '', l.status || '', l.gps || '', l.timestamp || Date.now()]; }));
     }
     else if (action === 'syncAgenda' && Array.isArray(req.data)) {
-      overwriteSheet(ss.getSheetByName('AgendaSekolah'), ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At'],
+      overwriteSheet_(ss.getSheetByName('AgendaSekolah'), ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At'],
         req.data.map(function(a) { return [a.tanggal, a.judul, a.kategori, a.updatedAt || Date.now()]; }));
     }
     else if (action === 'syncUsers' && Array.isArray(req.data)) {
-      overwriteSheet(ss.getSheetByName('DataUsers'), ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At'],
+      overwriteSheet_(ss.getSheetByName('DataUsers'), ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At'],
         req.data.map(function(u) { return [u.username, u.name, u.role, u.kelasBinaan || '', u.passHash, u.updatedAt || Date.now()]; }));
     }
     else if (action === 'syncAll') {
       if (Array.isArray(req.siswaData)) {
-        overwriteSheet(ss.getSheetByName('DataSiswa'), ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At'],
+        overwriteSheet_(ss.getSheetByName('DataSiswa'), ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At'],
           req.siswaData.map(function(s) { return ["'" + s.nisn, s.nama, s.kelas, s.foto || '', s.updatedAt || Date.now()]; }));
       }
       if (Array.isArray(req.guruData)) {
-        overwriteSheet(ss.getSheetByName('DataGuru'), ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Updated_At'],
-          req.guruData.map(function(g) { return ["'" + g.nip, g.nama, g.mapel, g.updatedAt || Date.now()]; }));
+        overwriteSheet_(ss.getSheetByName('DataGuru'), ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Foto_Base64', 'Updated_At'],
+          req.guruData.map(function(g) { return ["'" + g.nip, g.nama, g.mapel, g.foto || '', g.updatedAt || Date.now()]; }));
       }
       if (Array.isArray(req.logPresensi)) {
-        overwriteSheet(ss.getSheetByName('LogPresensi'), ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp'],
+        overwriteSheet_(ss.getSheetByName('LogPresensi'), ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp'],
           req.logPresensi.map(function(l) { return [l.tanggal || '', l.waktu || '', "'" + l.id, l.nama || '', l.status || '', l.gps || '', l.timestamp || Date.now()]; }));
       }
       if (Array.isArray(req.agendaData)) {
-        overwriteSheet(ss.getSheetByName('AgendaSekolah'), ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At'],
+        overwriteSheet_(ss.getSheetByName('AgendaSekolah'), ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At'],
           req.agendaData.map(function(a) { return [a.tanggal, a.judul, a.kategori, a.updatedAt || Date.now()]; }));
       }
       if (Array.isArray(req.usersData)) {
-        overwriteSheet(ss.getSheetByName('DataUsers'), ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At'],
+        overwriteSheet_(ss.getSheetByName('DataUsers'), ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At'],
           req.usersData.map(function(u) { return [u.username, u.name, u.role, u.kelasBinaan || '', u.passHash, u.updatedAt || Date.now()]; }));
       }
       if (req.settingsData) {
-        writeSettingsToSheet(ss, req.settingsData);
+        writeSettingsToSheet_(ss, req.settingsData);
       }
     }
 
     return ContentService.createTextOutput(JSON.stringify({ status: 'success', authRole: authRole })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function overwriteSheet(sheet, headers, rows) {
-  sheet.clearContents();
-  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-  if (rows && rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
   }
 }`;
       const ta = document.createElement('textarea');
@@ -4471,38 +4519,37 @@ function overwriteSheet(sheet, headers, rows) {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Kode Apps Script v9.4 Disalin!', 'Tempel ke Editor Google Apps Script -> Set Script Properties (ADMIN_SECRET_TOKEN & SCAN_KIOSK_TOKEN) -> Deploy Web App (Anyone).');
+      showAlert('Kode GAS v9.5 Disalin!', 'Tempel ke editor Apps Script, simpan, lalu Deploy sebagai versi baru (Anyone). Pastikan ADMIN_SECRET_TOKEN & SCAN_KIOSK_TOKEN di Script Properties sudah diisi.');
     }
 
-    // --- UI HELPERS & NAVIGATION ---
+    // --- UI HELPERS, MODALS & TABS ---
     function switchTab(tabId) {
-      const effRole = getEffectiveRole();
-      if (effRole === 'public_kiosk' && tabId !== 'scanner') {
+      if (getEffectiveRole() === 'public_kiosk' && tabId !== 'scanner') {
         tabId = 'scanner';
-      } else if (effRole === 'guru_walikelas' && tabId !== 'scanner' && tabId !== 'rekap') {
+      } else if (getEffectiveRole() === 'guru_walikelas' && tabId !== 'scanner' && tabId !== 'rekap') {
         tabId = 'scanner';
       }
       activeTabState = tabId;
-      document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(`tab_${tabId}`)?.classList.remove('hidden');
-
-      document.querySelectorAll('.nav-tab').forEach(b => {
-        b.classList.remove('bg-indigo-600', 'text-white');
-        b.classList.add('text-slate-600', 'hover:bg-slate-100');
+      persistActiveSession();
+      document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('text-slate-600', 'hover:bg-slate-100');
       });
+      document.getElementById(`tab_${tabId}`)?.classList.remove('hidden');
       const activeBtn = document.getElementById(`tabBtn_${tabId}`);
       if (activeBtn) {
-        activeBtn.classList.add('bg-indigo-600', 'text-white');
         activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
       }
-      persistActiveSession();
       if (tabId === 'analitik') initCharts();
       if (tabId === 'kartu') renderKartuPrint();
+      if (tabId === 'rekap') { renderRekapTable(); renderCalendar(); renderAgendaList(); }
     }
 
-    function showAlert(title, msg, photoUrl = null, autoCloseMs = 0) {
+    function showAlert(title, message, photoUrl = null, autoCloseMs = 0) {
       document.getElementById('alertTitle').innerText = title;
-      document.getElementById('alertMessage').innerText = msg;
+      document.getElementById('alertMessage').innerText = message;
 
       const photoWrap = document.getElementById('alertPhotoWrapper');
       const photoImg = document.getElementById('alertPhotoImg');
@@ -4530,16 +4577,9 @@ function overwriteSheet(sheet, headers, rows) {
         document.getElementById('confirmTitle').innerText = title;
         document.getElementById('confirmMessage').innerText = message;
         modal.classList.remove('hidden');
-        const okBtn = document.getElementById('confirmOkBtn');
-        const cancelBtn = document.getElementById('confirmCancelBtn');
-        const cleanup = (val) => {
-          modal.classList.add('hidden');
-          okBtn.onclick = null;
-          cancelBtn.onclick = null;
-          resolve(val);
-        };
-        okBtn.onclick = () => cleanup(true);
-        cancelBtn.onclick = () => cleanup(false);
+        const cleanup = (val) => { modal.classList.add('hidden'); resolve(val); };
+        document.getElementById('confirmOkBtn').onclick = () => cleanup(true);
+        document.getElementById('confirmCancelBtn').onclick = () => cleanup(false);
       });
     }
 
@@ -4549,25 +4589,21 @@ function overwriteSheet(sheet, headers, rows) {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.lang = 'id-ID';
-        u.rate = 1.05;
+        u.pitch = 1.25;
         window.speechSynthesis.speak(u);
       }
     }
 
     function populateKelasFilters() {
-      const isLimitedGuru = (getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && currentUserKelasBinaan);
-      const kelasList = isLimitedGuru
-        ? [currentUserKelasBinaan]
-        : [...new Set(siswaData.map(s => s.kelas || '-'))].sort();
-
+      const kelasSet = [...new Set(getScopedSiswa().map(s => s.kelas).filter(Boolean))].sort();
       ['filterKelasSiswa', 'filterKelasKartu', 'rekapKelasFilter'].forEach(id => {
         const sel = document.getElementById(id);
         if (!sel) return;
-        if (isLimitedGuru && id === 'rekapKelasFilter') {
-          sel.innerHTML = `<option value="${currentUserKelasBinaan}">Kelas ${currentUserKelasBinaan}</option>`;
-        } else {
-          sel.innerHTML = '<option value="Semua">Semua Kelas</option>' + kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
-        }
+        const cur = sel.value;
+        sel.innerHTML = (getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && kelasSet.length === 1)
+          ? kelasSet.map(k => `<option value="${k}">${k}</option>`).join('')
+          : `<option value="Semua">Semua Kelas</option>` + kelasSet.map(k => `<option value="${k}">${k}</option>`).join('');
+        if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
       });
     }
 
@@ -4580,7 +4616,7 @@ function overwriteSheet(sheet, headers, rows) {
       document.getElementById('profAlamat').value = appConfig.address;
       document.getElementById('profLat').value = targetSchoolGPS.lat;
       document.getElementById('profLng').value = targetSchoolGPS.lng;
-      document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters || 150;
+      document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters;
       document.getElementById('gsheetUrl').value = appConfig.gsheetUrl || '';
       document.getElementById('apiSecurityToken').value = appConfig.apiToken || '';
       document.getElementById('scanSecurityToken').value = appConfig.scanToken || '';
@@ -4588,8 +4624,8 @@ function overwriteSheet(sheet, headers, rows) {
       const retEl = document.getElementById('localRetentionDays');
       if (retEl) retEl.value = String(appConfig.localRetentionDays ?? 45);
       updateSesiDisplayUI();
-      updateCloudIndicator();
       updateStorageUsageUI();
+      updateCloudIndicator();
     }
 
     function renderAllViews() {
@@ -4606,35 +4642,32 @@ function overwriteSheet(sheet, headers, rows) {
       renderAnalytics();
     }
 
-    // --- INITIALIZATION ---
+    // --- BOOTSTRAP ---
     window.addEventListener('DOMContentLoaded', async () => {
-      registerPwaServiceWorker();
       loadAllData();
       await applyUrlBootstrapParams();
       refreshAllUI();
       syncSesiModeUI();
       initGPS();
-      renderAllViews();
-
-      if (!currentUserRole) {
-        restoreActiveSession();
-      }
-
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      registerPwaServiceWorker();
+      restoreActiveSession();
 
       setInterval(() => {
+        const nowStr = new Date().toTimeString().slice(0, 8);
         const clk = document.getElementById('liveClock');
-        if (clk) clk.innerText = new Date().toTimeString().slice(0, 8);
+        if (clk) clk.innerText = nowStr;
         if (document.getElementById('toggleAutoSesi')?.checked) {
-          const autoSesi = getAutoSesiByClock();
-          if (autoSesi !== aktifSesi) {
-            aktifSesi = autoSesi;
+          const autoS = getAutoSesiByClock();
+          if (autoS !== aktifSesi) {
+            aktifSesi = autoS;
             updateSesiButtonStyles();
           }
         }
       }, 1000);
 
-      if (GITHUB_DEFAULT_CONFIG.autoPullOnLoad && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
         if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
         silentPullFromCloud(getCurrentSelectedYM());
       }

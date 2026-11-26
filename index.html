@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
-  <title>Presensi QR Enterprise v9.4 - Dual-Token, Queue Sync & Susulan Manual</title>
+  <title>Presensi QR Enterprise v9.4 - Dual-Token, Queue Sync & Photo Verification</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -42,7 +42,7 @@
           <i data-lucide="shield-check" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight">Presensi QR Enterprise</h1>
-        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.4 • DUAL-TOKEN & QUEUE SYNC</p>
+        <p class="text-xs text-slate-400 mt-1 font-mono">PRODUCTION v9.4 • PHOTO VERIFICATION & QUEUE SYNC</p>
       </div>
 
       <div id="loginLockoutMsg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center"></div>
@@ -91,7 +91,7 @@
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
-          <!-- TOMBOL KIRIM ANTREAN OFFLINE (TAMPIL SAAT ADA ANTREAN / MANUAL SYNC) -->
+          <!-- TOMBOL KIRIM ANTREAN OFFLINE -->
           <button id="btnHeaderSyncQueue" onclick="manualFlushQueueAndPull()" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition" title="Kirim antrean presensi tertunda & sinkronkan dengan Cloud">
             <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i>
             <span id="btnHeaderSyncQueueText">Sync Cloud</span>
@@ -233,6 +233,17 @@
               <button onclick="stopQrScanner()" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5">
                 <i data-lucide="square" class="w-3.5 h-3.5"></i> Hentikan
               </button>
+            </div>
+
+            <!-- KARTU PREVIEW FOTO HASIL SCAN TERAKHIR -->
+            <div id="lastScanPhotoCard" class="hidden p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200 flex items-center gap-3.5 transition-all">
+              <img id="lastScanPhotoImg" src="" alt="Foto Presensi" class="w-16 h-20 object-cover rounded-xl border-2 border-white shadow-md bg-slate-200 flex-shrink-0">
+              <div class="min-w-0 flex-1 space-y-0.5">
+                <span id="lastScanStatusBadge" class="inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-600 text-white uppercase">HADIR</span>
+                <h4 id="lastScanNama" class="font-extrabold text-slate-900 text-sm truncate">-</h4>
+                <p id="lastScanMeta" class="font-mono text-[11px] text-slate-600 truncate">NISN: - • Kelas: -</p>
+                <p id="lastScanTime" class="font-mono text-[10px] text-emerald-700 font-bold">00:00:00</p>
+              </div>
             </div>
 
             <!-- Manual Input / Barcode Gun + MODE SUSULAN MANUAL -->
@@ -831,12 +842,17 @@
     </div>
   </div>
 
-  <!-- Alert Modal -->
+  <!-- Alert Modal (Dengan Foto Profil Presensi) -->
   <div id="alertModal" class="hidden fixed inset-0 z-[70] bg-slate-950/60 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
-      <h3 id="alertTitle" class="font-extrabold text-slate-900 text-base">Informasi</h3>
-      <p id="alertMessage" class="text-xs text-slate-600 leading-relaxed"></p>
-      <button onclick="document.getElementById('alertModal').classList.add('hidden')" class="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs">Tutup</button>
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+      <div id="alertPhotoWrapper" class="hidden mx-auto w-24 h-28 rounded-2xl overflow-hidden border-4 border-emerald-500 shadow-lg bg-slate-100">
+        <img id="alertPhotoImg" src="" alt="Foto" class="w-full h-full object-cover">
+      </div>
+      <div class="space-y-1">
+        <h3 id="alertTitle" class="font-extrabold text-slate-900 text-base">Informasi</h3>
+        <p id="alertMessage" class="text-xs text-slate-600 leading-relaxed"></p>
+      </div>
+      <button onclick="document.getElementById('alertModal').classList.add('hidden')" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs">Tutup</button>
     </div>
   </div>
 
@@ -1068,10 +1084,9 @@
 
   <script>
     // =========================================================================
-    // PRESENSI QR ENTERPRISE v9.4 - QUEUE SYNC BUTTON & SUSULAN MANUAL
+    // PRESENSI QR ENTERPRISE v9.4 - PHOTO VERIFICATION, QUEUE SYNC & SUSULAN
     // =========================================================================
 
-    // BIARKAN KOSONG AGAR TIDAK ADA TOKEN RAHASIA BOCOR DI REPOSITORI GITHUB PUBLIC
     const GITHUB_DEFAULT_CONFIG = {
       gsheetUrl: '',
       apiToken: '',
@@ -1210,6 +1225,7 @@
     let html5QrCodeInstance = null;
     let lastScanTimestamps = {};
     let loadedMonthsCache = new Set();
+    let alertAutoCloseTimer = null;
 
     // --- DUAL-TOKEN HELPER FUNCTIONS ---
     function getSigningQrSecret() {
@@ -1498,7 +1514,7 @@
       renderRekapTable();
       renderAnalytics();
       recordAudit('ABSEN_MANUAL', `Mencatat ${jenis} untuk ${siswa.nama} (${tanggal})`);
-      showAlert('Status Tersimpan', `${siswa.nama} berhasil dicatat sebagai ${jenis} pada tanggal ${tanggal}.`);
+      showAlert('Status Tersimpan', `${siswa.nama} berhasil dicatat sebagai ${jenis} pada tanggal ${tanggal}.`, siswa.foto || DEFAULT_SISWA_AVATAR, 2500);
     }
 
     // --- PERSISTENCE SESI LOGIN (ANTI-KELUAR SAAT REFRESH) ---
@@ -2116,7 +2132,7 @@
       }
     }
 
-    // --- AUTO SESI, SUSULAN MANUAL & PRESENSI ---
+    // --- AUTO SESI, SUSULAN MANUAL & PRESENSI (DENGAN TAMPILAN FOTO) ---
     function getAutoSesiByClock() {
       const hhmm = new Date().toTimeString().slice(0, 5);
       if (hhmm >= sesiSettings.pulangStart) return 'Jam Pulang';
@@ -2164,6 +2180,27 @@
           dateInp.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         }
       }
+    }
+
+    function showLastScanPhotoCard(person, code, statusLabel, timeStr) {
+      const card = document.getElementById('lastScanPhotoCard');
+      if (!card) return;
+      const photoSrc = person.foto || DEFAULT_SISWA_AVATAR;
+      const roleInfo = person.kelas ? `Kelas: ${person.kelas}` : (person.mapel || 'Guru / Staf');
+
+      document.getElementById('lastScanPhotoImg').src = photoSrc;
+      document.getElementById('lastScanStatusBadge').innerText = statusLabel;
+      document.getElementById('lastScanNama').innerText = person.nama;
+      document.getElementById('lastScanMeta').innerText = `${person.nisn ? 'NISN' : 'NIP'}: ${code} • ${roleInfo}`;
+      document.getElementById('lastScanTime').innerText = `Tercatat: ${timeStr}`;
+
+      const isLate = statusLabel.includes('Terlambat') || statusLabel.includes('Cepat');
+      card.className = isLate
+        ? 'p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3.5 transition-all'
+        : 'p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3.5 transition-all';
+      document.getElementById('lastScanStatusBadge').className = isLate
+        ? 'inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-500 text-white uppercase'
+        : 'inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-600 text-white uppercase';
     }
 
     async function processPresensi(rawCode, isManual = false, susulanOpts = null) {
@@ -2253,7 +2290,15 @@
       renderLogTable();
       renderRekapTable();
       renderAnalytics();
-      showAlert(susulanOpts ? 'Presensi Susulan Tercatat' : 'Presensi Tercatat', `${person.nama} berhasil dicatat (${statusLabel}) pada tanggal ${isoDate}.`);
+
+      const personPhoto = person.foto || DEFAULT_SISWA_AVATAR;
+      showLastScanPhotoCard(person, code, statusLabel, timeStr);
+      showAlert(
+        susulanOpts ? 'Presensi Susulan Tercatat' : 'Presensi Berhasil',
+        `${person.nama} (${person.kelas || person.mapel || '-'}) — ${statusLabel} (${isoDate})`,
+        personPhoto,
+        2500
+      );
       speakFemaleVoice(`Presensi berhasil. ${person.nama}.`);
     }
 
@@ -4127,356 +4172,402 @@
     }
 
     function copyGasScriptCode() {
-      const admTok = appConfig.apiToken || 'GANTI_DENGAN_TOKEN_ADMIN_RAHASIA_2026';
-      const scnTok = appConfig.scanToken || 'GANTI_DENGAN_TOKEN_SCAN_PIKET_2026';
-      const gasBackend = `// ============================================================================
-// GOOGLE APPS SCRIPT BACKEND - PRESENSI QR ENTERPRISE v9.4 (DUAL-TOKEN SECURITY)
-// ============================================================================
+      const gasCode = `// =========================================================================
+// GOOGLE APPS SCRIPT - BACKEND PRESENSI QR ENTERPRISE v9.4 (DUAL-TOKEN + SETTINGS)
+// =========================================================================
+// INSTRUKSI KEAMANAN:
+// 1. Klik ikon Roda Gigi (Setelan Proyek / Project Settings) di bilah kiri editor.
+// 2. Gulir ke bawah ke bagian "Properti Skrip" (Script Properties) -> Tambahkan:
+//    - Properti 1: ADMIN_SECRET_TOKEN = [Isi sama dengan Admin Secret Token di Web]
+//    - Properti 2: SCAN_KIOSK_TOKEN   = [Isi sama dengan Scan / Piket Token di Web]
+// 3. Klik Terapkan (Deploy) -> Deployment Baru -> Web App -> Siapa saja (Anyone).
+// =========================================================================
 
-const ADMIN_SECRET_TOKEN = "${admTok}";
-const SCAN_KIOSK_TOKEN   = "${scnTok}";
-
-const DRIVE_FOLDER_NAME = "PresensiQR_FotoSiswa_v8";
-const MAX_REQUEST_AGE_MS = 5 * 60 * 1000;
-
-const SHEET_SISWA    = "DataSiswa";
-const SHEET_GURU     = "DataGuru";
-const SHEET_LOG      = "LogPresensi";
-const SHEET_AGENDA   = "AgendaSekolah";
-const SHEET_USERS    = "DataUsers";
-const SHEET_SETTINGS = "PengaturanSekolah";
-
-function testSetup() {
-  const ss = setupSheets();
-  Logger.log("BERHASIL! Dual-Token v9.4 siap. Buka Google Sheets di: " + ss.getUrl());
+function getTokens() {
+  var props = PropertiesService.getScriptProperties();
+  var adminToken = props.getProperty('ADMIN_SECRET_TOKEN') || props.getProperty('API_SECRET_TOKEN') || '';
+  var scanToken = props.getProperty('SCAN_KIOSK_TOKEN') || adminToken;
+  return { adminToken: adminToken, scanToken: scanToken };
 }
 
-function setupSheets() {
-  const ss = getTargetSpreadsheet_();
-  ensureSheet_(ss, SHEET_SISWA,    ["nisn", "nama", "kelas", "foto", "updatedAt"]);
-  ensureSheet_(ss, SHEET_GURU,     ["nip", "nama", "mapel", "updatedAt"]);
-  ensureSheet_(ss, SHEET_LOG,      ["tanggal", "waktu", "id", "nama", "status", "gps", "timestamp"]);
-  ensureSheet_(ss, SHEET_AGENDA,   ["tanggal", "judul", "kategori", "updatedAt"]);
-  const userSheet = ensureSheet_(ss, SHEET_USERS, ["username", "name", "role", "kelasBinaan", "passHash", "updatedAt"]);
-  ensureSheet_(ss, SHEET_SETTINGS, ["key", "value"]);
-
-  if (userSheet && userSheet.getLastRow() <= 1) {
-    const defaultUsers = [
-      ["superadmin", "Super Administrator", "superadmin", "", computeSha256_("QR_SALT_2026_admin123"), 1700000000000],
-      ["admin", "Administrator Sistem", "admin", "", computeSha256_("QR_SALT_2026_operator123"), 1700000000000],
-      ["user_admin", "User Admin Operator", "admin", "", computeSha256_("QR_SALT_2026_admin123"), 1700000000000],
-      ["guru", "Wali Kelas 10-A", "guru_walikelas", "10-A", computeSha256_("QR_SALT_2026_guru123"), 1700000000000]
-    ];
-    userSheet.getRange(2, 1, defaultUsers.length, 6).setValues(defaultUsers);
-  }
-
-  const defaultSheet = ss.getSheetByName("Sheet1") || ss.getSheetByName("Lembar1");
-  if (defaultSheet && ss.getSheets().length > 1) {
-    try { ss.deleteSheet(defaultSheet); } catch (e) {}
-  }
-  return ss;
+function bytesToHex(bytes) {
+  return bytes.map(function(b) {
+    var v = (b < 0 ? b + 256 : b).toString(16);
+    return v.length === 1 ? '0' + v : v;
+  }).join('');
 }
 
-function getTargetSpreadsheet_() {
-  try {
-    const active = SpreadsheetApp.getActiveSpreadsheet();
-    if (active) return active;
-  } catch (e) {}
-  const props = PropertiesService.getScriptProperties();
-  let savedId = props.getProperty("TARGET_SPREADSHEET_ID");
-  if (savedId) {
-    try { return SpreadsheetApp.openById(savedId); } catch (e) {}
+function verifyHmacWithRole(message, signature) {
+  var tokens = getTokens();
+  if (!tokens.adminToken && !tokens.scanToken) return 'admin';
+  if (!signature) return null;
+  if (tokens.adminToken) {
+    var sigAdmin = bytesToHex(Utilities.computeHmacSha256Signature(message, tokens.adminToken));
+    if (sigAdmin === signature) return 'admin';
   }
-  const files = DriveApp.getFilesByName("Database_Presensi_QR_Enterprise_v8");
-  if (files.hasNext()) {
-    const existing = SpreadsheetApp.open(files.next());
-    props.setProperty("TARGET_SPREADSHEET_ID", existing.getId());
-    return existing;
-  }
-  const created = SpreadsheetApp.create("Database_Presensi_QR_Enterprise_v8");
-  props.setProperty("TARGET_SPREADSHEET_ID", created.getId());
-  return created;
-}
-
-function ensureSheet_(ss, name, headers) {
-  let sheet = ss.getSheetByName(name);
-  if (!sheet) sheet = ss.insertSheet(name);
-  if (sheet.getLastRow() === 0) {
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground("#e2e8f0");
-    sheet.setFrozenRows(1);
-  } else if (name === SHEET_USERS && sheet.getLastColumn() < 6) {
-    sheet.insertColumnAfter(3);
-    sheet.getRange(1, 4).setValue("kelasBinaan").setFontWeight("bold").setBackground("#e2e8f0");
-  }
-  return sheet;
-}
-
-function computeHmacSha256_(message, secret) {
-  const rawSig = Utilities.computeHmacSha256Signature(String(message), String(secret), Utilities.Charset.UTF_8);
-  return rawSig.map(b => ("0" + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join("");
-}
-
-function computeSha256_(message) {
-  const rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(message), Utilities.Charset.UTF_8);
-  return rawHash.map(b => ("0" + ((b < 0 ? b + 256 : b).toString(16))).slice(-2)).join("");
-}
-
-function getAuthorizedTier_(message, sig) {
-  if (!sig) return null;
-  const cleanSig = String(sig).toLowerCase();
-  if (ADMIN_SECRET_TOKEN && computeHmacSha256_(message, ADMIN_SECRET_TOKEN).toLowerCase() === cleanSig) {
-    return "admin";
-  }
-  if (SCAN_KIOSK_TOKEN && computeHmacSha256_(message, SCAN_KIOSK_TOKEN).toLowerCase() === cleanSig) {
-    return "scan";
+  if (tokens.scanToken) {
+    var sigScan = bytesToHex(Utilities.computeHmacSha256Signature(message, tokens.scanToken));
+    if (sigScan === signature) return 'scan';
   }
   return null;
 }
 
-function saveBase64PhotoToDrive_(base64Str, filePrefix) {
-  if (!base64Str || typeof base64Str !== "string" || !base64Str.startsWith("data:image/")) return base64Str;
-  try {
-    const matches = base64Str.match(/^data:(image\\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
-    if (!matches) return base64Str;
-    const mimeType = matches[1];
-    const bytes = Utilities.base64Decode(matches[2]);
-    const ext = mimeType.split("/")[1] || "jpg";
-    const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
-    const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
-    const blob = Utilities.newBlob(bytes, mimeType, filePrefix + "_" + Date.now() + "." + ext);
-    const file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return "https://lh3.googleusercontent.com/d/" + file.getId();
-  } catch (err) {
-    return base64Str;
+function ensureSheet(ss, name, headers) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    if (headers && headers.length > 0) {
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      sheet.setFrozenRows(1);
+    }
+  } else if (sheet.getLastRow() === 0 && headers && headers.length > 0) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.setFrozenRows(1);
   }
+  return sheet;
 }
 
-function doGet(e) {
-  const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : "";
-  const sig = (e && e.parameter && e.parameter.sig) ? e.parameter.sig : "";
-  const monthFilter = (e && e.parameter && e.parameter.month) ? String(e.parameter.month).trim() : "";
-
-  if (action === "getData") {
-    const tier = getAuthorizedTier_("GET_DATA", sig);
-    if (!tier) return jsonOut_({ status: "error", message: "Unauthorized GET Signature" });
-    const ss = setupSheets();
-    const allLogs = sheetToObjects_(ss.getSheetByName(SHEET_LOG));
-    const filteredLogs = monthFilter
-      ? allLogs.filter(l => String(l.tanggal || "").startsWith(monthFilter) || String(l.waktu || "").startsWith(monthFilter))
-      : allLogs;
-    return jsonOut_({
-      status: "success",
-      authTier: tier,
-      siswaData: sheetToObjects_(ss.getSheetByName(SHEET_SISWA)),
-      guruData: sheetToObjects_(ss.getSheetByName(SHEET_GURU)),
-      logPresensi: filteredLogs,
-      agendaData: sheetToObjects_(ss.getSheetByName(SHEET_AGENDA)),
-      usersData: sheetToObjects_(ss.getSheetByName(SHEET_USERS)),
-      settingsData: readSettingsObject_(ss.getSheetByName(SHEET_SETTINGS))
-    });
-  }
-  return jsonOut_({ status: "online", message: "Presensi QR Dual-Token Backend v9.4 Aktif" });
+function setupSheets(ss) {
+  ensureSheet(ss, 'DataSiswa', ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At']);
+  ensureSheet(ss, 'DataGuru', ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Updated_At']);
+  ensureSheet(ss, 'LogPresensi', ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp']);
+  ensureSheet(ss, 'AgendaSekolah', ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At']);
+  ensureSheet(ss, 'DataUsers', ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At']);
+  ensureSheet(ss, 'PengaturanSekolah', ['Key', 'Value']);
 }
 
-function doPost(e) {
-  const lock = LockService.getScriptLock();
-  lock.waitLock(25000);
-  try {
-    const envelope = JSON.parse(e.postData.contents);
-    const payloadStr = envelope.payload;
-    const timestamp = Number(envelope.timestamp);
-    const nonce = String(envelope.nonce || "");
-    const signature = String(envelope.signature || "");
-
-    if (!payloadStr || !timestamp || !nonce || !signature) return jsonOut_({ status: "error", message: "Invalid Envelope" });
-    if (Math.abs(Date.now() - timestamp) > MAX_REQUEST_AGE_MS) return jsonOut_({ status: "error", message: "Expired Timestamp" });
-
-    const tier = getAuthorizedTier_(payloadStr + String(timestamp) + nonce, signature);
-    if (!tier) return jsonOut_({ status: "error", message: "Invalid HMAC Signature" });
-
-    const cache = CacheService.getScriptCache();
-    if (cache.get("NONCE_" + nonce)) return jsonOut_({ status: "error", message: "Replay Detected" });
-    cache.put("NONCE_" + nonce, "1", 600);
-
-    const body = JSON.parse(payloadStr);
-    const action = body.action;
-
-    if (tier === "scan" && action !== "appendLog") {
-      return jsonOut_({ status: "error", message: "Scan Token hanya diizinkan mencatat presensi (appendLog)." });
-    }
-
-    const ss = setupSheets();
-
-    if (action === "appendLog" && body.data) {
-      const l = body.data;
-      ss.getSheetByName(SHEET_LOG).appendRow([l.tanggal || "", l.waktu || "", l.id || "", l.nama || "", l.status || "", l.gps || "", l.timestamp || Date.now()]);
-      return jsonOut_({ status: "success" });
-    }
-    if (action === "syncLog" && Array.isArray(body.data)) {
-      replaceSheetRows_(ss.getSheetByName(SHEET_LOG), ["tanggal", "waktu", "id", "nama", "status", "gps", "timestamp"], body.data);
-      return jsonOut_({ status: "success" });
-    }
-    if (action === "syncSiswa" && Array.isArray(body.data)) {
-      const processed = body.data.map(s => ({ ...s, foto: saveBase64PhotoToDrive_(s.foto, "SISWA_" + s.nisn) }));
-      replaceSheetRows_(ss.getSheetByName(SHEET_SISWA), ["nisn", "nama", "kelas", "foto", "updatedAt"], processed);
-      return jsonOut_({ status: "success" });
-    }
-    if (action === "syncGuru" && Array.isArray(body.data)) {
-      replaceSheetRows_(ss.getSheetByName(SHEET_GURU), ["nip", "nama", "mapel", "updatedAt"], body.data);
-      return jsonOut_({ status: "success" });
-    }
-    if (action === "syncAgenda" && Array.isArray(body.data)) {
-      replaceSheetRows_(ss.getSheetByName(SHEET_AGENDA), ["tanggal", "judul", "kategori", "updatedAt"], body.data);
-      return jsonOut_({ status: "success" });
-    }
-    if (action === "syncUsers" && Array.isArray(body.data)) {
-      const safeUsers = protectSuperadminRow_(ss.getSheetByName(SHEET_USERS), body.data);
-      replaceSheetRows_(ss.getSheetByName(SHEET_USERS), ["username", "name", "role", "kelasBinaan", "passHash", "updatedAt"], safeUsers);
-      return jsonOut_({ status: "success" });
-    }
-    if (action === "syncSettings" && body.data) {
-      writeSettingsObject_(ss.getSheetByName(SHEET_SETTINGS), body.data);
-      return jsonOut_({ status: "success" });
-    }
-    if (action === "syncAll") {
-      if (Array.isArray(body.siswaData)) {
-        const processed = body.siswaData.map(s => ({ ...s, foto: saveBase64PhotoToDrive_(s.foto, "SISWA_" + s.nisn) }));
-        replaceSheetRows_(ss.getSheetByName(SHEET_SISWA), ["nisn", "nama", "kelas", "foto", "updatedAt"], processed);
-      }
-      if (Array.isArray(body.guruData)) replaceSheetRows_(ss.getSheetByName(SHEET_GURU), ["nip", "nama", "mapel", "updatedAt"], body.guruData);
-      if (Array.isArray(body.logPresensi)) mergeSheetLogs_(ss.getSheetByName(SHEET_LOG), body.logPresensi);
-      if (Array.isArray(body.agendaData)) replaceSheetRows_(ss.getSheetByName(SHEET_AGENDA), ["tanggal", "judul", "kategori", "updatedAt"], body.agendaData);
-      if (Array.isArray(body.usersData)) {
-        const safeUsers = protectSuperadminRow_(ss.getSheetByName(SHEET_USERS), body.usersData);
-        replaceSheetRows_(ss.getSheetByName(SHEET_USERS), ["username", "name", "role", "kelasBinaan", "passHash", "updatedAt"], safeUsers);
-      }
-      if (body.settingsData) {
-        writeSettingsObject_(ss.getSheetByName(SHEET_SETTINGS), body.settingsData);
-      }
-      return jsonOut_({ status: "success" });
-    }
-    return jsonOut_({ status: "error", message: "Unknown Action" });
-  } catch (err) {
-    return jsonOut_({ status: "error", message: err.toString() });
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function readSettingsObject_(sheet) {
-  const obj = {};
-  if (!sheet || sheet.getLastRow() <= 1) return obj;
-  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).getValues();
-  rows.forEach(r => {
-    const k = String(r[0] || "").trim();
-    if (k) obj[k] = r[1];
+function readSettingsFromSheet(ss) {
+  var sh = ss.getSheetByName('PengaturanSekolah');
+  if (!sh || sh.getLastRow() < 2) return null;
+  var rows = sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues();
+  var obj = {};
+  rows.forEach(function(r) {
+    if (r[0] !== '') obj[String(r[0])] = r[1];
   });
   return obj;
 }
 
-function writeSettingsObject_(sheet, newSettingsObj) {
-  if (!sheet || !newSettingsObj) return;
-  const merged = readSettingsObject_(sheet);
-  Object.keys(newSettingsObj).forEach(k => {
-    merged[k] = newSettingsObj[k];
+function writeSettingsToSheet(ss, settingsObj) {
+  if (!settingsObj || typeof settingsObj !== 'object') return;
+  var sh = ensureSheet(ss, 'PengaturanSekolah', ['Key', 'Value']);
+  var existing = readSettingsFromSheet(ss) || {};
+  Object.keys(settingsObj).forEach(function(k) {
+    existing[k] = settingsObj[k];
   });
-  const rows = Object.keys(merged).map(k => [k, merged[k]]);
-  if (sheet.getLastRow() > 1) sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).clearContent();
-  if (rows.length > 0) sheet.getRange(2, 1, rows.length, 2).setValues(rows);
-}
-
-function protectSuperadminRow_(userSheet, incomingUsers) {
-  const list = Array.isArray(incomingUsers) ? [...incomingUsers] : [];
-  if (!list.some(u => String(u.username) === "superadmin")) {
-    const existing = sheetToObjects_(userSheet).find(u => String(u.username) === "superadmin");
-    if (existing) list.unshift(existing);
+  sh.clearContents();
+  sh.getRange(1, 1, 1, 2).setValues([['Key', 'Value']]);
+  var keys = Object.keys(existing);
+  if (keys.length > 0) {
+    var out = keys.map(function(k) { return [k, String(existing[k])]; });
+    sh.getRange(2, 1, out.length, 2).setValues(out);
   }
-  return list;
 }
 
-function mergeSheetLogs_(sheet, incomingLogs) {
-  const headers = ["tanggal", "waktu", "id", "nama", "status", "gps", "timestamp"];
-  const existing = sheetToObjects_(sheet);
-  const map = new Map();
-  existing.forEach(l => {
-    if (l.id) map.set(String(l.id) + "_" + String(l.waktu) + "_" + String(l.status), l);
-  });
-  incomingLogs.forEach(l => {
-    if (l.id) map.set(String(l.id) + "_" + String(l.waktu) + "_" + String(l.status), l);
-  });
-  const merged = Array.from(map.values()).sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
-  replaceSheetRows_(sheet, headers, merged);
+function formatCellDateStr(val) {
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  var s = String(val || '');
+  return /^\\d{4}-\\d{2}-\\d{2}/.test(s) ? s.slice(0, 10) : s;
 }
 
-function replaceSheetRows_(sheet, headers, objects) {
-  if (sheet.getLastRow() > 1) sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).clearContent();
-  if (!objects || objects.length === 0) return;
-  const rows = objects.map(obj => headers.map(h => obj[h] !== undefined ? obj[h] : ""));
-  sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+function formatCellDateTimeStr(val) {
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  }
+  return String(val || '');
 }
 
-function sheetToObjects_(sheet) {
-  const lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return [];
-  const data = sheet.getRange(1, 1, lastRow, sheet.getLastColumn()).getValues();
-  const headers = data[0];
-  return data.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = row[i]);
-    return obj;
-  });
+function doGet(e) {
+  var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : '';
+  var sig = (e && e.parameter && e.parameter.sig) ? e.parameter.sig : '';
+  var filterMonth = (e && e.parameter && e.parameter.month) ? String(e.parameter.month).trim() : '';
+
+  if (action === 'getData') {
+    var authRole = verifyHmacWithRole('GET_DATA', sig);
+    if (!authRole) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Akses ditolak: Signature Token tidak valid.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    setupSheets(ss);
+
+    var shSiswa = ss.getSheetByName('DataSiswa');
+    var siswaRows = shSiswa.getLastRow() > 1 ? shSiswa.getRange(2, 1, shSiswa.getLastRow() - 1, 5).getValues() : [];
+    var siswaData = siswaRows.map(function(r) {
+      return { nisn: String(r[0]), nama: String(r[1]), kelas: String(r[2]), foto: String(r[3]), updatedAt: Number(r[4]) || 0 };
+    });
+
+    var shGuru = ss.getSheetByName('DataGuru');
+    var guruRows = shGuru.getLastRow() > 1 ? shGuru.getRange(2, 1, shGuru.getLastRow() - 1, 4).getValues() : [];
+    var guruData = guruRows.map(function(r) {
+      return { nip: String(r[0]), nama: String(r[1]), mapel: String(r[2]), updatedAt: Number(r[3]) || 0 };
+    });
+
+    var shLog = ss.getSheetByName('LogPresensi');
+    var logRows = shLog.getLastRow() > 1 ? shLog.getRange(2, 1, shLog.getLastRow() - 1, 7).getValues() : [];
+    var logPresensi = [];
+    for (var i = 0; i < logRows.length; i++) {
+      var r = logRows[i];
+      var tglStr = formatCellDateStr(r[0]);
+      if (filterMonth && tglStr.indexOf(filterMonth) !== 0) continue;
+      logPresensi.push({
+        tanggal: tglStr,
+        waktu: formatCellDateTimeStr(r[1]),
+        id: String(r[2]),
+        nama: String(r[3]),
+        status: String(r[4]),
+        gps: String(r[5]),
+        timestamp: Number(r[6]) || 0
+      });
+    }
+
+    var shAgenda = ss.getSheetByName('AgendaSekolah');
+    var agendaRows = shAgenda.getLastRow() > 1 ? shAgenda.getRange(2, 1, shAgenda.getLastRow() - 1, 4).getValues() : [];
+    var agendaData = agendaRows.map(function(r) {
+      return { tanggal: formatCellDateStr(r[0]), judul: String(r[1]), kategori: String(r[2]), updatedAt: Number(r[3]) || 0 };
+    });
+
+    var usersData = [];
+    if (authRole === 'admin') {
+      var shUsers = ss.getSheetByName('DataUsers');
+      var userRows = shUsers.getLastRow() > 1 ? shUsers.getRange(2, 1, shUsers.getLastRow() - 1, 6).getValues() : [];
+      usersData = userRows.map(function(r) {
+        return {
+          username: String(r[0]),
+          name: String(r[1]),
+          role: String(r[2]),
+          kelasBinaan: String(r[3]),
+          passHash: String(r[4]),
+          updatedAt: Number(r[5]) || 0
+        };
+      });
+    }
+
+    var settingsData = readSettingsFromSheet(ss);
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      authRole: authRole,
+      siswaData: siswaData,
+      guruData: guruData,
+      logPresensi: logPresensi,
+      agendaData: agendaData,
+      usersData: usersData,
+      settingsData: settingsData
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'online',
+    version: 'v9.4 Dual-Token & Settings Sync'
+  })).setMimeType(ContentService.MimeType.JSON);
 }
 
-function jsonOut_(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+function doPost(e) {
+  try {
+    var rawBody = e.postData.contents;
+    var envelope = JSON.parse(rawBody);
+    var payloadStr = envelope.payload;
+    var timestamp = envelope.timestamp;
+    var nonce = envelope.nonce;
+    var signature = envelope.signature;
+
+    if (Math.abs(Date.now() - Number(timestamp)) > 300000) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Request kadaluarsa (Replay protection).' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var authRole = verifyHmacWithRole(payloadStr + String(timestamp) + String(nonce), signature);
+    if (!authRole) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Signature HMAC tidak valid.' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var req = JSON.parse(payloadStr);
+    var action = req.action;
+
+    if (authRole === 'scan' && action !== 'appendLog') {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Token Scan/Piket tidak memiliki hak akses mengubah data master atau pengaturan.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    setupSheets(ss);
+
+    if (action === 'appendLog' && req.data) {
+      var l = req.data;
+      var shLog = ss.getSheetByName('LogPresensi');
+      shLog.appendRow([l.tanggal || '', l.waktu || '', "'" + l.id, l.nama || '', l.status || '', l.gps || '', l.timestamp || Date.now()]);
+    }
+    else if (action === 'syncSettings' && req.data) {
+      writeSettingsToSheet(ss, req.data);
+    }
+    else if (action === 'syncSiswa' && Array.isArray(req.data)) {
+      overwriteSheet(ss.getSheetByName('DataSiswa'), ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At'],
+        req.data.map(function(s) { return ["'" + s.nisn, s.nama, s.kelas, s.foto || '', s.updatedAt || Date.now()]; }));
+    }
+    else if (action === 'syncGuru' && Array.isArray(req.data)) {
+      overwriteSheet(ss.getSheetByName('DataGuru'), ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Updated_At'],
+        req.data.map(function(g) { return ["'" + g.nip, g.nama, g.mapel, g.updatedAt || Date.now()]; }));
+    }
+    else if (action === 'syncLog' && Array.isArray(req.data)) {
+      overwriteSheet(ss.getSheetByName('LogPresensi'), ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp'],
+        req.data.map(function(l) { return [l.tanggal || '', l.waktu || '', "'" + l.id, l.nama || '', l.status || '', l.gps || '', l.timestamp || Date.now()]; }));
+    }
+    else if (action === 'syncAgenda' && Array.isArray(req.data)) {
+      overwriteSheet(ss.getSheetByName('AgendaSekolah'), ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At'],
+        req.data.map(function(a) { return [a.tanggal, a.judul, a.kategori, a.updatedAt || Date.now()]; }));
+    }
+    else if (action === 'syncUsers' && Array.isArray(req.data)) {
+      overwriteSheet(ss.getSheetByName('DataUsers'), ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At'],
+        req.data.map(function(u) { return [u.username, u.name, u.role, u.kelasBinaan || '', u.passHash, u.updatedAt || Date.now()]; }));
+    }
+    else if (action === 'syncAll') {
+      if (Array.isArray(req.siswaData)) {
+        overwriteSheet(ss.getSheetByName('DataSiswa'), ['NISN', 'Nama_Lengkap', 'Kelas', 'Foto_Base64', 'Updated_At'],
+          req.siswaData.map(function(s) { return ["'" + s.nisn, s.nama, s.kelas, s.foto || '', s.updatedAt || Date.now()]; }));
+      }
+      if (Array.isArray(req.guruData)) {
+        overwriteSheet(ss.getSheetByName('DataGuru'), ['NIP', 'Nama_Lengkap', 'Jabatan_Mapel', 'Updated_At'],
+          req.guruData.map(function(g) { return ["'" + g.nip, g.nama, g.mapel, g.updatedAt || Date.now()]; }));
+      }
+      if (Array.isArray(req.logPresensi)) {
+        overwriteSheet(ss.getSheetByName('LogPresensi'), ['Tanggal', 'Waktu', 'ID', 'Nama', 'Status', 'Validasi_GPS', 'Timestamp'],
+          req.logPresensi.map(function(l) { return [l.tanggal || '', l.waktu || '', "'" + l.id, l.nama || '', l.status || '', l.gps || '', l.timestamp || Date.now()]; }));
+      }
+      if (Array.isArray(req.agendaData)) {
+        overwriteSheet(ss.getSheetByName('AgendaSekolah'), ['Tanggal', 'Judul_Agenda', 'Kategori', 'Updated_At'],
+          req.agendaData.map(function(a) { return [a.tanggal, a.judul, a.kategori, a.updatedAt || Date.now()]; }));
+      }
+      if (Array.isArray(req.usersData)) {
+        overwriteSheet(ss.getSheetByName('DataUsers'), ['Username', 'Nama_Pengguna', 'Role', 'Kelas_Binaan', 'Pass_Hash', 'Updated_At'],
+          req.usersData.map(function(u) { return [u.username, u.name, u.role, u.kelasBinaan || '', u.passHash, u.updatedAt || Date.now()]; }));
+      }
+      if (req.settingsData) {
+        writeSettingsToSheet(ss, req.settingsData);
+      }
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success', authRole: authRole })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function overwriteSheet(sheet, headers, rows) {
+  sheet.clearContents();
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  if (rows && rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+  }
 }`;
-
       const ta = document.createElement('textarea');
-      ta.value = gasBackend;
+      ta.value = gasCode;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showAlert('Kode Apps Script v9.4 Disalin!', 'Tempelkan ke Google Apps Script, jalankan fungsi testSetup, lalu Deploy sebagai Web App (Anyone).');
+      showAlert('Kode Apps Script v9.4 Disalin!', 'Tempel ke Editor Google Apps Script -> Set Script Properties (ADMIN_SECRET_TOKEN & SCAN_KIOSK_TOKEN) -> Deploy Web App (Anyone).');
     }
 
-    // --- UI HELPERS ---
+    // --- UI HELPERS & NAVIGATION ---
     function switchTab(tabId) {
-      if (getEffectiveRole() === 'public_kiosk' && tabId !== 'scanner') {
-        return;
-      }
-      if (getEffectiveRole() === 'guru_walikelas' && tabId !== 'scanner' && tabId !== 'rekap') {
-        return;
+      const effRole = getEffectiveRole();
+      if (effRole === 'public_kiosk' && tabId !== 'scanner') {
+        tabId = 'scanner';
+      } else if (effRole === 'guru_walikelas' && tabId !== 'scanner' && tabId !== 'rekap') {
+        tabId = 'scanner';
       }
       activeTabState = tabId;
       document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
       document.getElementById(`tab_${tabId}`)?.classList.remove('hidden');
+
       document.querySelectorAll('.nav-tab').forEach(b => {
         b.classList.remove('bg-indigo-600', 'text-white');
-        b.classList.add('text-slate-600');
+        b.classList.add('text-slate-600', 'hover:bg-slate-100');
       });
       const activeBtn = document.getElementById(`tabBtn_${tabId}`);
       if (activeBtn) {
-        activeBtn.classList.remove('text-slate-600');
         activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
       }
       persistActiveSession();
-      if (tabId === 'analitik') renderAnalytics();
-      if (tabId === 'rekap') { renderRekapTable(); renderCalendar(); renderAgendaList(); }
+      if (tabId === 'analitik') initCharts();
       if (tabId === 'kartu') renderKartuPrint();
     }
 
+    function showAlert(title, msg, photoUrl = null, autoCloseMs = 0) {
+      document.getElementById('alertTitle').innerText = title;
+      document.getElementById('alertMessage').innerText = msg;
+
+      const photoWrap = document.getElementById('alertPhotoWrapper');
+      const photoImg = document.getElementById('alertPhotoImg');
+      if (photoUrl && photoWrap && photoImg) {
+        photoImg.src = photoUrl;
+        photoWrap.classList.remove('hidden');
+      } else if (photoWrap) {
+        photoWrap.classList.add('hidden');
+      }
+
+      const modal = document.getElementById('alertModal');
+      modal.classList.remove('hidden');
+
+      if (alertAutoCloseTimer) clearTimeout(alertAutoCloseTimer);
+      if (autoCloseMs > 0) {
+        alertAutoCloseTimer = setTimeout(() => {
+          modal.classList.add('hidden');
+        }, autoCloseMs);
+      }
+    }
+
+    function showConfirm(title, message) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
+        document.getElementById('confirmTitle').innerText = title;
+        document.getElementById('confirmMessage').innerText = message;
+        modal.classList.remove('hidden');
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const cleanup = (val) => {
+          modal.classList.add('hidden');
+          okBtn.onclick = null;
+          cancelBtn.onclick = null;
+          resolve(val);
+        };
+        okBtn.onclick = () => cleanup(true);
+        cancelBtn.onclick = () => cleanup(false);
+      });
+    }
+
+    function speakFemaleVoice(text) {
+      if (!document.getElementById('toggleVoiceNotif')?.checked) return;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id-ID';
+        u.rate = 1.05;
+        window.speechSynthesis.speak(u);
+      }
+    }
+
     function populateKelasFilters() {
-      const isGuruRestricted = (getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && currentUserKelasBinaan);
-      const kelasList = isGuruRestricted ? [currentUserKelasBinaan] : [...new Set(siswaData.map(s => s.kelas || '-'))];
-      const opts = isGuruRestricted
-        ? `<option value="${currentUserKelasBinaan}">Kelas ${currentUserKelasBinaan}</option>`
-        : `<option value="Semua">Semua Kelas</option>` + kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
+      const isLimitedGuru = (getEffectiveRole() === 'guru_walikelas' && !hasAllClassesAccess() && currentUserKelasBinaan);
+      const kelasList = isLimitedGuru
+        ? [currentUserKelasBinaan]
+        : [...new Set(siswaData.map(s => s.kelas || '-'))].sort();
 
       ['filterKelasSiswa', 'filterKelasKartu', 'rekapKelasFilter'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = opts;
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        if (isLimitedGuru && id === 'rekapKelasFilter') {
+          sel.innerHTML = `<option value="${currentUserKelasBinaan}">Kelas ${currentUserKelasBinaan}</option>`;
+        } else {
+          sel.innerHTML = '<option value="Semua">Semua Kelas</option>' + kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
+        }
       });
     }
 
@@ -4489,7 +4580,7 @@ function jsonOut_(obj) {
       document.getElementById('profAlamat').value = appConfig.address;
       document.getElementById('profLat').value = targetSchoolGPS.lat;
       document.getElementById('profLng').value = targetSchoolGPS.lng;
-      document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters;
+      document.getElementById('profMaxRadius').value = appConfig.maxRadiusMeters || 150;
       document.getElementById('gsheetUrl').value = appConfig.gsheetUrl || '';
       document.getElementById('apiSecurityToken').value = appConfig.apiToken || '';
       document.getElementById('scanSecurityToken').value = appConfig.scanToken || '';
@@ -4515,53 +4606,6 @@ function jsonOut_(obj) {
       renderAnalytics();
     }
 
-    function showAlert(title, msg) {
-      document.getElementById('alertTitle').innerText = title;
-      document.getElementById('alertMessage').innerText = msg;
-      document.getElementById('alertModal').classList.remove('hidden');
-    }
-
-    function showConfirm(title, message) {
-      return new Promise((resolve) => {
-        const modal = document.getElementById('confirmModal');
-        document.getElementById('confirmTitle').innerText = title;
-        document.getElementById('confirmMessage').innerText = message;
-        modal.classList.remove('hidden');
-        const okBtn = document.getElementById('confirmOkBtn');
-        const cancelBtn = document.getElementById('confirmCancelBtn');
-        const cleanup = (result) => {
-          modal.classList.add('hidden');
-          okBtn.onclick = null;
-          cancelBtn.onclick = null;
-          resolve(result);
-        };
-        okBtn.onclick = () => cleanup(true);
-        cancelBtn.onclick = () => cleanup(false);
-      });
-    }
-
-    function speakFemaleVoice(text) {
-      if (!document.getElementById('toggleVoiceNotif')?.checked) return;
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'id-ID';
-        window.speechSynthesis.speak(u);
-      }
-    }
-
-    setInterval(() => {
-      const clock = document.getElementById('liveClock');
-      if (clock) clock.innerText = new Date().toTimeString().slice(0, 8);
-      if (document.getElementById('toggleAutoSesi')?.checked) {
-        const autoSesi = getAutoSesiByClock();
-        if (autoSesi !== aktifSesi) {
-          aktifSesi = autoSesi;
-          updateSesiButtonStyles();
-        }
-      }
-    }, 1000);
-
     // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
       registerPwaServiceWorker();
@@ -4569,15 +4613,28 @@ function jsonOut_(obj) {
       await applyUrlBootstrapParams();
       refreshAllUI();
       syncSesiModeUI();
-      renderAllViews();
       initGPS();
-      refreshCameraDevices(false);
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      renderAllViews();
 
-      if (currentUserRole !== 'public_kiosk') {
+      if (!currentUserRole) {
         restoreActiveSession();
       }
-      if (navigator.onLine && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      setInterval(() => {
+        const clk = document.getElementById('liveClock');
+        if (clk) clk.innerText = new Date().toTimeString().slice(0, 8);
+        if (document.getElementById('toggleAutoSesi')?.checked) {
+          const autoSesi = getAutoSesiByClock();
+          if (autoSesi !== aktifSesi) {
+            aktifSesi = autoSesi;
+            updateSesiButtonStyles();
+          }
+        }
+      }, 1000);
+
+      if (GITHUB_DEFAULT_CONFIG.autoPullOnLoad && appConfig.gsheetUrl && appConfig.gsheetUrl.startsWith('https://')) {
         if (offlineSyncQueue.length > 0) flushOfflineQueue(false);
         silentPullFromCloud(getCurrentSelectedYM());
       }
